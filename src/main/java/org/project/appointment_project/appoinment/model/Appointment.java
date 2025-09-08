@@ -10,6 +10,7 @@ import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
 import org.project.appointment_project.user.model.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -45,7 +46,7 @@ public class Appointment {
     DoctorAvailableSlot slot;
 
     @Column(name = "consultation_fee", precision = 10, scale = 2)
-    Double consultationFee;
+    BigDecimal consultationFee;
 
     @Column(name = "reason")
     String reason;

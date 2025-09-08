@@ -25,19 +25,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @NotBlank(message = "Username không được để trống")
-    @Size(min = 3, max = 100, message = "Username phải từ 3-100 ký tự")
-    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username chỉ chứa chữ cái, số và dấu gạch dưới")
+    @NotBlank(message = "Username cannot be empty")
+    @Size(min = 3, max = 100, message = "Username must be between 3-100 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers and underscore")
     @Column(name = "username", nullable = false, unique = true)
     String username;
 
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
-    @Size(max = 255, message = "Email không được quá 255 ký tự")
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot exceed 255 characters")
     @Column(name = "email", nullable = false, unique = true)
     String email;
 
-    @NotBlank(message = "Password hash không được để trống")
+    @NotBlank(message = "Password hash cannot be empty")
     @Column(name = "password_hash", nullable = false)
     String passwordHash;
 

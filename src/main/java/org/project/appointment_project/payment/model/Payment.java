@@ -11,6 +11,7 @@ import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.payment.enums.PaymentMethod;
 import org.project.appointment_project.payment.enums.PaymentStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class Payment {
 
     @Min(value = 0, message = "Amount must be non-negative")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
-    Double amount;
+    BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
