@@ -2,10 +2,7 @@ package org.project.appointment_project.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project.appointment_project.auth.dto.LoginRequest;
-import org.project.appointment_project.auth.dto.LoginResponse;
-import org.project.appointment_project.auth.dto.RefreshTokenRequest;
-import org.project.appointment_project.auth.dto.TokenResponse;
+import org.project.appointment_project.auth.dto.*;
 import org.project.appointment_project.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,5 +26,11 @@ public class AuthController {
     public ResponseEntity<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         TokenResponse response = authService.refreshToken(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(LogoutRequest request) {
+        authService.logout(request);
+        return ResponseEntity.noContent().build();
     }
 }
