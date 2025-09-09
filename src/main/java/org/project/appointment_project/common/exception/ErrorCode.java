@@ -10,10 +10,19 @@ public enum ErrorCode {
 
     INTERNAL_SERVER_ERROR(9999, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_REQUEST(1000, "Invalid request", HttpStatus.BAD_REQUEST),
-    UNAUTHORIZED(1001, "Unauthorized", HttpStatus.UNAUTHORIZED),
-    FORBIDDEN(1002, "Access denied", HttpStatus.FORBIDDEN),
-    RESOURCE_NOT_FOUND(1003, "Resource not found", HttpStatus.NOT_FOUND),
-    VALIDATION_ERROR(1004, "Validation error", HttpStatus.BAD_REQUEST),
+    UNAUTHENTICATED(1001, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(1002, "Unauthorized", HttpStatus.UNAUTHORIZED),
+    FORBIDDEN(1003, "Access denied", HttpStatus.FORBIDDEN),
+    RESOURCE_NOT_FOUND(1004, "Resource not found", HttpStatus.NOT_FOUND),
+    VALIDATION_ERROR(1005, "Validation error", HttpStatus.BAD_REQUEST),
+    INVALID_CREDENTIALS(1006, "Invalid username or password", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXPIRED(1007, "Token has expired", HttpStatus.UNAUTHORIZED),
+    TOKEN_INVALID(1008, "Invalid token", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_DISABLED(1009, "Account is disabled", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_NOT_VERIFIED(1010, "Account is not verified", HttpStatus.UNAUTHORIZED),
+    ACCESS_DENIED(1011, "Access denied", HttpStatus.FORBIDDEN),
+    TOKEN_GENERATION_FAILED(1012, "Token generation failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    TOKEN_PARSE_ERROR(1013, "Error parsing token", HttpStatus.BAD_REQUEST),
 
     //User errors
     USERNAME_ALREADY_EXISTS(2001, "Username already exists", HttpStatus.CONFLICT),
@@ -21,7 +30,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(2003, "User not found", HttpStatus.NOT_FOUND),
     REGISTRATION_FAILED(2004, "User registration failed", HttpStatus.BAD_REQUEST),
     LICENSE_NUMBER_ALREADY_EXISTS(2005, "License number already exists", HttpStatus.CONFLICT),
-
+    ROLE_NOT_FOUND(2006, "Role not found", HttpStatus.NOT_FOUND),
+    EMAIL_NOT_VERIFIED(2007, "Email not verified", HttpStatus.UNAUTHORIZED),
 
     SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND)
     ;

@@ -1,4 +1,4 @@
-package org.project.appointment_project.common.security;
+package org.project.appointment_project.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -80,6 +80,4 @@ public class MedicalProfile {
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     User user;
-
-
 }

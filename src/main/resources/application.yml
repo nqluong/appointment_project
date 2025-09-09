@@ -16,3 +16,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+jwt:
+    signer-key: "${SECRET_KEY}"
+    expiration: 3600 # in seconds
+    refresh:
+        expiration: 36000
