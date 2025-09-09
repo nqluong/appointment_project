@@ -22,7 +22,7 @@ public class InvalidatedToken {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-     User user;
+    User user;
 
     @Column(name = "token_hash", nullable = false)
      String tokenHash;

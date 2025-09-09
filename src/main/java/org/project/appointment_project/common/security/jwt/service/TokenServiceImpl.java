@@ -1,10 +1,12 @@
 package org.project.appointment_project.common.security.jwt.service;
 
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.auth.dto.TokenPair;
+import org.project.appointment_project.auth.dto.TokenResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.generator.AccessTokenGenerator;
@@ -14,6 +16,8 @@ import org.project.appointment_project.user.enums.RoleName;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,12 +40,12 @@ public class TokenServiceImpl implements TokenService {
     final TokenValidator tokenValidator;
 
     @Override
-    public TokenPair generateTokens(UUID userId, String username, List<RoleName> roles) {
+    public TokenResponse generateTokens(UUID userId, String username, List<RoleName> roles) {
         try {
             String accessToken = accessTokenGenerator.generate(userId, username, roles, accessTokenExpiration);
             String refreshToken = refreshTokenGenerator.generate(userId, refreshTokenExpiration);
 
-            return TokenPair.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+            return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
         } catch (Exception e) {
             throw new CustomException(ErrorCode.TOKEN_GENERATION_FAILED);
         }
@@ -58,13 +62,8 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public String getEmailFromToken(String token) {
-        return tokenValidator.getEmail(token);
-    }
-
-    @Override
-    public List<String> getRolesFromToken(String token) {
-        return tokenValidator.getRoles(token);
+    public LocalDateTime getExpirationTimeFromToken(String token) {
+        return tokenValidator.getExpiretionTime(token);
     }
 
     @Override

@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -71,6 +73,21 @@ public class TokenValidator {
         } catch (ParseException e) {
             log.error("Error parsing token to get roles", e);
             return List.of();
+        }
+    }
+
+    public LocalDateTime getExpiretionTime(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
+            if (exp == null) {
+                log.error("Token does not contain expiration time");
+                throw new CustomException(ErrorCode.TOKEN_INVALID, "Token lacks expiration time");
+            }
+            return LocalDateTime.ofInstant(exp.toInstant(), ZoneId.systemDefault()).truncatedTo(ChronoUnit.SECONDS);
+        } catch (ParseException e) {
+            log.error("Error parsing token to get expiration time", e);
+            throw new CustomException(ErrorCode.TOKEN_PARSE_ERROR, e);
         }
     }
 
