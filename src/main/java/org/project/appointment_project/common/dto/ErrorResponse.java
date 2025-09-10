@@ -17,6 +17,9 @@ public class ErrorResponse {
     boolean succes = false;
     int code;
     String message;
-    LocalDateTime timestamp;
+    String details;
+    String path;
+    @Builder.Default
+    LocalDateTime timestamp = LocalDateTime.now();
     List<ValidationResponse> validationErrors;
 }
