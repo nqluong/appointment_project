@@ -19,15 +19,23 @@ import java.time.LocalDateTime;
 public class InvalidatedTokenService {
     InvalidatedTokenRepository invalidatedTokenRepository;
 
-    public void invalidateToken(String tokenHash, LocalDateTime expiresAt, User user) {
+    /**
+     * Invalidate token bằng cách lưu token hash vào db
+     * @param tokenHash - Hash của token
+     * @param expiresAt - Thời gian hết hạn của token
+     * @param user - User sở hữu token
+     * @param tokenType - Loại token (ACCESS_TOKEN hoặc REFRESH_TOKEN)
+     */
+    public void invalidateToken(String tokenHash, LocalDateTime expiresAt, User user, TokenType tokenType) {
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .tokenHash(tokenHash)
-                .tokenType(TokenType.REFRESH_TOKEN)
+                .tokenType(tokenType)
                 .blackListedAt(LocalDateTime.now())
                 .expiresAt(expiresAt)
                 .user(user)
                 .build();
+
         invalidatedTokenRepository.save(invalidatedToken);
-        log.info("Successfully invalidated refresh token for user: {}", user.getId());
+        log.info("Successfully invalidated {} token for user: {}", tokenType.name(), user.getId());
     }
 }

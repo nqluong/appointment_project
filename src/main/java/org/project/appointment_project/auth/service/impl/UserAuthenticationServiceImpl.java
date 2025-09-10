@@ -1,12 +1,12 @@
-package org.project.appointment_project.auth.service;
+package org.project.appointment_project.auth.service.impl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.auth.service.UserAuthenticationService;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
-import org.project.appointment_project.user.enums.RoleName;
 import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +40,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
     }
 
     @Override
-    public List<RoleName> getUserRoles(UUID userId) {
+    public List<String> getUserRoles(UUID userId) {
         return userRepository.findUserRolesByUserId(userId);
     }
 }

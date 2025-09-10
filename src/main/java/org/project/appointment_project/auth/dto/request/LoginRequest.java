@@ -1,4 +1,4 @@
-package org.project.appointment_project.auth.dto;
+package org.project.appointment_project.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

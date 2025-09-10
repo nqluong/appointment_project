@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.project.appointment_project.user.enums.RoleName;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,8 +25,7 @@ public class Role {
 
     @NotNull(message = "Role name cannot be null")
     @Column(name = "name", nullable = false, unique = true)
-    @Enumerated(EnumType.STRING)
-    RoleName name;
+    String name;
 
     @Column(name = "description")
     String description;

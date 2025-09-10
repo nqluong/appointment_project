@@ -66,6 +66,16 @@ public class TokenValidator {
         }
     }
 
+    public String getUsername(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException e) {
+            log.error("Error parsing token to get username", e);
+            throw new CustomException(ErrorCode.TOKEN_PARSE_ERROR, e);
+        }
+    }
+
     public List<String> getRoles(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);

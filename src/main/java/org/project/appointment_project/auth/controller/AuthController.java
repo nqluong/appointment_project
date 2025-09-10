@@ -2,7 +2,13 @@ package org.project.appointment_project.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project.appointment_project.auth.dto.*;
+import org.project.appointment_project.auth.dto.request.LoginRequest;
+import org.project.appointment_project.auth.dto.request.LogoutRequest;
+import org.project.appointment_project.auth.dto.request.RefreshTokenRequest;
+import org.project.appointment_project.auth.dto.request.VerifyTokenRequest;
+import org.project.appointment_project.auth.dto.response.LoginResponse;
+import org.project.appointment_project.auth.dto.response.TokenResponse;
+import org.project.appointment_project.auth.dto.response.VerifyTokenResponse;
 import org.project.appointment_project.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +35,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(LogoutRequest request) {
+    public ResponseEntity<Void> logout(@RequestBody LogoutRequest request) {
         authService.logout(request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-token")
+    public ResponseEntity<VerifyTokenResponse> verifyToken(@RequestBody VerifyTokenRequest request) {
+        VerifyTokenResponse response = authService.verifyToken(request);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,6 +1,5 @@
 package org.project.appointment_project.user.repository;
 
-import org.project.appointment_project.user.enums.RoleName;
 import org.project.appointment_project.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,7 +27,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "JOIN u.userRoles ur " +
             "JOIN ur.role r " +
             "WHERE u.id = :userId AND ur.isActive = true")
-    List<RoleName> findUserRolesByUserId(@Param("userId") UUID userId);
+    List<String> findUserRolesByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT u FROM User u WHERE u.username = :username AND u.isActive = true")
     Optional<User> findActiveUserByUsername(@Param("username") String username);

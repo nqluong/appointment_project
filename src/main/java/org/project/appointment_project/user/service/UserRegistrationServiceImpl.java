@@ -11,7 +11,6 @@ import org.project.appointment_project.user.dto.request.BaseUserRegistrationRequ
 import org.project.appointment_project.user.dto.request.DoctorRegistrationRequest;
 import org.project.appointment_project.user.dto.request.PatientRegistrationRequest;
 import org.project.appointment_project.user.dto.response.UserRegistrationResponse;
-import org.project.appointment_project.user.enums.RoleName;
 import org.project.appointment_project.user.mapper.UserRegistrationMapper;
 import org.project.appointment_project.user.model.*;
 import org.project.appointment_project.user.repository.RoleRepository;
@@ -47,7 +46,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
 
             UserProfile userProfile = createUserProfile(request, savedUser);
             MedicalProfile medicalProfile = createPatientMedicalProfile(request, savedUser);
-            assignRole(savedUser, RoleName.PATIENT);
+            assignRole(savedUser, "PATIENT");
             return userRegistrationMapper.toRegistrationResponse(savedUser, userProfile, medicalProfile, "PATIENT");
         }catch (Exception e){
             log.error("Error during patient registration: {}", e.getMessage());
@@ -71,7 +70,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
             UserProfile userProfile = createUserProfile(request, savedUser);
 
             MedicalProfile medicalProfile = createDoctorMedicalProfile(request, savedUser, specialty);
-            assignRole(savedUser, RoleName.DOCTOR);
+            assignRole(savedUser, "DOCTOR");
             log.info("Doctor registration completed successfully for user: {}", savedUser.getUsername());
 
             return userRegistrationMapper.toRegistrationResponse(
@@ -120,7 +119,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         return medicalProfile;
     }
 
-    private void assignRole(User user, RoleName roleName) {
+    private void assignRole(User user, String roleName) {
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_NOT_FOUND, "Role not found: " + roleName));
         UserRole userRole = UserRole.builder()

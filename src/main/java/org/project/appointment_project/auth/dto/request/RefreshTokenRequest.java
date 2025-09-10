@@ -1,4 +1,4 @@
-package org.project.appointment_project.auth.dto;
+package org.project.appointment_project.auth.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

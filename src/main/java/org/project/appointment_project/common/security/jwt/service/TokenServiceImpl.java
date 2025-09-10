@@ -1,18 +1,15 @@
 package org.project.appointment_project.common.security.jwt.service;
 
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.project.appointment_project.auth.dto.TokenPair;
-import org.project.appointment_project.auth.dto.TokenResponse;
+import org.project.appointment_project.auth.dto.response.TokenResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.generator.AccessTokenGenerator;
 import org.project.appointment_project.common.security.jwt.generator.RefreshTokenGenerator;
 import org.project.appointment_project.common.security.jwt.validator.TokenValidator;
-import org.project.appointment_project.user.enums.RoleName;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +36,9 @@ public class TokenServiceImpl implements TokenService {
     final TokenValidator tokenValidator;
 
     @Override
-    public TokenResponse generateTokens(UUID userId, String username, List<RoleName> roles) {
+    public TokenResponse generateTokens(UUID userId, String username, String email, List<String> roles) {
         try {
-            String accessToken = accessTokenGenerator.generate(userId, username, roles, accessTokenExpiration);
+            String accessToken = accessTokenGenerator.generate(userId, username, email,roles, accessTokenExpiration);
             String refreshToken = refreshTokenGenerator.generate(userId, refreshTokenExpiration);
 
             return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();

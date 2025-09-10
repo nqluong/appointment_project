@@ -6,7 +6,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.project.appointment_project.user.enums.RoleName;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +23,10 @@ public class AccessTokenGenerator {
     @Value("${jwt.signer-key}")
     String jwtSecret;
 
-    public String generate(UUID userId, String username, List<RoleName> roles, Long expiration) {
+    public String generate(UUID userId, String username, String email,List<String> roles, Long expiration) {
         try {
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-            JWTClaimsSet claimsSet = buildAccessTokenClaims(userId, username, roles, expiration);
+            JWTClaimsSet claimsSet = buildAccessTokenClaims(userId, username, email, roles, expiration);
 
             return createSignedToken(header, claimsSet);
         } catch (JOSEException e) {
@@ -35,7 +34,7 @@ public class AccessTokenGenerator {
         }
     }
 
-    private JWTClaimsSet buildAccessTokenClaims(UUID userId, String username, List<RoleName> roles, Long expiration) {
+    private JWTClaimsSet buildAccessTokenClaims(UUID userId, String username, String email, List<String> roles, Long expiration) {
         return new JWTClaimsSet.Builder()
                 .subject(username)
                 .issuer("appointment")
@@ -43,6 +42,7 @@ public class AccessTokenGenerator {
                 .expirationTime(new Date(Instant.now().plus(expiration, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("userId", userId.toString())
+                .claim("email", email)
                 .claim("roles", roles)
                 .build();
     }
