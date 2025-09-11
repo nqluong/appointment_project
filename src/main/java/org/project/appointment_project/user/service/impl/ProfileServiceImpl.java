@@ -25,10 +25,12 @@ import org.project.appointment_project.user.repository.UserRepository;
 import org.project.appointment_project.user.service.ProfileService;
 import org.project.appointment_project.user.service.ProfileValidationService;
 import org.project.appointment_project.user.service.UserRoleService;
+import org.project.appointment_project.user.service.strategy.ProfileUpdateStrategyFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,21 +42,26 @@ public class ProfileServiceImpl implements ProfileService {
     UserRepository userRepository;
     ProfileMapper profileMapper;
     ProfileValidationService profileValidationService;
-    SpecialtyRepository specialtyRepository;
     UserRoleService userRoleService;
+    ProfileUpdateStrategyFactory profileUpdateStrategyFactory;
 
     @Override
     @Transactional
     @RequireOwnershipOrAdmin(allowedRoles = {"PATIENT", "DOCTOR"})
     public UpdateUserProfileResponse updateUserProfile(UUID userId, UpdateUserProfileRequest request) {
         try {
-            User user = findUserById(userId);
-            UserProfile userProfile = getOrCreateUserProfile(user, request);
+            User user = findUserByIdOrThrow(userId);
+
+            profileMapper.createOrUpdateUserProfile(user, request);
+
             User savedUser = userRepository.save(user);
             return profileMapper.toUserProfileResponse(savedUser.getUserProfile());
+
         } catch (CustomException e) {
+            log.error("Failed to update user profile for userId: {} - {}", userId, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.error("Unexpected error updating user profile for userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -63,16 +70,19 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional
     @RequireOwnershipOrAdmin(allowedRoles = {"PATIENT", "DOCTOR"})
     public UpdateMedicalProfileResponse updateMedicalProfile(UUID userId, UpdateMedicalProfileRequest request) {
-        log.info("Starting medical profile update for userId: {}", userId);
         try {
-            User user = findUserById(userId);
-            MedicalProfile medicalProfile = getOrCreateMedicalProfile(user, request);
-            User savedUser = userRepository.save(user);
+            User user = findUserByIdOrThrow(userId);
 
+            profileMapper.createOrUpdateMedicalProfile(user, request);
+
+            User savedUser = userRepository.save(user);
             return profileMapper.toMedicalProfileResponse(savedUser.getMedicalProfile());
+
         } catch (CustomException e) {
+            log.error("Failed to update medical profile for userId: {} - {}", userId, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.error("Unexpected error updating medical profile for userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -82,34 +92,24 @@ public class ProfileServiceImpl implements ProfileService {
     @RequireOwnershipOrAdmin(allowedRoles = {"PATIENT", "DOCTOR", "ADMIN"})
     public CompleteProfileResponse updateCompleteProfile(UUID userId, UpdateCompleteProfileRequest request) {
         try {
-            User user = findUserById(userId);
-            List<String> userRoles = userRoleService.getUserRoleNames(userId);
+            User user = findUserByIdOrThrow(userId);
+            Set<String> userRoles = getUserRoles(userId);
 
-            // Validate request based on user roles
-            profileValidationService.validateProfileUpdateRequest(request, userRoles);
+            // Validate request dựa trên quyền của user
+            profileValidationService.validateProfileUpdateRequest(request, userRoles.stream().toList());
 
-            boolean hasDoctor = userRoles.contains("DOCTOR");
-            boolean hasPatient = userRoles.contains("PATIENT");
-            boolean hasOnlyAdmin = userRoles.contains("ADMIN") && !hasDoctor && !hasPatient;
-
-            // Update UserProfile (common for all roles except pure admin with medical fields)
-            if (!hasOnlyAdmin) {
-                updateUserProfileFromCompleteRequest(user, request);
-            } else {
-                updateUserProfileOnlyFromCompleteRequest(user, request);
-            }
-
-            // Update MedicalProfile based on roles
-            if (hasDoctor || hasPatient) {
-                updateMedicalProfileFromCompleteRequest(user, request, hasDoctor);
-            }
+            // Sử dụng Strategy pattern để xử lý update dựa trên role
+            var updateStrategy = profileUpdateStrategyFactory.getStrategy(userRoles);
+            updateStrategy.updateProfile(user, request);
 
             User savedUser = userRepository.save(user);
             return profileMapper.toCompleteProfileResponse(savedUser);
 
         } catch (CustomException e) {
+            log.error("Failed to update complete profile for userId: {} - {}", userId, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.error("Unexpected error updating complete profile for userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -118,105 +118,25 @@ public class ProfileServiceImpl implements ProfileService {
     @RequireOwnershipOrAdmin(allowedRoles = {"PATIENT", "DOCTOR", "ADMIN"})
     public CompleteProfileResponse getCompleteProfile(UUID userId) {
         try {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+            User user = findUserByIdOrThrow(userId);
             return profileMapper.toCompleteProfileResponse(user);
 
         } catch (CustomException e) {
             log.error("Failed to retrieve complete profile for userId: {} - {}", userId, e.getMessage());
             throw e;
         } catch (Exception e) {
+            log.error("Unexpected error retrieving complete profile for userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private User findUserById(UUID userId) {
+    private User findUserByIdOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private UserProfile getOrCreateUserProfile(User user, UpdateUserProfileRequest request) {
-        UserProfile userProfile = user.getUserProfile();
-        if (userProfile == null) {
-            userProfile = profileMapper.toUserProfileEntity(request);
-            userProfile.setUser(user);
-            user.setUserProfile(userProfile);
-        } else {
-            profileMapper.updateUserProfileEntity(userProfile, request);
-        }
-        return userProfile;
+    private Set<String> getUserRoles(UUID userId) {
+        return Set.copyOf(userRoleService.getUserRoleNames(userId));
     }
 
-    private MedicalProfile getOrCreateMedicalProfile(User user, UpdateMedicalProfileRequest request) {
-        MedicalProfile medicalProfile = user.getMedicalProfile();
-        if (medicalProfile == null) {
-            medicalProfile = profileMapper.toMedicalProfileEntity(request);
-            medicalProfile.setUser(user);
-            user.setMedicalProfile(medicalProfile);
-        } else {
-            profileMapper.updateMedicalProfileEntity(medicalProfile, request);
-        }
-        return medicalProfile;
-    }
-
-    private void updateUserProfileFromCompleteRequest(User user, UpdateCompleteProfileRequest request) {
-        UserProfile userProfile = user.getUserProfile();
-        if (userProfile == null) {
-            userProfile = profileMapper.toUserProfileFromCompleteRequest(request);
-            userProfile.setUser(user);
-            user.setUserProfile(userProfile);
-        } else {
-            profileMapper.updateUserProfileFromCompleteRequest(userProfile, request);
-        }
-    }
-
-    private void updateUserProfileOnlyFromCompleteRequest(User user, UpdateCompleteProfileRequest request) {
-        // For pure ADMIN role, only update basic user profile fields
-        UserProfile userProfile = user.getUserProfile();
-        if (userProfile == null) {
-            userProfile = UserProfile.builder()
-                    .firstName(request.getFirstName())
-                    .lastName(request.getLastName())
-                    .dateOfBirth(request.getDateOfBirth())
-                    .gender(request.getGender())
-                    .address(request.getAddress())
-                    .phone(request.getPhone())
-                    .avatarUrl(request.getAvatarUrl())
-                    .user(user)
-                    .build();
-            user.setUserProfile(userProfile);
-        } else {
-            if (StringUtils.hasText(request.getFirstName())) userProfile.setFirstName(request.getFirstName());
-            if (StringUtils.hasText(request.getLastName())) userProfile.setLastName(request.getLastName());
-            if (request.getDateOfBirth() != null) userProfile.setDateOfBirth(request.getDateOfBirth());
-            if (request.getGender() != null) userProfile.setGender(request.getGender());
-            if (StringUtils.hasText(request.getAddress())) userProfile.setAddress(request.getAddress());
-            if (StringUtils.hasText(request.getPhone())) userProfile.setPhone(request.getPhone());
-            if (StringUtils.hasText(request.getAvatarUrl())) userProfile.setAvatarUrl(request.getAvatarUrl());
-        }
-    }
-
-    private void updateMedicalProfileFromCompleteRequest(User user, UpdateCompleteProfileRequest request, boolean hasDoctor) {
-        MedicalProfile medicalProfile = user.getMedicalProfile();
-        if (medicalProfile == null) {
-            medicalProfile = profileMapper.toMedicalProfileFromCompleteRequest(request);
-            medicalProfile.setUser(user);
-            user.setMedicalProfile(medicalProfile);
-        } else {
-            profileMapper.updateMedicalProfileFromCompleteRequest(medicalProfile, request);
-        }
-
-        // Set specialty for doctors only
-        if (hasDoctor && StringUtils.hasText(request.getSpecialtyId())) {
-            try {
-                UUID specialtyId = UUID.fromString(request.getSpecialtyId());
-                Specialty specialty = specialtyRepository.findById(specialtyId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.SPECIALTY_NOT_FOUND));
-                medicalProfile.setSpecialty(specialty);
-            } catch (IllegalArgumentException e) {
-                throw new CustomException(ErrorCode.INVALID_UUID_FORMAT, "Invalid specialty ID format");
-            }
-        }
-    }
 }
