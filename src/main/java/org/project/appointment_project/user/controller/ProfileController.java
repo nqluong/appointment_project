@@ -3,8 +3,11 @@ package org.project.appointment_project.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.user.dto.request.UpdateCompleteProfileRequest;
+
 import org.project.appointment_project.user.dto.request.UpdateMedicalProfileRequest;
 import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
+import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
 import org.project.appointment_project.user.dto.response.UpdateMedicalProfileResponse;
 import org.project.appointment_project.user.dto.response.UpdateUserProfileResponse;
 import org.project.appointment_project.user.service.ProfileService;
@@ -42,6 +45,23 @@ public class ProfileController {
         UpdateMedicalProfileResponse response = profileService.updateMedicalProfile(userId, request);
 
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/complete")
+    public ResponseEntity<CompleteProfileResponse> updateCompleteProfile(
+            @PathVariable UUID userId,
+            @Valid @RequestBody UpdateCompleteProfileRequest request) {
+
+        CompleteProfileResponse response = profileService.updateCompleteProfile(userId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/complete")
+    public ResponseEntity<CompleteProfileResponse> getCompleteProfile(
+            @PathVariable UUID userId) {
+
+        CompleteProfileResponse response = profileService.getCompleteProfile(userId);
         return ResponseEntity.ok(response);
     }
 }

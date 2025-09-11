@@ -23,6 +23,13 @@ public enum ErrorCode {
     ACCESS_DENIED(1011, "Access denied", HttpStatus.FORBIDDEN),
     TOKEN_GENERATION_FAILED(1012, "Token generation failed", HttpStatus.INTERNAL_SERVER_ERROR),
     TOKEN_PARSE_ERROR(1013, "Error parsing token", HttpStatus.BAD_REQUEST),
+    INVALID_ROLE(1014,"Invalid user role", HttpStatus.BAD_REQUEST),
+
+    MISSING_REQUIRED_FIELD(1015, "Required field is missing", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT(1016, "Invalid input provided", HttpStatus.BAD_REQUEST),
+    INVALID_ROLE_OPERATION(1017, "Operation not allowed for this role",HttpStatus.BAD_REQUEST),
+    INVALID_UUID_FORMAT(1018, "Invalid uuid format", HttpStatus.BAD_REQUEST),
+
 
     //User errors
     USERNAME_ALREADY_EXISTS(2001, "Username already exists", HttpStatus.CONFLICT),
@@ -33,8 +40,8 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(2006, "Role not found", HttpStatus.NOT_FOUND),
     EMAIL_NOT_VERIFIED(2007, "Email not verified", HttpStatus.UNAUTHORIZED),
 
-    SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND)
-    ;
+    SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND);
+
 
     private final int code;
     private final String message;

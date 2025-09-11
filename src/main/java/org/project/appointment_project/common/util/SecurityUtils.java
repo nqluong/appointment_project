@@ -116,15 +116,6 @@ public class SecurityUtils {
         return hasRole;
     }
 
-    public UUID getCurrentUserIdSafe() {
-        try {
-            return getCurrentUserId();
-        } catch (Exception e) {
-            log.debug("Could not get current user ID safely", e);
-            return null;
-        }
-    }
-
     public boolean isCurrentUserAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null && hasAdminRole(authentication);

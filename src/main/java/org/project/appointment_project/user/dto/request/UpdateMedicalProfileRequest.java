@@ -3,8 +3,6 @@ package org.project.appointment_project.user.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
