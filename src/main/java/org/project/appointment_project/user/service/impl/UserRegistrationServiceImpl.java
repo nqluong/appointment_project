@@ -1,4 +1,4 @@
-package org.project.appointment_project.user.service;
+package org.project.appointment_project.user.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -17,6 +17,8 @@ import org.project.appointment_project.user.repository.RoleRepository;
 import org.project.appointment_project.user.repository.SpecialtyRepository;
 import org.project.appointment_project.user.repository.UserRepository;
 import org.project.appointment_project.user.repository.UserRoleRepository;
+import org.project.appointment_project.user.service.UserRegistrationService;
+import org.project.appointment_project.user.service.UserRegistrationValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

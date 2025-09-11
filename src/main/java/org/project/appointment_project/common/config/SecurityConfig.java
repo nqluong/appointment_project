@@ -1,8 +1,6 @@
 package org.project.appointment_project.common.config;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.project.appointment_project.common.security.jwt.converter.CustomJwtAuthenticationConverter;
 import org.project.appointment_project.common.security.jwt.handler.JwtAccessDeniedHandler;
 import org.project.appointment_project.common.security.jwt.handler.JwtAuthenticationEntryPoint;
@@ -16,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -41,12 +38,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/register/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
-                        .requestMatchers("/api/doctor/**").hasAnyRole("DOCTOR")
-                        .requestMatchers("/api/patient/**").hasRole("PATIENT")
-
-
                         .anyRequest().authenticated());
+
         http.oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.decoder(jwtDecoder)
                         .jwtAuthenticationConverter(customJwtAuthenticationConverter))

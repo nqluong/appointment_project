@@ -1,4 +1,4 @@
-package org.project.appointment_project.user.service;
+package org.project.appointment_project.user.service.impl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,7 @@ import org.project.appointment_project.user.dto.request.PatientRegistrationReque
 import org.project.appointment_project.user.repository.MedicalProfileRepository;
 import org.project.appointment_project.user.repository.UserProfileRepository;
 import org.project.appointment_project.user.repository.UserRepository;
+import org.project.appointment_project.user.service.UserRegistrationValidator;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -27,17 +27,21 @@ public class JwtClaimsExtractor {
     static String EMAIL_CLAIM = "email";
 
     public JwtUserPrincipal extractPrincipal(Jwt jwt) {
-        UUID userId = extractUserId(jwt);
-        String username = extractUsername(jwt);
-        String email = extractEmail(jwt);
-        List<String> roles = extractRoles(jwt);
+        try {
+            UUID userId = extractUserId(jwt);
+            String username = extractUsername(jwt);
+            String email = extractEmail(jwt);
+            List<String> roles = extractRoles(jwt);
 
-        return JwtUserPrincipal.builder()
-                .userId(userId)
-                .username(username)
-                .email(email)
-                .roles(roles)
-                .build();
+            return JwtUserPrincipal.builder()
+                    .userId(userId)
+                    .username(username)
+                    .email(email)
+                    .roles(roles)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract principal from JWT", e);
+        }
     }
 
     public Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
@@ -57,7 +61,16 @@ public class JwtClaimsExtractor {
     }
 
     private String extractUsername(Jwt jwt) {
-        return jwt.getSubject();
+        String username = jwt.getSubject();
+        if (username == null || username.trim().isEmpty()) {
+            username = jwt.getClaimAsString(USERNAME_CLAIM);
+        }
+
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username not found in token");
+        }
+
+        return username;
     }
 
     private String extractEmail(Jwt jwt) {

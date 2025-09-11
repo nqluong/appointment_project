@@ -30,7 +30,7 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
             JwtUserPrincipal principal = jwtClaimsExtractor.extractPrincipal(jwt);
             Collection<GrantedAuthority> authorities = jwtClaimsExtractor.extractAuthorities(jwt);
 
-            return new JwtAuthenticationToken(jwt, authorities, principal.getUsername());
+            return new CustomJwtAuthenticationToken(jwt, authorities, principal);
         } catch (Exception e) {
             log.error("Error converting JWT to Authentication: {}", e.getMessage(), e);
             return new JwtAuthenticationToken(jwt);
