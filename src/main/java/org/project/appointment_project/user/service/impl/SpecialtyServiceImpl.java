@@ -4,8 +4,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
+import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.user.dto.request.SpecialtyRequest;
 import org.project.appointment_project.user.dto.request.SpecialtyUpdate;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;
@@ -30,23 +32,18 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     SpecialtyRepository specialtyRepository;
     SpecialtyMapper specialtyMapper;
+    PageMapper pageMapper;
 
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public SpecialtyResponse createSpecialty(SpecialtyRequest request) {
-
-        if (specialtyRepository.existsByName(request.getName())) {
-            throw new CustomException(ErrorCode.SPECIALTY_NAME_EXISTS);
-        }
+        validateSpecialtyNameUniqueness(request.getName(), null);
 
         Specialty specialty = specialtyMapper.toEntity(request);
-        if (specialty.getIsActive() == null) {
-            specialty.setIsActive(true);
-        }
+        setDefaultActiveStatus(specialty);
 
         Specialty savedSpecialty = specialtyRepository.save(specialty);
-
         return specialtyMapper.toResponseDto(savedSpecialty);
     }
 
@@ -66,24 +63,17 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<SpecialtyResponse> getSpecialtiesWithFilters(String name, Boolean isActive, Pageable pageable) {
+    public PageResponse<SpecialtyResponse> getSpecialtiesWithFilters(String name, Boolean isActive, Pageable pageable) {
         Page<Specialty> specialties = specialtyRepository.findSpecialtiesWithFilters(name, isActive, pageable);
-        return specialties.map(specialtyMapper::toResponseDto);
+        return pageMapper.toPageResponse(specialties, specialtyMapper::toResponseDto);
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public SpecialtyResponse updateSpecialty(UUID id, SpecialtyUpdate updateDto) {
-
         Specialty existingSpecialty = findSpecialtyById(id);
 
-        // Check for duplicate name if name is being updated
-        if (updateDto.getName() != null &&
-                !updateDto.getName().equals(existingSpecialty.getName()) &&
-                specialtyRepository.existsByNameAndIdNot(updateDto.getName(), id)) {
-            throw new CustomException(ErrorCode.SPECIALTY_NAME_EXISTS);
-
-        }
+        validateSpecialtyNameUniquenessForUpdate(updateDto.getName(), existingSpecialty.getName(), id);
 
         specialtyMapper.updateEntityFromDto(updateDto, existingSpecialty);
         Specialty updatedSpecialty = specialtyRepository.save(existingSpecialty);
@@ -105,8 +95,28 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     private Specialty findSpecialtyById(UUID id) {
         return specialtyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Specialty not found with id: " + id
-                ));
+                .orElseThrow(() -> new CustomException(ErrorCode.SPECIALTY_NOT_FOUND));
+    }
+
+    private void validateSpecialtyNameUniqueness(String name, UUID excludeId) {
+        boolean exists = excludeId == null
+                ? specialtyRepository.existsByName(name)
+                : specialtyRepository.existsByNameAndIdNot(name, excludeId);
+
+        if (exists) {
+            throw new CustomException(ErrorCode.SPECIALTY_NAME_EXISTS);
+        }
+    }
+
+    private void validateSpecialtyNameUniquenessForUpdate(String newName, String currentName, UUID id) {
+        if (newName != null && !newName.equals(currentName)) {
+            validateSpecialtyNameUniqueness(newName, id);
+        }
+    }
+
+    private void setDefaultActiveStatus(Specialty specialty) {
+        if (specialty.getIsActive() == null) {
+            specialty.setIsActive(true);
+        }
     }
 }

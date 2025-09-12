@@ -3,6 +3,7 @@ package org.project.appointment_project.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.user.dto.request.SpecialtyRequest;
 import org.project.appointment_project.user.dto.request.SpecialtyUpdate;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;
@@ -10,6 +11,7 @@ import org.project.appointment_project.user.service.SpecialtyService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,15 +53,22 @@ public class SpecialtyController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<SpecialtyResponse>> getSpecialtiesWithFilters(
+    public ResponseEntity<PageResponse<SpecialtyResponse>> getSpecialtiesWithFilters(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        log.info("Request to get specialties with filters - name: {}, isActive: {}", name, isActive);
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SpecialtyResponse> specialties = specialtyService.getSpecialtiesWithFilters(name, isActive, pageable);
-        return ResponseEntity.ok(specialties);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        PageResponse<SpecialtyResponse> response = specialtyService.getSpecialtiesWithFilters(name, isActive, pageable);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
@@ -67,7 +76,6 @@ public class SpecialtyController {
     public ResponseEntity<SpecialtyResponse> updateSpecialty(
             @PathVariable UUID id,
             @Valid @RequestBody SpecialtyUpdate updateDto) {
-        log.info("Request to update specialty with id: {}", id);
 
         SpecialtyResponse updatedSpecialty = specialtyService.updateSpecialty(id, updateDto);
         return ResponseEntity.ok(updatedSpecialty);

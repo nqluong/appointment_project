@@ -19,10 +19,6 @@ public class WebConfig implements WebMvcConfigurer {
         // Lấy đường dẫn tuyệt đối tới thư mục upload
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
 
-        // Debug log để xem đường dẫn
-        System.out.println("Upload path: " + uploadPath);
-        System.out.println("Parent path: " + uploadPath.getParent());
-
         // Cấu hình cho /uploads/avatars/**
         registry.addResourceHandler("/uploads/avatars/**")
                 .addResourceLocations("file:" + uploadPath + "/")

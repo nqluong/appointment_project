@@ -1,5 +1,6 @@
 package org.project.appointment_project.user.service;
 
+import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.user.dto.request.SpecialtyRequest;
 import org.project.appointment_project.user.dto.request.SpecialtyUpdate;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;
@@ -17,7 +18,7 @@ public interface SpecialtyService {
 
     List<SpecialtyResponse> getAllActiveSpecialties();
 
-    Page<SpecialtyResponse> getSpecialtiesWithFilters(String name, Boolean isActive, Pageable pageable);
+    PageResponse<SpecialtyResponse> getSpecialtiesWithFilters(String name, Boolean isActive, Pageable pageable);
 
     SpecialtyResponse updateSpecialty(UUID id, SpecialtyUpdate updateDto);
 
