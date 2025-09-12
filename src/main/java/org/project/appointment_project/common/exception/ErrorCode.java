@@ -29,7 +29,13 @@ public enum ErrorCode {
     INVALID_INPUT(1016, "Invalid input provided", HttpStatus.BAD_REQUEST),
     INVALID_ROLE_OPERATION(1017, "Operation not allowed for this role",HttpStatus.BAD_REQUEST),
     INVALID_UUID_FORMAT(1018, "Invalid uuid format", HttpStatus.BAD_REQUEST),
-
+    ROLE_ALREADY_ASSIGNED(1019, "Role already assigned to user", HttpStatus.CONFLICT),
+    ROLE_NOT_FOUND(1020, "Role not found for user", HttpStatus.NOT_FOUND),
+    INVALID_EXPIRATION_DATE(1023, "Expiration date must be in the future", HttpStatus.BAD_REQUEST),
+    ROLE_ASSIGNMENT_FAILED(1022, "Failed to assign role to user", HttpStatus.INTERNAL_SERVER_ERROR),
+    ROLE_REVOCATION_FAILED(1023, "Failed to revoke role from user", HttpStatus.INTERNAL_SERVER_ERROR),
+    ROLE_UPDATE_FAILED(1024, "Failed to update role", HttpStatus.INTERNAL_SERVER_ERROR),
+    INSUFFICIENT_PRIVILEGES(1025, "Insufficient privileges to perform this action", HttpStatus.FORBIDDEN),
 
     //User errors
     USERNAME_ALREADY_EXISTS(2001, "Username already exists", HttpStatus.CONFLICT),
@@ -37,7 +43,6 @@ public enum ErrorCode {
     USER_NOT_FOUND(2003, "User not found", HttpStatus.NOT_FOUND),
     REGISTRATION_FAILED(2004, "User registration failed", HttpStatus.BAD_REQUEST),
     LICENSE_NUMBER_ALREADY_EXISTS(2005, "License number already exists", HttpStatus.CONFLICT),
-    ROLE_NOT_FOUND(2006, "Role not found", HttpStatus.NOT_FOUND),
     EMAIL_NOT_VERIFIED(2007, "Email not verified", HttpStatus.UNAUTHORIZED),
 
     SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND),
