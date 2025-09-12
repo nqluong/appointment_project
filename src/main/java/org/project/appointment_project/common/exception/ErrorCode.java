@@ -49,7 +49,9 @@ public enum ErrorCode {
     INVALID_FILE_CONTENT_TYPE(4005, "Invalid file content type", HttpStatus.BAD_REQUEST),
     FILE_NOT_PROVIDED(4006, "File not provided or is empty", HttpStatus.BAD_REQUEST),
     PHOTO_UPLOAD_ERROR(4007, "Error occurred while uploading photo", HttpStatus.INTERNAL_SERVER_ERROR),
-    DIRECTORY_CREATION_FAILED(4008, "Failed to create upload directory", HttpStatus.INTERNAL_SERVER_ERROR)
+    DIRECTORY_CREATION_FAILED(4008, "Failed to create upload directory", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    SPECIALTY_NAME_EXISTS(5001, "Specialty name already exists", HttpStatus.BAD_REQUEST)
     ;
 
 
