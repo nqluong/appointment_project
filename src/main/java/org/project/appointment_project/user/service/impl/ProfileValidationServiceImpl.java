@@ -85,7 +85,7 @@ public class ProfileValidationServiceImpl implements ProfileValidationService {
     }
 
     /**
-     * Validate request cho user có mixed roles
+     * Validate request cho user có nhiều role
      */
     private void validateMixedRolesRequest(UpdateCompleteProfileRequest request, Set<String> roles) {
         log.debug("Validating mixed roles profile update request for roles: {}", roles);

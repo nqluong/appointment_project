@@ -25,6 +25,9 @@ import org.project.appointment_project.user.repository.UserRepository;
 import org.project.appointment_project.user.service.ProfileService;
 import org.project.appointment_project.user.service.ProfileValidationService;
 import org.project.appointment_project.user.service.UserRoleService;
+import org.project.appointment_project.user.service.strategy.FieldFilterStrategy;
+import org.project.appointment_project.user.service.strategy.FieldFilterStrategyFactory;
+import org.project.appointment_project.user.service.strategy.ProfileUpdateStrategy;
 import org.project.appointment_project.user.service.strategy.ProfileUpdateStrategyFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -44,6 +47,7 @@ public class ProfileServiceImpl implements ProfileService {
     ProfileValidationService profileValidationService;
     UserRoleService userRoleService;
     ProfileUpdateStrategyFactory profileUpdateStrategyFactory;
+    FieldFilterStrategyFactory fieldFilterStrategyFactory;
 
     @Override
     @Transactional
@@ -95,12 +99,16 @@ public class ProfileServiceImpl implements ProfileService {
             User user = findUserByIdOrThrow(userId);
             Set<String> userRoles = getUserRoles(userId);
 
+            //Lọc field theo role của user
+            FieldFilterStrategy fieldFilterStrategy = fieldFilterStrategyFactory.getStrategy(userRoles);
+            UpdateCompleteProfileRequest requestFilter = fieldFilterStrategy.filterFields(request);
+
             // Validate request dựa trên quyền của user
-            profileValidationService.validateProfileUpdateRequest(request, userRoles.stream().toList());
+            profileValidationService.validateProfileUpdateRequest(requestFilter, userRoles.stream().toList());
 
             // Sử dụng Strategy pattern để xử lý update dựa trên role
-            var updateStrategy = profileUpdateStrategyFactory.getStrategy(userRoles);
-            updateStrategy.updateProfile(user, request);
+            ProfileUpdateStrategy updateStrategy = profileUpdateStrategyFactory.getStrategy(userRoles);
+            updateStrategy.updateProfile(user, requestFilter);
 
             User savedUser = userRepository.save(user);
             return profileMapper.toCompleteProfileResponse(savedUser);

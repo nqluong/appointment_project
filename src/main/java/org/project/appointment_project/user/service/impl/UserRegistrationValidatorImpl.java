@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserRegistrationValidatorImpl implements UserRegistrationValidator {
     UserRepository userRepository;
-    UserProfileRepository userProfileRepository;
     MedicalProfileRepository medicalProfileRepository;
 
     @Override

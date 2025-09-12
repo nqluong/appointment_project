@@ -13,17 +13,15 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ProfileUpdateStrategyFactory {
-    List<ProfileUpdateStrategy> strategies;
+public class FieldFilterStrategyFactory {
+    List<FieldFilterStrategy> strategies;
 
-    /**
-     * Lấy strategy phù hợp dựa trên set of roles
-     */
-    public ProfileUpdateStrategy getStrategy(Set<String> roles) {
+    public FieldFilterStrategy getStrategy(Set<String> roles) {
+
         return strategies.stream()
                 .filter(strategy -> strategy.supports(roles))
                 .findFirst()
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ROLE_OPERATION,
-                        "No suitable update strategy found for roles: " + roles));
+                        "No suitable field filter strategy found for roles: " + roles));
     }
 }
