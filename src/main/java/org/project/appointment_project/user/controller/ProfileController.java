@@ -3,16 +3,21 @@ package org.project.appointment_project.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.user.dto.request.PhotoUploadRequest;
 import org.project.appointment_project.user.dto.request.UpdateCompleteProfileRequest;
 
 import org.project.appointment_project.user.dto.request.UpdateMedicalProfileRequest;
 import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
 import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
+import org.project.appointment_project.user.dto.response.PhotoUploadResponse;
 import org.project.appointment_project.user.dto.response.UpdateMedicalProfileResponse;
 import org.project.appointment_project.user.dto.response.UpdateUserProfileResponse;
+import org.project.appointment_project.user.service.PhotoUploadService;
 import org.project.appointment_project.user.service.ProfileService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -22,6 +27,7 @@ import java.util.UUID;
 @Slf4j
 public class ProfileController {
     private final ProfileService profileService;
+    private final PhotoUploadService photoUploadService;
 
     @PutMapping("/user")
     public ResponseEntity<UpdateUserProfileResponse> updateUserProfile(
@@ -63,5 +69,24 @@ public class ProfileController {
 
         CompleteProfileResponse response = profileService.getCompleteProfile(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PhotoUploadResponse> uploadUserPhoto(
+            @PathVariable UUID userId,
+            @RequestParam("photo") MultipartFile photo) {
+
+
+        PhotoUploadRequest request = PhotoUploadRequest.builder()
+                .photo(photo)
+                .build();
+
+        PhotoUploadResponse response = photoUploadService.uploadUserPhoto(userId, request);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 }

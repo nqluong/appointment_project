@@ -40,7 +40,17 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(2006, "Role not found", HttpStatus.NOT_FOUND),
     EMAIL_NOT_VERIFIED(2007, "Email not verified", HttpStatus.UNAUTHORIZED),
 
-    SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND);
+    SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND),
+
+    INVALID_FILE_FORMAT(4001, "Invalid file format. Only JPG, PNG, GIF files are allowed", HttpStatus.BAD_REQUEST),
+    FILE_SIZE_EXCEEDED(4002, "File size exceeded. Maximum allowed size is 5MB", HttpStatus.BAD_REQUEST),
+    FILE_UPLOAD_FAILED(4003, "Failed to upload file", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_DELETE_FAILED(4004, "Failed to delete old file", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_FILE_CONTENT_TYPE(4005, "Invalid file content type", HttpStatus.BAD_REQUEST),
+    FILE_NOT_PROVIDED(4006, "File not provided or is empty", HttpStatus.BAD_REQUEST),
+    PHOTO_UPLOAD_ERROR(4007, "Error occurred while uploading photo", HttpStatus.INTERNAL_SERVER_ERROR),
+    DIRECTORY_CREATION_FAILED(4008, "Failed to create upload directory", HttpStatus.INTERNAL_SERVER_ERROR)
+    ;
 
 
     private final int code;
