@@ -8,6 +8,7 @@ import org.project.appointment_project.common.security.jwt.principal.JwtUserPrin
 import org.project.appointment_project.user.dto.request.AssignRoleRequest;
 import org.project.appointment_project.user.dto.request.UpdateRoleExpirationRequest;
 import org.project.appointment_project.user.dto.response.RoleInfo;
+import org.project.appointment_project.user.service.RoleManagementService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,17 +21,16 @@ import java.util.UUID;
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
 public class RoleController {
-    private final UserAuthenticationService userAuthenticationService;
+    private final RoleManagementService roleManagementService;
 
     @GetMapping("/user/{userId}")
     @RequireOwnershipOrAdmin
     public ResponseEntity<List<String>> getUserRoles(@PathVariable UUID userId) {
-        List<String> roles = userAuthenticationService.getUserRoles(userId);
+        List<String> roles = roleManagementService.getUserRoles(userId);
         return ResponseEntity.ok(roles);
     }
 
     @PostMapping("/assign")
-
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> assignRoleToUser(
             @Valid @RequestBody AssignRoleRequest request,
@@ -39,7 +39,7 @@ public class RoleController {
         JwtUserPrincipal principal = (JwtUserPrincipal) authentication.getPrincipal();
         UUID assignedBy = principal.getUserId();
 
-        userAuthenticationService.assignRoleToUser(request, assignedBy);
+        roleManagementService.assignRoleToUser(request, assignedBy);
 
         return ResponseEntity.noContent().build();
     }
@@ -50,7 +50,7 @@ public class RoleController {
             @PathVariable UUID userId,
             @PathVariable UUID roleId) {
 
-        userAuthenticationService.revokeRoleFromUser(userId, roleId);
+        roleManagementService.revokeRoleFromUser(userId, roleId);
 
         return ResponseEntity.noContent().build();
     }
@@ -58,7 +58,7 @@ public class RoleController {
     @DeleteMapping("/revoke-all/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> revokeAllUserRoles(@PathVariable UUID userId) {
-        userAuthenticationService.revokeAllUserRoles(userId);
+        roleManagementService.revokeAllUserRoles(userId);
 
         return ResponseEntity.noContent().build();
     }
@@ -66,7 +66,7 @@ public class RoleController {
     @GetMapping("/available")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RoleInfo>> getAvailableRoles() {
-        List<RoleInfo> roles = userAuthenticationService.getAvailableRoles();
+        List<RoleInfo> roles = roleManagementService.getAvailableRoles();
         return ResponseEntity.ok(roles);
     }
 
@@ -75,7 +75,7 @@ public class RoleController {
     public ResponseEntity<Void> updateRoleExpiration(
             @Valid @RequestBody UpdateRoleExpirationRequest request) {
 
-        userAuthenticationService.updateRoleExpiration(request);
+        roleManagementService.updateRoleExpiration(request);
 
         return ResponseEntity.noContent().build();
 
@@ -87,7 +87,7 @@ public class RoleController {
             @PathVariable UUID userId,
             @PathVariable String roleName) {
 
-        boolean hasRole = userAuthenticationService.userHasRole(userId, roleName);
+        boolean hasRole = roleManagementService.userHasRole(userId, roleName);
         return ResponseEntity.ok(hasRole);
     }
 }

@@ -12,18 +12,4 @@ import java.util.UUID;
 
 public interface UserAuthenticationService {
     User authenticateUser(String username, String password);
-
-    List<String> getUserRoles(UUID userId);
-
-    void assignRoleToUser(AssignRoleRequest request, UUID assignedBy);
-
-    void revokeRoleFromUser(UUID userId, UUID roleId);
-
-    void revokeAllUserRoles(UUID userId);
-
-    List<RoleInfo> getAvailableRoles();
-
-    void updateRoleExpiration(UpdateRoleExpirationRequest request);
-
-    boolean userHasRole(UUID userId, String roleName);
 }

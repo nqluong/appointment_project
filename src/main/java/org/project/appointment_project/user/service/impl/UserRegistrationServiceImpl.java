@@ -16,7 +16,7 @@ import org.project.appointment_project.user.model.*;
 import org.project.appointment_project.user.repository.RoleRepository;
 import org.project.appointment_project.user.repository.SpecialtyRepository;
 import org.project.appointment_project.user.repository.UserRepository;
-import org.project.appointment_project.user.repository.UserRoleRepositoryJdbc;
+import org.project.appointment_project.user.repository.UserRoleRepositoryJdbcImpl;
 import org.project.appointment_project.user.service.UserRegistrationService;
 import org.project.appointment_project.user.service.UserRegistrationValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,7 +33,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     UserRegistrationValidator userRegistrationValidator;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
-    UserRoleRepositoryJdbc userRoleRepositoryJdbc;
+    UserRoleRepositoryJdbcImpl userRoleRepositoryJdbc;
 
     @Override
     @Transactional

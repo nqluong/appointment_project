@@ -13,7 +13,7 @@ import org.project.appointment_project.user.dto.request.UpdateRoleExpirationRequ
 import org.project.appointment_project.user.dto.response.RoleInfo;
 import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.repository.UserRepository;
-import org.project.appointment_project.user.repository.UserRoleRepositoryJdbc;
+import org.project.appointment_project.user.repository.UserRoleRepositoryJdbcImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
-    UserRoleRepositoryJdbc userRoleRepositoryJdbc;
+    UserRoleRepositoryJdbcImpl userRoleRepositoryJdbc;
 
     @Override
     public User authenticateUser(String username, String password) {
@@ -46,103 +46,5 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         return user;
     }
 
-    @Override
-    public List<String> getUserRoles(UUID userId) {
-        return userRoleRepositoryJdbc.getUserRoleNames(userId);
-    }
 
-    @Override
-    public void assignRoleToUser(AssignRoleRequest request, UUID assignedBy) {
-        if(!userRepository.existsById(request.getUserId())) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        if(userRoleRepositoryJdbc.hasActiveRole(request.getUserId(), request.getRoleId())) {
-            throw new CustomException(ErrorCode.ROLE_ALREADY_ASSIGNED);
-        }
-
-        if(request.getExpiresAt() != null && request.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorCode.INVALID_EXPIRATION_DATE);
-        }
-        try {
-            userRoleRepositoryJdbc.assignRoleToUser(
-                    request.getUserId(),
-                    request.getRoleId(),
-                    assignedBy,
-                    request.getExpiresAt()
-            );
-        }catch (Exception e) {
-            throw new CustomException(ErrorCode.ROLE_ASSIGNMENT_FAILED);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void revokeRoleFromUser(UUID userId, UUID roleId) {
-        if (!userRepository.existsById(userId)) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        if (!userRoleRepositoryJdbc.hasActiveRole(userId, roleId)) {
-            throw new CustomException(ErrorCode.ROLE_NOT_FOUND);
-        }
-
-        try {
-            userRoleRepositoryJdbc.deactivateUserRole(userId, roleId);
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.ROLE_REVOCATION_FAILED);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void revokeAllUserRoles(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        try {
-            userRoleRepositoryJdbc.deactivateAllUserRoles(userId);
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.ROLE_REVOCATION_FAILED);
-        }
-    }
-
-    @Override
-    public List<RoleInfo> getAvailableRoles() {
-        return userRoleRepositoryJdbc.getAvailableRoles();
-    }
-
-    @Override
-    @Transactional
-    public void updateRoleExpiration(UpdateRoleExpirationRequest request) {
-        if (!userRepository.existsById(request.getUserId())) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        if (!userRoleRepositoryJdbc.hasActiveRole(request.getUserId(), request.getRoleId())) {
-            throw new CustomException(ErrorCode.ROLE_NOT_FOUND);
-        }
-
-        if (request.getNewExpiresAt() != null && request.getNewExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorCode.INVALID_EXPIRATION_DATE);
-        }
-
-        try {
-            userRoleRepositoryJdbc.updateRoleExpiration(
-                    request.getUserId(),
-                    request.getRoleId(),
-                    request.getNewExpiresAt()
-            );
-
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.ROLE_UPDATE_FAILED);
-        }
-    }
-
-    @Override
-    public boolean userHasRole(UUID userId, String roleName) {
-        List<String> userRoles = getUserRoles(userId);
-        return userRoles.contains(roleName);
-    }
 }

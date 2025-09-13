@@ -5,5 +5,6 @@ import java.util.UUID;
 
 public interface UserRoleService {
     List<String> getUserRoleNames(UUID userId);
-
+    boolean hasRole(UUID userId, String roleName);
+    boolean hasActiveRole(UUID userId, UUID roleId);
 }
