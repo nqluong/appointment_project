@@ -6,9 +6,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
-import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.repository.UserRepository;
-import org.project.appointment_project.user.repository.UserRoleRepositoryJdbc;
+import org.project.appointment_project.user.repository.UserRoleJdbcRepository;
 import org.project.appointment_project.user.service.UserRoleService;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +21,7 @@ import java.util.UUID;
 public class UserRoleServiceImpl implements UserRoleService {
 
     UserRepository userRepository;
-    UserRoleRepositoryJdbc userRoleRepository;
+    UserRoleJdbcRepository userRoleRepository;
 
     @Override
     public List<String> getUserRoleNames(UUID userId) {

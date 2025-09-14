@@ -3,11 +3,9 @@ package org.project.appointment_project.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.project.appointment_project.user.dto.request.PhotoUploadRequest;
-import org.project.appointment_project.user.dto.request.UpdateCompleteProfileRequest;
+import org.project.appointment_project.common.security.annotation.RequireOwnershipOrAdmin;
+import org.project.appointment_project.user.dto.request.*;
 
-import org.project.appointment_project.user.dto.request.UpdateMedicalProfileRequest;
-import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
 import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
 import org.project.appointment_project.user.dto.response.PhotoUploadResponse;
 import org.project.appointment_project.user.dto.response.UpdateMedicalProfileResponse;
@@ -29,37 +27,14 @@ public class ProfileController {
     private final ProfileService profileService;
     private final PhotoUploadService photoUploadService;
 
-    @PutMapping("/user")
-    public ResponseEntity<UpdateUserProfileResponse> updateUserProfile(
+    @PutMapping("/update")
+    @RequireOwnershipOrAdmin(allowedRoles = {"DOCTOR", "PATIENT"})
+    public ResponseEntity<CompleteProfileResponse> updateUserProfile(
             @PathVariable UUID userId,
-            @Valid @RequestBody UpdateUserProfileRequest request) {
+            @Valid @RequestBody ProfileUpdateRequest request) {
 
+        CompleteProfileResponse response = profileService.updateProfile(userId, request);
 
-        UpdateUserProfileResponse response = profileService.updateUserProfile(userId, request);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/medical")
-
-    public ResponseEntity<UpdateMedicalProfileResponse> updateMedicalProfile(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UpdateMedicalProfileRequest request) {
-
-        log.info("Received request to update medical profile for userId: {}", userId);
-
-        UpdateMedicalProfileResponse response = profileService.updateMedicalProfile(userId, request);
-
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/complete")
-    public ResponseEntity<CompleteProfileResponse> updateCompleteProfile(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UpdateCompleteProfileRequest request) {
-
-        CompleteProfileResponse response = profileService.updateCompleteProfile(userId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -72,6 +47,7 @@ public class ProfileController {
     }
 
     @PostMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequireOwnershipOrAdmin(allowedRoles = {"DOCTOR", "PATIENT"})
     public ResponseEntity<PhotoUploadResponse> uploadUserPhoto(
             @PathVariable UUID userId,
             @RequestParam("photo") MultipartFile photo) {

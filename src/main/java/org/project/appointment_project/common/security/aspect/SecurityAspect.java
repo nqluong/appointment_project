@@ -34,19 +34,19 @@ public class SecurityAspect {
         UUID targetUserId = (UUID) args[0];
         UUID currentUserId = securityUtils.getCurrentUserId();
 
-        // Check if user is admin
+        // Kiểm tra nếu là admin
         if (securityUtils.isCurrentUserAdmin()) {
             log.info("Admin access granted for user: {} by admin: {}", targetUserId, currentUserId);
             return;
         }
 
-        // Check if user is accessing their own profile
+        // Kiểm tra nếu là đúng của user truyền vào
         if (!currentUserId.equals(targetUserId)) {
             log.warn("User {} attempted to access profile of user {}", currentUserId, targetUserId);
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        // Check if user has required role
+        // Kiểm tra nếu có role phù hợp
         boolean hasAllowedRole = Arrays.stream(allowedRoles)
                 .anyMatch(securityUtils::hasRole);
 

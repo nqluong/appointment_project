@@ -18,87 +18,6 @@ import org.project.appointment_project.user.model.UserProfile;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface ProfileMapper {
-    /**
-     * Tạo UserProfile entity từ request, bỏ qua các trường hệ thống
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    UserProfile toUserProfileEntity(UpdateUserProfileRequest request);
-
-    /**
-     * Cập nhật UserProfile entity từ request, chỉ update các trường không null
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
-    void updateUserProfileEntity(@MappingTarget UserProfile target, UpdateUserProfileRequest source);
-
-    /**
-     * Chuyển đổi UserProfile entity thành response DTO
-     */
-    UpdateUserProfileResponse toUserProfileResponse(UserProfile userProfile);
-
-    /**
-     * Tạo hoặc cập nhật UserProfile cho User entity
-     * Nếu user chưa có UserProfile thì tạo mới, ngược lại thì cập nhật
-     */
-    @AfterMapping
-    default void createOrUpdateUserProfile(@MappingTarget User user, UpdateUserProfileRequest request) {
-        if (user.getUserProfile() == null) {
-            UserProfile userProfile = toUserProfileEntity(request);
-            userProfile.setUser(user);
-            user.setUserProfile(userProfile);
-        } else {
-            updateUserProfileEntity(user.getUserProfile(), request);
-        }
-    }
-
-
-    /**
-     * Tạo MedicalProfile entity từ request, bỏ qua các field hệ thống
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "specialty", ignore = true)
-    @Mapping(target = "isDoctorApproved", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    MedicalProfile toMedicalProfileEntity(UpdateMedicalProfileRequest request);
-
-    /**
-     * Cập nhật MedicalProfile entity từ request
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "specialty", ignore = true)
-//    @Mapping(target = "isDoctorApproved", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
-    void updateMedicalProfileEntity(@MappingTarget MedicalProfile target, UpdateMedicalProfileRequest source);
-
-    /**
-     * Chuyển đổi MedicalProfile entity thành response DTO
-     */
-    UpdateMedicalProfileResponse toMedicalProfileResponse(MedicalProfile medicalProfile);
-
-    /**
-     * Tạo hoặc cập nhật MedicalProfile cho User entity
-     */
-    @AfterMapping
-    default void createOrUpdateMedicalProfile(@MappingTarget User user, UpdateMedicalProfileRequest request) {
-        if (user.getMedicalProfile() == null) {
-            MedicalProfile medicalProfile = toMedicalProfileEntity(request);
-            medicalProfile.setUser(user);
-            user.setMedicalProfile(medicalProfile);
-        } else {
-            updateMedicalProfileEntity(user.getMedicalProfile(), request);
-        }
-    }
-
-
 
     /**
      * Tạo UserProfile entity từ complete request (chỉ các field basic)
@@ -166,22 +85,7 @@ public interface ProfileMapper {
     @Mapping(source = "medicalProfile.yearsOfExperience", target = "yearsOfExperience")
     @Mapping(source = "medicalProfile.consultationFee", target = "consultationFee")
     @Mapping(source = "medicalProfile.bio", target = "bio")
-//    @Mapping(source = "medicalProfile.isDoctorApproved", target = "isDoctorApproved")
     @Mapping(source = "medicalProfile.updatedAt", target = "medicalProfileUpdatedAt")
     CompleteProfileResponse toCompleteProfileResponse(User user);
 
-
-    /**
-     * Tạo UserProfile cơ bản chỉ với các trường admin được phép (không có medical fields)
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
-    UserProfile createBasicUserProfile(
-            String firstName, String lastName,
-            @Context java.time.LocalDate dateOfBirth,
-            @Context org.project.appointment_project.user.enums.Gender gender,
-            String address, String phone, String avatarUrl
-    );
 }

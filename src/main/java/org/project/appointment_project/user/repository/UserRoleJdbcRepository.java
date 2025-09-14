@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public interface UserRoleRepositoryJdbc {
+public interface UserRoleJdbcRepository {
     List<String> getUserRoleNames(UUID userId);
     void assignRoleToUser(UUID userId, UUID roleId, UUID assignedBy, LocalDateTime expiresAt);
     void assignRoleToUserOnRegistration(UUID userId, UUID roleId);

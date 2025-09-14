@@ -13,6 +13,7 @@ import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.service.TokenService;
 import org.project.appointment_project.user.model.User;
+import org.project.appointment_project.user.service.RoleManagementService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class StandardAuthenticationManager implements AuthenticationManager {
 
     UserAuthenticationService userAuthenticationService;
     TokenService tokenService;
+    RoleManagementService roleManagementService;
 
     @Override
     public LoginResponse authenticate(LoginRequest loginRequest) {
@@ -47,7 +49,7 @@ public class StandardAuthenticationManager implements AuthenticationManager {
     }
 
     private List<String> getUserRoles(User user) {
-        return userAuthenticationService.getUserRoles(user.getId());
+        return roleManagementService.getUserRoles(user.getId());
     }
 
     private TokenResponse generateTokens(User user, List<String> roles) {

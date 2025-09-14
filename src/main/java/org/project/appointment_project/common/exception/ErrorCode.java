@@ -56,8 +56,8 @@ public enum ErrorCode {
     PHOTO_UPLOAD_ERROR(4007, "Error occurred while uploading photo", HttpStatus.INTERNAL_SERVER_ERROR),
     DIRECTORY_CREATION_FAILED(4008, "Failed to create upload directory", HttpStatus.INTERNAL_SERVER_ERROR),
 
-    SPECIALTY_NAME_EXISTS(5001, "Specialty name already exists", HttpStatus.BAD_REQUEST)
-    ;
+    SPECIALTY_NAME_EXISTS(5001, "Specialty name already exists", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_PERMISSION(5002,"Error Update" ,HttpStatus.BAD_REQUEST );
 
 
     private final int code;

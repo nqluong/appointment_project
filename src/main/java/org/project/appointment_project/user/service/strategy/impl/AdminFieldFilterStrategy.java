@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.user.dto.request.ProfileUpdateRequest;
 import org.project.appointment_project.user.dto.request.UpdateCompleteProfileRequest;
 import org.project.appointment_project.user.service.strategy.FieldFilterStrategy;
 import org.springframework.stereotype.Component;
@@ -16,23 +17,34 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminFieldFilterStrategy implements FieldFilterStrategy {
 
+    private static final Set<String> ALLOWED_USER_PROFILE_FIELDS = Set.of(
+            "firstName", "lastName", "dateOfBirth", "gender", "address", "phone"
+    );
+
+    private static final Set<String> ALLOWED_MEDICAL_PROFILE_FIELDS = Set.of(
+            "bloodType", "allergies", "medicalHistory",
+            "emergencyContactName", "emergencyContactPhone",
+            "licenseNumber", "qualification", "yearsOfExperience",
+            "consultationFee", "bio", "specialtyId", "isDoctorApproved"
+    );
+
     @Override
-    public UpdateCompleteProfileRequest filterFields(UpdateCompleteProfileRequest request) {
-        return UpdateCompleteProfileRequest.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .dateOfBirth(request.getDateOfBirth())
-                .gender(request.getGender())
-                .address(request.getAddress())
-                .phone(request.getPhone())
-                .avatarUrl(request.getAvatarUrl())
-                .build();
+    public ProfileUpdateRequest filterFields(ProfileUpdateRequest request) {
+        return request;
     }
 
     @Override
     public boolean supports(Set<String> roles) {
-        return roles.contains("ADMIN") &&
-                !roles.contains("DOCTOR") &&
-                !roles.contains("PATIENT");
+        return roles.contains("ADMIN");
+    }
+
+    @Override
+    public Set<String> getAllowedUserProfileFields() {
+        return ALLOWED_USER_PROFILE_FIELDS;
+    }
+
+    @Override
+    public Set<String> getAllowedMedicalProfileFields() {
+        return ALLOWED_MEDICAL_PROFILE_FIELDS;
     }
 }

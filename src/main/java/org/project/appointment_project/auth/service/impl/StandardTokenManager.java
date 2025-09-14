@@ -15,6 +15,7 @@ import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.service.TokenService;
 import org.project.appointment_project.user.enums.TokenType;
+import org.project.appointment_project.user.service.RoleManagementService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class StandardTokenManager implements TokenManager {
     TokenInvalidator tokenInvalidator;
     TokenService tokenService;
     UserAuthenticationService userAuthenticationService;
+    RoleManagementService roleManagementService;
 
     @Override
     public TokenResponse refreshAccessToken(RefreshTokenRequest request) {
@@ -58,7 +60,7 @@ public class StandardTokenManager implements TokenManager {
     }
 
     private TokenResponse generateNewTokens(TokenValidationResult validationResult) {
-        List<String> roles = userAuthenticationService.getUserRoles(validationResult.getUserId());
+        List<String> roles = roleManagementService.getUserRoles(validationResult.getUserId());
         return tokenService.generateTokens(
                 validationResult.getUserId(),
                 validationResult.getUser().getUsername(),

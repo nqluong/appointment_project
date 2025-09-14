@@ -1,9 +1,10 @@
-package org.project.appointment_project.user.repository;
+package org.project.appointment_project.user.repository.impl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.project.appointment_project.user.dto.response.RoleInfo;
+import org.project.appointment_project.user.repository.UserRoleJdbcRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserRoleRepositoryJdbcImpl implements UserRoleRepositoryJdbc {
+public class UserRoleJdbcRepositoryImpl implements UserRoleJdbcRepository {
     JdbcTemplate jdbcTemplate;
 
     //Lấy danh sách các quyền của user

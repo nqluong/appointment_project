@@ -10,7 +10,7 @@ import org.project.appointment_project.user.dto.request.AssignRoleRequest;
 import org.project.appointment_project.user.dto.request.UpdateRoleExpirationRequest;
 import org.project.appointment_project.user.dto.response.RoleInfo;
 import org.project.appointment_project.user.repository.UserRepository;
-import org.project.appointment_project.user.repository.UserRoleRepositoryJdbc;
+import org.project.appointment_project.user.repository.UserRoleJdbcRepository;
 import org.project.appointment_project.user.service.RoleManagementService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @Transactional
 public class RoleManagementServiceImpl implements RoleManagementService {
 
-    UserRoleRepositoryJdbc userRoleRepositoryJdbc;
+    UserRoleJdbcRepository userRoleRepositoryJdbc;
     UserRepository userRepository;
 
     @Override

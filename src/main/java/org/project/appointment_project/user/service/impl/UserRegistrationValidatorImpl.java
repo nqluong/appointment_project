@@ -9,7 +9,6 @@ import org.project.appointment_project.user.dto.request.DoctorRegistrationReques
 import org.project.appointment_project.user.dto.request.PatientRegistrationRequest;
 
 import org.project.appointment_project.user.repository.MedicalProfileRepository;
-import org.project.appointment_project.user.repository.UserProfileRepository;
 import org.project.appointment_project.user.repository.UserRepository;
 import org.project.appointment_project.user.service.UserRegistrationValidator;
 import org.springframework.stereotype.Component;
