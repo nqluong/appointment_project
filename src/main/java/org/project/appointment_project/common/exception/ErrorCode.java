@@ -57,7 +57,14 @@ public enum ErrorCode {
     DIRECTORY_CREATION_FAILED(4008, "Failed to create upload directory", HttpStatus.INTERNAL_SERVER_ERROR),
 
     SPECIALTY_NAME_EXISTS(5001, "Specialty name already exists", HttpStatus.BAD_REQUEST),
-    INSUFFICIENT_PERMISSION(5002,"Error Update" ,HttpStatus.BAD_REQUEST );
+    INSUFFICIENT_PERMISSION(5002,"User does not have sufficient permissions" ,HttpStatus.BAD_REQUEST ),
+    SCHEDULE_ALREADY_EXISTS(5003, "Doctor already has a schedule configured", HttpStatus.CONFLICT),
+    SCHEDULE_NOT_FOUND(5004, "Doctor schedule not found", HttpStatus.NOT_FOUND),
+    DUPLICATE_SCHEDULE_DAY(5004, "Duplicate day of week in schedule entries", HttpStatus.CONFLICT),
+    INVALID_TIME_RANGE(5005, "Invalid time range: start time must be before end time", HttpStatus.BAD_REQUEST),
+    INVALID_WORKING_HOURS(5006, "Working hours must be between 6:00 AM and 11:00 PM", HttpStatus.BAD_REQUEST),
+    INVALID_SLOT_DURATION(5007, "Slot duration exceeds total working time", HttpStatus.CONFLICT),
+    ;
 
 
     private final int code;

@@ -1,0 +1,99 @@
+package org.project.appointment_project.schedule.mapper;
+
+import org.project.appointment_project.schedule.dto.request.ScheduleEntryRequest;
+import org.project.appointment_project.schedule.dto.response.DoctorScheduleResponse;
+import org.project.appointment_project.schedule.dto.response.ScheduleEntryResponse;
+import org.project.appointment_project.schedule.model.DoctorSchedule;
+import org.project.appointment_project.user.model.User;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Component
+public class DoctorScheduleMapper {
+    public DoctorSchedule toEntity(ScheduleEntryRequest request, User doctor, String timezone, String notes) {
+        return DoctorSchedule.builder()
+                .doctor(doctor)
+                .dayOfWeek(request.getDayOfWeek())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .slotDuration(request.getSlotDuration() != null ? request.getSlotDuration() : 30)
+                .breakDuration(request.getBreakDuration() != null ? request.getBreakDuration() : 5)
+                .maxAppointmentsPerSlot(request.getMaxAppointmentsPerSlot() != null ? request.getMaxAppointmentsPerSlot() : 1)
+                .maxAppointmentsPerDay(request.getMaxAppointmentsPerDay())
+                .isActive(true)
+                .timezone(timezone)
+                .notes(notes)
+                .build();
+    }
+
+    public List<DoctorSchedule> toEntityList(List<ScheduleEntryRequest> requests, User doctor, String timezone, String notes) {
+        return requests.stream()
+                .map(request -> toEntity(request, doctor, timezone, notes))
+                .collect(Collectors.toList());
+    }
+
+    public ScheduleEntryResponse toScheduleEntryResponse(DoctorSchedule entity) {
+        return ScheduleEntryResponse.builder()
+                .id(entity.getId())
+                .dayOfWeek(entity.getDayOfWeek())
+                .dayName(getDayName(entity.getDayOfWeek()))
+                .startTime(entity.getStartTime())
+                .endTime(entity.getEndTime())
+                .slotDuration(entity.getSlotDuration())
+                .breakDuration(entity.getBreakDuration())
+                .maxAppointmentsPerSlot(entity.getMaxAppointmentsPerSlot())
+                .maxAppointmentsPerDay(entity.getMaxAppointmentsPerDay())
+                .isActive(entity.isActive())
+                .build();
+    }
+
+    public List<ScheduleEntryResponse> toScheduleEntryResponseList(List<DoctorSchedule> entities) {
+        return entities.stream()
+                .map(this::toScheduleEntryResponse)
+                .collect(Collectors.toList());
+    }
+
+    public DoctorScheduleResponse toDoctorScheduleResponse(User doctor, List<DoctorSchedule> schedules) {
+        return DoctorScheduleResponse.builder()
+                .doctorId(doctor.getId())
+                .doctorName(doctor.getUserProfile().getFirstName() + " " + doctor.getUserProfile().getLastName())
+                .scheduleEntries(toScheduleEntryResponseList(schedules))
+                .timezone(extractTimezone(schedules))
+                .notes(extractNotes(schedules))
+                .createdAt(extractCreatedAt(schedules))
+                .updatedAt(extractUpdatedAt(schedules))
+                .build();
+    }
+
+    private String extractTimezone(List<DoctorSchedule> schedules) {
+        return schedules.isEmpty() ? null : schedules.get(0).getTimezone();
+    }
+
+    private String extractNotes(List<DoctorSchedule> schedules) {
+        return schedules.isEmpty() ? null : schedules.get(0).getNotes();
+    }
+
+    private java.time.LocalDateTime extractCreatedAt(List<DoctorSchedule> schedules) {
+        return schedules.isEmpty() ? null : schedules.get(0).getCreatedAt();
+    }
+
+    private java.time.LocalDateTime extractUpdatedAt(List<DoctorSchedule> schedules) {
+        return schedules.isEmpty() ? null : schedules.get(0).getUpdatedAt();
+    }
+
+    private String getDayName(Integer dayOfWeek) {
+        return switch (dayOfWeek) {
+            case 1 -> "Monday";
+            case 2 -> "Tuesday";
+            case 3 -> "Wednesday";
+            case 4 -> "Thursday";
+            case 5 -> "Friday";
+            case 6 -> "Saturday";
+            case 7 -> "Sunday";
+            default -> "Unknown";
+        };
+    }
+}
