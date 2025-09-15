@@ -64,6 +64,12 @@ public enum ErrorCode {
     INVALID_TIME_RANGE(5005, "Invalid time range: start time must be before end time", HttpStatus.BAD_REQUEST),
     INVALID_WORKING_HOURS(5006, "Working hours must be between 6:00 AM and 11:00 PM", HttpStatus.BAD_REQUEST),
     INVALID_SLOT_DURATION(5007, "Slot duration exceeds total working time", HttpStatus.CONFLICT),
+
+    INVALID_SEARCH_CRITERIA(6001, "Invalid search criteria provided", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE(6002, "Invalid date range for search", HttpStatus.BAD_REQUEST),
+    INVALID_EXPERIENCE_RANGE(6003, "Invalid experience range", HttpStatus.BAD_REQUEST),
+    INVALID_FEE_RANGE(6004, "Invalid consultation fee range", HttpStatus.BAD_REQUEST),
+    DATABASE_ERROR(6005, "Database error occurred during search", HttpStatus.BAD_REQUEST)
     ;
 
 

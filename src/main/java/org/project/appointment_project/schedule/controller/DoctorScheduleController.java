@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -68,15 +69,17 @@ public class DoctorScheduleController {
     @GetMapping("/doctors/search")
     public ResponseEntity<PageResponse<DoctorSearchResponse>> searchDoctors(
             @RequestParam(required = false) UUID specialtyId,
+            @RequestParam(required = false) String specialtyName,
             @RequestParam(required = false) String doctorName,
             @RequestParam(required = false) String availableDate,
             @RequestParam(required = false) String preferredStartTime,
             @RequestParam(required = false) String preferredEndTime,
-            @RequestParam(required = false) String location,
             @RequestParam(required = false) Boolean isApproved,
             @RequestParam(required = false) Integer minExperience,
             @RequestParam(required = false) Integer maxExperience,
             @RequestParam(required = false) String qualification,
+            @RequestParam(required = false) BigDecimal minConsultationFee,
+            @RequestParam(required = false) BigDecimal maxConsultationFee,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -88,14 +91,16 @@ public class DoctorScheduleController {
         DoctorSearchRequest request = DoctorSearchRequest.builder()
                 .specialtyId(specialtyId)
                 .doctorName(doctorName)
+                .specialtyName(specialtyName)
                 .availableDate(availableDate != null ? LocalDate.parse(availableDate) : null)
                 .preferredStartTime(preferredStartTime != null ? LocalTime.parse(preferredStartTime) : null)
                 .preferredEndTime(preferredEndTime != null ? LocalTime.parse(preferredEndTime) : null)
-                .location(location)
                 .isApproved(isApproved)
                 .minExperience(minExperience)
                 .maxExperience(maxExperience)
                 .qualification(qualification)
+                .minConsultationFee(minConsultationFee)
+                .maxConsultationFee(maxConsultationFee)
                 .page(page)
                 .size(size)
                 .sortBy(sortBy)

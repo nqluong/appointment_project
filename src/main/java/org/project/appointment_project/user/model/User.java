@@ -9,6 +9,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.project.appointment_project.schedule.model.DoctorSchedule;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -66,4 +68,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<PasswordResetToken> passwordResetTokens;
+
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<DoctorSchedule> doctorSchedules;
 }

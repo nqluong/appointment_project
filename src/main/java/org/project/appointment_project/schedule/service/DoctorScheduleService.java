@@ -9,9 +9,14 @@ import org.project.appointment_project.schedule.dto.response.DoctorSearchRespons
 import java.util.UUID;
 
 public interface DoctorScheduleService {
+
     DoctorScheduleResponse createDoctorSchedule(DoctorScheduleCreateRequest request);
+
     DoctorScheduleResponse getDoctorSchedule(UUID doctorId);
+
     DoctorScheduleResponse updateDoctorSchedule(UUID doctorId, DoctorScheduleCreateRequest request);
+
     void deleteDoctorSchedule(UUID doctorId);
+
     PageResponse<DoctorSearchResponse> searchDoctors(DoctorSearchRequest request);
 }

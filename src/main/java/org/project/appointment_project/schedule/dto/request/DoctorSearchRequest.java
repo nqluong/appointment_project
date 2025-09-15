@@ -3,6 +3,7 @@ package org.project.appointment_project.schedule.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -13,16 +14,25 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DoctorSearchRequest {
-    UUID specialtyId;
     String doctorName;
+
+    UUID specialtyId;
+    String specialtyName;
+
+    Integer minExperience;
+    Integer maxExperience;
+
     LocalDate availableDate;
     LocalTime preferredStartTime;
     LocalTime preferredEndTime;
-    String location;
+
+    BigDecimal minConsultationFee;
+    BigDecimal maxConsultationFee;
+
     Boolean isApproved;
-    Integer minExperience;
-    Integer maxExperience;
+
     String qualification;
+
     int page = 0;
     int size = 20;
     String sortBy = "createdAt";
