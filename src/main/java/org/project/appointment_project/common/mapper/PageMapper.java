@@ -1,7 +1,6 @@
 package org.project.appointment_project.common.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.project.appointment_project.common.dto.PageResponse;
 import org.springframework.data.domain.Page;
 

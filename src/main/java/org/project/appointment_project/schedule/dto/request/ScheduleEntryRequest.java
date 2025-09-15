@@ -38,4 +38,6 @@ public class ScheduleEntryRequest {
 
     @Min(value = 1, message = "Max appointments per day must be at least 1")
     Integer maxAppointmentsPerDay;
+
+    Boolean isActive;
 }

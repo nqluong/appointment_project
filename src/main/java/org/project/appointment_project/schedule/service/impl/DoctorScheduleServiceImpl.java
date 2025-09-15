@@ -10,6 +10,7 @@ import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.schedule.dto.request.DoctorScheduleCreateRequest;
 import org.project.appointment_project.schedule.dto.request.DoctorSearchRequest;
+import org.project.appointment_project.schedule.dto.request.ScheduleEntryRequest;
 import org.project.appointment_project.schedule.dto.response.DoctorScheduleResponse;
 import org.project.appointment_project.schedule.dto.response.DoctorSearchResponse;
 import org.project.appointment_project.schedule.mapper.DoctorScheduleMapper;
@@ -29,8 +30,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,19 +54,18 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     @Override
     @Transactional
     public DoctorScheduleResponse createDoctorSchedule(DoctorScheduleCreateRequest request) {
-        // Validate doctor exists and has proper role
+        // Validate doctor và có quyền phù hợp không
         User doctor = findAndValidateDoctor(request.getDoctorId());
 
-        // Validate schedule entries
+        // Validate schedule
         scheduleValidationService.validateScheduleEntries(request.getScheduleEntries());
 
-        // Check if doctor already has schedule
+        // Kiểm tra xem có lich chưa
         if (doctorScheduleRepository.existsByDoctorId(doctor.getId())) {
             log.warn("Doctor {} already has a schedule", doctor.getId());
             throw new CustomException(ErrorCode.SCHEDULE_ALREADY_EXISTS);
         }
 
-        // Create schedule entities
         List<DoctorSchedule> schedules = doctorScheduleMapper.toEntityList(
                 request.getScheduleEntries(),
                 doctor,
@@ -69,7 +73,6 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
                 request.getNotes()
         );
 
-        // Save schedules
         List<DoctorSchedule> savedSchedules = doctorScheduleRepository.saveAll(schedules);
 
         log.info("Successfully created {} schedule entries for doctor: {}",
@@ -98,22 +101,40 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         User doctor = findAndValidateDoctor(doctorId);
         scheduleValidationService.validateScheduleEntries(request.getScheduleEntries());
 
-        // Deactivate existing schedules
-        doctorScheduleRepository.deactivateSchedulesByDoctorId(doctorId);
+        // Lấy tất cả schedule hiện có của doctor
+        List<DoctorSchedule> existingSchedules = doctorScheduleRepository.findByDoctorIdAndIsActiveTrue(doctorId);
 
-        // Create new schedule entries
-        List<DoctorSchedule> newSchedules = doctorScheduleMapper.toEntityList(
-                request.getScheduleEntries(),
-                doctor,
-                request.getTimezone(),
-                request.getNotes()
-        );
+        // Tạo map để dễ dàng lookup schedule theo dayOfWeek
+        Map<Integer, DoctorSchedule> existingScheduleMap = existingSchedules.stream()
+                .collect(Collectors.toMap(DoctorSchedule::getDayOfWeek, Function.identity()));
 
-        List<DoctorSchedule> savedSchedules = doctorScheduleRepository.saveAll(newSchedules);
+        List<DoctorSchedule> updatedSchedules = new ArrayList<>();
+
+        for (ScheduleEntryRequest entryRequest : request.getScheduleEntries()) {
+            DoctorSchedule existingSchedule = existingScheduleMap.get(entryRequest.getDayOfWeek());
+
+            if (existingSchedule != null) {
+                DoctorSchedule updatedSchedule = doctorScheduleMapper.updateEntity(
+                        existingSchedule,
+                        entryRequest,
+                        request.getTimezone(),
+                        request.getNotes()
+                );
+                updatedSchedules.add(updatedSchedule);
+
+                existingScheduleMap.remove(entryRequest.getDayOfWeek());
+            }
+        }
+
+        List<DoctorSchedule> savedSchedules = doctorScheduleRepository.saveAll(updatedSchedules);
+
+        List<DoctorSchedule> activeSchedules = savedSchedules.stream()
+                .filter(DoctorSchedule::isActive)
+                .collect(Collectors.toList());
 
         log.info("Successfully updated schedule for doctor: {}", doctorId);
 
-        return doctorScheduleMapper.toDoctorScheduleResponse(doctor, savedSchedules);
+        return doctorScheduleMapper.toDoctorScheduleResponse(doctor, activeSchedules);
     }
 
 
@@ -171,4 +192,6 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         return user.getUserRoles().stream()
                 .anyMatch(userRole -> "DOCTOR".equals(userRole.getRole().getName()));
     }
+
+
 }

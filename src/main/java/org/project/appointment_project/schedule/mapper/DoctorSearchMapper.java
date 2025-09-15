@@ -1,10 +1,6 @@
 package org.project.appointment_project.schedule.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 import org.project.appointment_project.schedule.dto.response.DoctorSearchResponse;
 import org.project.appointment_project.schedule.model.DoctorSchedule;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;

@@ -6,8 +6,6 @@ import org.project.appointment_project.schedule.dto.response.ScheduleEntryRespon
 import org.project.appointment_project.schedule.model.DoctorSchedule;
 import org.project.appointment_project.user.model.User;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,5 +93,25 @@ public class DoctorScheduleMapper {
             case 7 -> "Sunday";
             default -> "Unknown";
         };
+    }
+
+    public DoctorSchedule updateEntity(DoctorSchedule existingSchedule, ScheduleEntryRequest request,
+                                       String timezone, String notes) {
+        existingSchedule.setStartTime(request.getStartTime());
+        existingSchedule.setEndTime(request.getEndTime());
+        existingSchedule.setSlotDuration(request.getSlotDuration() != null ? request.getSlotDuration() : 30);
+        existingSchedule.setBreakDuration(request.getBreakDuration() != null ? request.getBreakDuration() : 5);
+        existingSchedule.setMaxAppointmentsPerSlot(request.getMaxAppointmentsPerSlot() != null ?
+                request.getMaxAppointmentsPerSlot() : 1);
+        existingSchedule.setMaxAppointmentsPerDay(request.getMaxAppointmentsPerDay());
+        existingSchedule.setTimezone(timezone);
+        existingSchedule.setNotes(notes);
+
+        // Update isActive
+        if (request.getIsActive() != null) {
+            existingSchedule.setActive(request.getIsActive());
+        }
+
+        return existingSchedule;
     }
 }
