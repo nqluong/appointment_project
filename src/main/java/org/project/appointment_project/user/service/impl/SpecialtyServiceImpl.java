@@ -64,7 +64,8 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<SpecialtyResponse> getSpecialtiesWithFilters(String name, Boolean isActive, Pageable pageable) {
-        Page<Specialty> specialties = specialtyRepository.findSpecialtiesWithFilters(name, isActive, pageable);
+        String searchName = (name != null && name.trim().isEmpty()) ? null : name;
+        Page<Specialty> specialties = specialtyRepository.findSpecialtiesWithFilters(searchName, isActive, pageable);
         return pageMapper.toPageResponse(specialties, specialtyMapper::toResponseDto);
     }
 

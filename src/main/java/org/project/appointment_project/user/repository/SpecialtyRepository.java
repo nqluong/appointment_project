@@ -23,7 +23,7 @@ public interface SpecialtyRepository extends JpaRepository<Specialty, UUID> {
     List<Specialty> findByIsActiveTrue();
 
     @Query("SELECT s FROM Specialty s WHERE " +
-            "(:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(COALESCE(:name, '') = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:isActive IS NULL OR s.isActive = :isActive)")
     Page<Specialty> findSpecialtiesWithFilters(
             @Param("name") String name,

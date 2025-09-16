@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.schedule.dto.request.DoctorScheduleCreateRequest;
+import org.project.appointment_project.schedule.dto.request.DoctorScheduleUpdateRequest;
 import org.project.appointment_project.schedule.dto.request.DoctorSearchRequest;
 import org.project.appointment_project.schedule.dto.response.DoctorScheduleResponse;
 import org.project.appointment_project.schedule.dto.response.DoctorSearchResponse;
@@ -49,7 +50,7 @@ public class DoctorScheduleController {
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<DoctorScheduleResponse> updateDoctorSchedule(
             @PathVariable UUID doctorId,
-            @Valid @RequestBody DoctorScheduleCreateRequest request) {
+            @Valid @RequestBody DoctorScheduleUpdateRequest request) {
 
         DoctorScheduleResponse response = doctorScheduleService.updateDoctorSchedule(doctorId, request);
 

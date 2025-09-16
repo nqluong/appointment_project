@@ -10,6 +10,7 @@ import org.project.appointment_project.schedule.dto.request.ScheduleEntryRequest
 import org.project.appointment_project.schedule.service.ScheduleValidationService;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +63,7 @@ public class ScheduleValidationServiceImpl implements ScheduleValidationService 
 
         // Validate thời lượng của 1 lịch khám
         if (entry.getSlotDuration() != null) {
-            long totalMinutes = java.time.Duration.between(entry.getStartTime(), entry.getEndTime()).toMinutes();
+            long totalMinutes = Duration.between(entry.getStartTime(), entry.getEndTime()).toMinutes();
             if (entry.getSlotDuration() > totalMinutes) {
                 log.warn("Slot duration {} exceeds total working time {} minutes",
                         entry.getSlotDuration(), totalMinutes);

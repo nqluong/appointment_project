@@ -2,6 +2,7 @@ package org.project.appointment_project.schedule.service;
 
 import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.schedule.dto.request.DoctorScheduleCreateRequest;
+import org.project.appointment_project.schedule.dto.request.DoctorScheduleUpdateRequest;
 import org.project.appointment_project.schedule.dto.request.DoctorSearchRequest;
 import org.project.appointment_project.schedule.dto.response.DoctorScheduleResponse;
 import org.project.appointment_project.schedule.dto.response.DoctorSearchResponse;
@@ -14,7 +15,7 @@ public interface DoctorScheduleService {
 
     DoctorScheduleResponse getDoctorSchedule(UUID doctorId);
 
-    DoctorScheduleResponse updateDoctorSchedule(UUID doctorId, DoctorScheduleCreateRequest request);
+    DoctorScheduleResponse updateDoctorSchedule(UUID doctorId, DoctorScheduleUpdateRequest request);
 
     void deleteDoctorSchedule(UUID doctorId);
 

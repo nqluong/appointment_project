@@ -9,6 +9,7 @@ import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.schedule.dto.request.DoctorScheduleCreateRequest;
+import org.project.appointment_project.schedule.dto.request.DoctorScheduleUpdateRequest;
 import org.project.appointment_project.schedule.dto.request.DoctorSearchRequest;
 import org.project.appointment_project.schedule.dto.request.ScheduleEntryRequest;
 import org.project.appointment_project.schedule.dto.response.DoctorScheduleResponse;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -97,12 +99,12 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
 
     @Override
     @Transactional
-    public DoctorScheduleResponse updateDoctorSchedule(UUID doctorId, DoctorScheduleCreateRequest request) {
+    public DoctorScheduleResponse updateDoctorSchedule(UUID doctorId, DoctorScheduleUpdateRequest request) {
         User doctor = findAndValidateDoctor(doctorId);
         scheduleValidationService.validateScheduleEntries(request.getScheduleEntries());
 
         // Lấy tất cả schedule hiện có của doctor
-        List<DoctorSchedule> existingSchedules = doctorScheduleRepository.findByDoctorIdAndIsActiveTrue(doctorId);
+        List<DoctorSchedule> existingSchedules = doctorScheduleRepository.findByDoctorId(doctorId);
 
         // Tạo map để dễ dàng lookup schedule theo dayOfWeek
         Map<Integer, DoctorSchedule> existingScheduleMap = existingSchedules.stream()
@@ -113,24 +115,31 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         for (ScheduleEntryRequest entryRequest : request.getScheduleEntries()) {
             DoctorSchedule existingSchedule = existingScheduleMap.get(entryRequest.getDayOfWeek());
 
-            if (existingSchedule != null) {
-                DoctorSchedule updatedSchedule = doctorScheduleMapper.updateEntity(
-                        existingSchedule,
-                        entryRequest,
-                        request.getTimezone(),
-                        request.getNotes()
-                );
-                updatedSchedules.add(updatedSchedule);
-
-                existingScheduleMap.remove(entryRequest.getDayOfWeek());
+            if (existingSchedule == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST, "No schedule found for day " + entryRequest.getDayOfWeek() + ".");
             }
+
+            DoctorSchedule updatedSchedule = doctorScheduleMapper.updateEntity(
+                    existingSchedule,
+                    entryRequest,
+                    request.getTimezone(),
+                    request.getNotes()
+            );
+            updatedSchedules.add(updatedSchedule);
+
+            existingScheduleMap.remove(entryRequest.getDayOfWeek());
         }
 
         List<DoctorSchedule> savedSchedules = doctorScheduleRepository.saveAll(updatedSchedules);
 
-        List<DoctorSchedule> activeSchedules = savedSchedules.stream()
-                .filter(DoctorSchedule::isActive)
-                .collect(Collectors.toList());
+        // Lịch không được update
+        List<DoctorSchedule> unchangedSchedules = new ArrayList<>(existingScheduleMap.values());
+
+        // Tổng hợp lại và trả về
+        List<DoctorSchedule> activeSchedules = Stream.concat(
+                unchangedSchedules.stream(),
+                savedSchedules.stream().filter(DoctorSchedule::isActive)
+        ).collect(Collectors.toList());
 
         log.info("Successfully updated schedule for doctor: {}", doctorId);
 
