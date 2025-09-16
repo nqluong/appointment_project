@@ -11,10 +11,7 @@ import org.project.appointment_project.user.dto.response.UpdateUserProfileRespon
 import java.util.UUID;
 
 public interface ProfileService {
-//    UpdateUserProfileResponse updateUserProfile(UUID userId, UpdateUserProfileRequest request);
-//    UpdateMedicalProfileResponse updateMedicalProfile(UUID userId, UpdateMedicalProfileRequest request);
-//
-//    CompleteProfileResponse updateCompleteProfile(UUID userId, UpdateCompleteProfileRequest request);
+
     CompleteProfileResponse getCompleteProfile(UUID userId);
 
     CompleteProfileResponse updateProfile(UUID userId, ProfileUpdateRequest request);

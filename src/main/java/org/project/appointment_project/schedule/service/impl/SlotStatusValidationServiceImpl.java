@@ -1,0 +1,98 @@
+package org.project.appointment_project.schedule.service.impl;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.common.exception.CustomException;
+import org.project.appointment_project.common.exception.ErrorCode;
+import org.project.appointment_project.schedule.dto.request.BatchSlotStatusRequest;
+import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
+import org.project.appointment_project.schedule.service.SlotStatusValidationService;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
+public class SlotStatusValidationServiceImpl implements SlotStatusValidationService {
+
+    @Override
+    public void validateSlotAvailabilityUpdate(UUID slotId, DoctorAvailableSlot slot, boolean newStatus) {
+        validateSlotOperation(slotId, slot);
+
+        // Check if status is actually changing
+        if (slot.isAvailable() == newStatus) {
+            if (newStatus) {
+                throw new CustomException(ErrorCode.SLOT_ALREADY_AVAILABLE);
+            } else {
+                throw new CustomException(ErrorCode.SLOT_ALREADY_RESERVED);
+            }
+        }
+    }
+
+    @Override
+    public void validateMultipleSlotStatusUpdate(List<BatchSlotStatusRequest> requests) {
+        if (CollectionUtils.isEmpty(requests)) {
+            throw new CustomException(ErrorCode.INVALID_SLOT_OPERATION, "Request list cannot be empty");
+        }
+
+        if (requests.size() > 50) {
+            throw new CustomException(ErrorCode.BULK_OPERATION_LIMIT_EXCEEDED,
+                    "Cannot update more than 50 slots at once");
+        }
+
+        long distinctSlotIds = requests.stream()
+                .map(BatchSlotStatusRequest::getSlotId)
+                .distinct()
+                .count();
+
+        if (distinctSlotIds != requests.size()) {
+            throw new CustomException(ErrorCode.DUPLICATE_SLOT_IDS);
+        }
+    }
+
+    @Override
+    public void validateSlotReservation(UUID slotId, DoctorAvailableSlot slot) {
+        validateSlotExists(slot, slotId);
+        validateSlotNotInPast(slot);
+
+        if (!slot.isAvailable()) {
+            throw new CustomException(ErrorCode.SLOT_ALREADY_RESERVED);
+
+        }
+    }
+
+    @Override
+    public void validateSlotRelease(UUID slotId, DoctorAvailableSlot slot) {
+        validateSlotExists(slot, slotId);
+    }
+
+    @Override
+    public void validateSlotOperation(UUID slotId, DoctorAvailableSlot slot) {
+        validateSlotExists(slot, slotId);
+        validateSlotNotInPast(slot);
+    }
+
+    private void validateSlotExists(DoctorAvailableSlot slot, UUID slotId) {
+        if (slot == null) {
+            throw new CustomException(ErrorCode.SLOT_NOT_FOUND);
+        }
+    }
+
+    private void validateSlotNotInPast(DoctorAvailableSlot slot) {
+        LocalDateTime slotDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getStartTime());
+
+        if (slotDateTime.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorCode.SLOT_IN_PAST);
+        }
+    }
+
+
+
+}

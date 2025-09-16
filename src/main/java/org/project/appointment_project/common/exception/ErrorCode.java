@@ -44,6 +44,9 @@ public enum ErrorCode {
     REGISTRATION_FAILED(2004, "User registration failed", HttpStatus.BAD_REQUEST),
     LICENSE_NUMBER_ALREADY_EXISTS(2005, "License number already exists", HttpStatus.CONFLICT),
     EMAIL_NOT_VERIFIED(2007, "Email not verified", HttpStatus.UNAUTHORIZED),
+    USER_CANNOT_BE_DELETED(2008, "User cannot be deleted", HttpStatus.BAD_REQUEST),
+    USER_NOT_DELETED(2009, "User is not in deleted state", HttpStatus.BAD_REQUEST),
+    USER_ALREADY_DELETED(2010, "User is already deleted", HttpStatus.BAD_REQUEST),
 
     SPECIALTY_NOT_FOUND(3001, "Specialty not found", HttpStatus.NOT_FOUND),
 
@@ -69,7 +72,18 @@ public enum ErrorCode {
     INVALID_DATE_RANGE(6002, "Invalid date range for search", HttpStatus.BAD_REQUEST),
     INVALID_EXPERIENCE_RANGE(6003, "Invalid experience range", HttpStatus.BAD_REQUEST),
     INVALID_FEE_RANGE(6004, "Invalid consultation fee range", HttpStatus.BAD_REQUEST),
-    DATABASE_ERROR(6005, "Database error occurred during search", HttpStatus.BAD_REQUEST)
+    DATABASE_ERROR(6005, "Database error occurred during search", HttpStatus.BAD_REQUEST),
+
+    SLOT_NOT_FOUND(7001, "Slot not found", HttpStatus.NOT_FOUND),
+    SLOT_NOT_AVAILABLE(7002, "Slot is not available", HttpStatus.NOT_FOUND),
+    SLOT_ACCESS_DENIED(7003, "Access denied to slot", HttpStatus.UNAUTHORIZED),
+    SLOT_ALREADY_RESERVED(7004, "Slot is already reserved", HttpStatus.CONFLICT),
+    SLOT_ALREADY_AVAILABLE(7005, "Slot is already available", HttpStatus.CONFLICT),
+    SLOT_IN_PAST(7006, "Cannot modify slot in the past", HttpStatus.BAD_REQUEST),
+    SLOT_UPDATE_FAILED(7007, "Failed to update slot status", HttpStatus.BAD_REQUEST),
+    INVALID_SLOT_OPERATION(7008, "Invalid slot operation", HttpStatus.BAD_REQUEST),
+    BULK_OPERATION_LIMIT_EXCEEDED(7009, "Bulk operation limit exceeded", HttpStatus.BAD_REQUEST),
+    DUPLICATE_SLOT_IDS(7010, "Duplicate slot IDs found", HttpStatus.NOT_FOUND);
     ;
 
 

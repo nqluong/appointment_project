@@ -57,6 +57,12 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    UUID deletedBy;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<UserRole> userRoles;
 

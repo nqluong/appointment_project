@@ -6,6 +6,8 @@ import org.project.appointment_project.schedule.dto.response.ScheduleEntryRespon
 import org.project.appointment_project.schedule.model.DoctorSchedule;
 import org.project.appointment_project.user.model.User;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,11 +76,11 @@ public class DoctorScheduleMapper {
         return schedules.isEmpty() ? null : schedules.get(0).getNotes();
     }
 
-    private java.time.LocalDateTime extractCreatedAt(List<DoctorSchedule> schedules) {
+    private LocalDateTime extractCreatedAt(List<DoctorSchedule> schedules) {
         return schedules.isEmpty() ? null : schedules.get(0).getCreatedAt();
     }
 
-    private java.time.LocalDateTime extractUpdatedAt(List<DoctorSchedule> schedules) {
+    private LocalDateTime extractUpdatedAt(List<DoctorSchedule> schedules) {
         return schedules.isEmpty() ? null : schedules.get(0).getUpdatedAt();
     }
 

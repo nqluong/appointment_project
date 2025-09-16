@@ -16,11 +16,14 @@ import org.project.appointment_project.user.model.*;
 import org.project.appointment_project.user.repository.RoleRepository;
 import org.project.appointment_project.user.repository.SpecialtyRepository;
 import org.project.appointment_project.user.repository.UserRepository;
+import org.project.appointment_project.user.repository.UserRoleRepository;
 import org.project.appointment_project.user.repository.impl.UserRoleJdbcRepositoryImpl;
 import org.project.appointment_project.user.service.UserRegistrationService;
 import org.project.appointment_project.user.service.UserRegistrationValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
     UserRoleJdbcRepositoryImpl userRoleRepositoryJdbc;
+    UserRoleRepository userRoleRepository;
 
     @Override
     @Transactional
@@ -122,12 +126,13 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     private void assignRole(User user, String roleName) {
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_NOT_FOUND, "Role not found: " + roleName));
-//        UserRole userRole = UserRole.builder()
-//                .user(user)
-//                .role(role)
-//                .assignedAt(LocalDateTime.now())
-//                .isActive(true)
-//                .build();
-        userRoleRepositoryJdbc.assignRoleToUserOnRegistration(user.getId(), role.getId());
+        UserRole userRole = UserRole.builder()
+                .user(user)
+                .role(role)
+                .assignedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+//        userRoleRepositoryJdbc.assignRoleToUserOnRegistration(user.getId(), role.getId());
+        userRoleRepository.save(userRole);
     }
 }

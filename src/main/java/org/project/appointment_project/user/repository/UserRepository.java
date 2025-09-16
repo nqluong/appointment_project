@@ -1,6 +1,8 @@
 package org.project.appointment_project.user.repository;
 
 import org.project.appointment_project.user.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -24,16 +26,74 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
             "WHERE u.username = :username AND u.isActive = true")
     Optional<User> findActiveUserByUsernameWithRoles(@Param("username") String username);
 
+    @Query("""
+        SELECT DISTINCT u FROM User u 
+        JOIN u.userRoles ur 
+        JOIN ur.role r 
+        WHERE r.name = 'DOCTOR' AND u.deletedAt IS NOT NULL
+        ORDER BY u.deletedAt DESC
+        """)
+    Page<User> findDeletedDoctors(Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN u.userRoles ur WHERE ur.role.name = :roleName")
-    List<User> findByRoleName(@Param("roleName") String roleName);
+    @Query("""
+        SELECT DISTINCT u FROM User u 
+        JOIN u.userRoles ur 
+        JOIN ur.role r 
+        WHERE r.name = 'PATIENT' AND u.deletedAt IS NOT NULL
+        ORDER BY u.deletedAt DESC
+        """)
+    Page<User> findDeletedPatients(Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN u.userRoles ur JOIN u.medicalProfile mp " +
-            "WHERE ur.role.name = 'DOCTOR' AND mp.isDoctorApproved = true")
-    List<User> findApprovedDoctors();
+    @Query("""
+        SELECT u FROM User u 
+        WHERE u.deletedAt IS NOT NULL
+        ORDER BY u.deletedAt DESC
+        """)
+    Page<User> findAllDeletedUsers(Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN u.userRoles ur JOIN u.medicalProfile mp " +
-            "WHERE ur.role.name = 'DOCTOR' AND mp.specialty.id = :specialtyId AND mp.isDoctorApproved = true")
-    List<User> findApprovedDoctorsBySpecialty(@Param("specialtyId") UUID specialtyId);
+    @Query("""
+        SELECT DISTINCT u FROM User u 
+        JOIN u.userRoles ur 
+        JOIN ur.role r 
+        WHERE r.name = 'DOCTOR' AND u.deletedAt IS NULL AND u.isActive = true
+        ORDER BY u.createdAt DESC
+        """)
+    Page<User> findActiveDoctors(Pageable pageable);
 
+    @Query("""
+        SELECT DISTINCT u FROM User u 
+        JOIN u.userRoles ur 
+        JOIN ur.role r 
+        WHERE r.name = 'PATIENT' AND u.deletedAt IS NULL AND u.isActive = true
+        ORDER BY u.createdAt DESC
+        """)
+    Page<User> findActivePatients(Pageable pageable);
+
+    @Query("""
+        SELECT u FROM User u 
+        WHERE u.deletedAt IS NULL 
+        AND u.isActive = true
+        ORDER BY u.createdAt DESC
+        """)
+    Page<User> findAllActiveUsers(Pageable pageable);
+
+    @Query("""
+        SELECT DISTINCT u FROM User u 
+        LEFT JOIN u.userRoles ur 
+        LEFT JOIN ur.role r 
+        LEFT JOIN u.userProfile up
+        WHERE (:keyword IS NULL OR 
+               LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+               LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+               LOWER(CONCAT(up.firstName, ' ', up.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:userType IS NULL OR :userType = 'ALL' OR r.name = :userType)
+        AND (:isDeleted IS NULL OR 
+             (:isDeleted = true AND u.deletedAt IS NOT NULL) OR
+             (:isDeleted = false AND u.deletedAt IS NULL))
+        ORDER BY u.createdAt DESC
+        """)
+    Page<User> searchUsers(@Param("keyword") String keyword,
+                           @Param("userType") String userType,
+                           @Param("isDeleted") Boolean isDeleted,
+                           Pageable pageable);
 }
