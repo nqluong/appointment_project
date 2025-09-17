@@ -62,4 +62,18 @@ public class DoctorAvailabilityController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{doctorId}/available-slots")
+    public ResponseEntity<DoctorWithSlotsResponse> getDoctorAvailableSlots(
+            @PathVariable UUID doctorId,
+            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().plusDays(30)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        DoctorWithSlotsResponse response = doctorAvailabilityService
+                .getDoctorAvailableSlots(doctorId, startDate, endDate);
+
+        return ResponseEntity.ok(response);
+    }
 }

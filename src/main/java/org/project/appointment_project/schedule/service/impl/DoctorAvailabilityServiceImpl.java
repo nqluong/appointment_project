@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.dto.PageResponse;
+import org.project.appointment_project.common.exception.CustomException;
+import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.schedule.dto.response.AvailableSlotInfo;
 import org.project.appointment_project.schedule.dto.response.DoctorWithSlotsResponse;
@@ -82,5 +84,27 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
                 responses, pageable, projectionPage.getTotalElements());
 
         return pageMapper.toPageResponse(responsePage, response -> response);
+    }
+
+    @Override
+    public DoctorWithSlotsResponse getDoctorAvailableSlots(UUID doctorId, LocalDate startDate, LocalDate endDate) {
+        // Lấy thông tin cơ bản của bác sĩ
+        DoctorWithSlotsProjection doctorProjection = repository.findDoctorById(doctorId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // Tạo response với thông tin cơ bản
+        DoctorWithSlotsResponse response = doctorAvailabilityMapper.toBaseDoctorResponse(doctorProjection);
+
+        // Lấy tất cả slots có sẵn trong khoảng thời gian
+        List<SlotProjection> slots = repository.findAvailableSlotsByDoctorId(doctorId, startDate, endDate);
+
+        // Chuyển đổi slots thành AvailableSlotInfo
+        List<AvailableSlotInfo> slotInfos = slots.stream()
+                .map(doctorAvailabilityMapper::toAvailableSlotInfo)
+                .collect(Collectors.toList());
+
+        response.setAvailableSlots(slotInfos);
+
+        return response;
     }
 }

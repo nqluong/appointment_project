@@ -1,9 +1,14 @@
 package org.project.appointment_project.schedule.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
@@ -31,13 +36,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -62,9 +64,18 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         // Validate schedule
         scheduleValidationService.validateScheduleEntries(request.getScheduleEntries());
 
-        // Kiểm tra xem có lich chưa
-        if (doctorScheduleRepository.existsByDoctorId(doctor.getId())) {
-            log.warn("Doctor {} already has a schedule", doctor.getId());
+        // Lấy danh sách các ngày đã có lịch của bác sĩ
+        List<DoctorSchedule> existingSchedules = doctorScheduleRepository.findByDoctorIdAndIsActiveTrue(doctor.getId());
+        Set<Integer> existingDaysOfWeek = existingSchedules.stream()
+                .map(DoctorSchedule::getDayOfWeek)
+                .collect(Collectors.toSet());
+
+        // Kiểm tra xem có ngày nào trong yêu cầu đã có lịch chưa
+        boolean hasConflict = request.getScheduleEntries().stream()
+                .anyMatch(entry -> existingDaysOfWeek.contains(entry.getDayOfWeek()));
+
+        if (hasConflict) {
+            log.warn("Doctor {} already has schedule(s) for requested day(s)", doctor.getId());
             throw new CustomException(ErrorCode.SCHEDULE_ALREADY_EXISTS);
         }
 

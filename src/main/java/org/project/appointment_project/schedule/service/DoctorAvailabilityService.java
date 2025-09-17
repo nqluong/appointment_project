@@ -37,4 +37,18 @@ public interface DoctorAvailabilityService {
             LocalDate endDate,
             Pageable pageable
     );
+
+    /**
+     * Lấy danh sách các khung giờ có sẵn của một bác sĩ trong khoảng thời gian
+     *
+     * @param doctorId ID của bác sĩ
+     * @param startDate Ngày bắt đầu
+     * @param endDate Ngày kết thúc
+     * @return Thông tin bác sĩ và danh sách các khung giờ có sẵn
+     */
+    DoctorWithSlotsResponse getDoctorAvailableSlots(
+            UUID doctorId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }

@@ -1,14 +1,12 @@
 package org.project.appointment_project.user.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
+import java.util.UUID;
+
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.annotation.RequireOwnershipOrAdmin;
 import org.project.appointment_project.user.dto.request.ProfileUpdateRequest;
-import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
 import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
 import org.project.appointment_project.user.mapper.ProfileMapper;
 import org.project.appointment_project.user.model.User;
@@ -22,8 +20,10 @@ import org.project.appointment_project.user.service.strategy.FieldFilterStrategy
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -44,28 +44,25 @@ public class ProfileServiceJdbcImpl implements ProfileService {
         try {
             log.info("Starting unified profile update for userId: {}", userId);
 
-            // 1. Validate user exists
+            // Xác tồn tại của người dùng
             User user = findUserByIdOrThrow(userId);
 
-            // 2. Get user roles
+            // Lấy danh sách role của người dùng
             Set<String> userRoles = getUserRoles(userId);
-            log.debug("User roles for filtering: {}", userRoles);
 
-            // 3. Get appropriate strategy and filter fields
+            // Lấy theo role cho phù hợp và lọc các trường
             FieldFilterStrategy strategy = fieldFilterStrategyFactory.getStrategy(userRoles);
             ProfileUpdateRequest filteredRequest = strategy.filterFields(request);
 
-            log.debug("Request filtered by strategy: {}", strategy.getClass().getSimpleName());
 
-            // 4. Update profile using filtered request
+            //Cập nhật hồ sơ sử dụng yêu cầu đã lọc
             boolean updateSuccess = profileJdbcRepository.updateProfile(userId, filteredRequest);
 
             if (!updateSuccess) {
-                log.warn("No fields were updated for userId: {}", userId);
-                // Still return current profile instead of throwing exception
+                log.warn("Không có trường nào được cập nhật cho userId: {}", userId);
             }
 
-            // 5. Get and return complete profile after update
+            // Lấy và trả về hồ sơ sau khi cập nhật
             CompleteProfileResponse response = getCompleteProfileFromRepository(userId);
             log.info("Unified profile update completed successfully for userId: {}", userId);
             return response;
@@ -85,10 +82,8 @@ public class ProfileServiceJdbcImpl implements ProfileService {
         try {
             log.info("Getting complete profile for userId: {}", userId);
 
-            // Validate user exists
             User user = findUserByIdOrThrow(userId);
 
-            // Get complete profile from repository
             return getCompleteProfileFromRepository(userId);
 
         } catch (CustomException e) {
@@ -111,7 +106,7 @@ public class ProfileServiceJdbcImpl implements ProfileService {
     }
 
     /**
-     * Helper methods từ parent implementation
+     * Các phương thức hỗ trợ từ parent implementation
      */
     private User findUserByIdOrThrow(UUID userId) {
         return userRepository.findById(userId)
