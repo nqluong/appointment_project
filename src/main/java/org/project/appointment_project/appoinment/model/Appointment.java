@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
@@ -17,23 +18,26 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "appointments")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString(exclude = {"doctor", "patient", "slot"})
+@EqualsAndHashCode(exclude = {"doctor", "patient", "slot"})
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
     @NotNull(message = "Doctor user ID is required")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_user_id", nullable = false)
     User doctor;
 
     @NotNull(message = "Patient user ID is required")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_user_id", nullable = false)
     User patient;
 
@@ -41,7 +45,7 @@ public class Appointment {
     @Column(name = "appointment_date", nullable = false)
     LocalDate appointmentDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "slot_id")
     DoctorAvailableSlot slot;
 

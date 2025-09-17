@@ -15,11 +15,14 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "doctor_available_slots")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString(exclude = {"doctor"})
+@EqualsAndHashCode(exclude = {"doctor"})
 public class DoctorAvailableSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

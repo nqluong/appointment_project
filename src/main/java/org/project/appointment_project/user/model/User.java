@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
 import org.project.appointment_project.schedule.model.DoctorSchedule;
 
 import java.time.LocalDateTime;
@@ -16,12 +17,15 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "users")
+@ToString(exclude = {"userRoles", "userProfile", "medicalProfile", "passwordResetTokens", "doctorSchedules"})
+@EqualsAndHashCode(exclude = {"userRoles", "userProfile", "medicalProfile", "passwordResetTokens", "doctorSchedules"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -83,8 +83,22 @@ public enum ErrorCode {
     SLOT_UPDATE_FAILED(7007, "Failed to update slot status", HttpStatus.BAD_REQUEST),
     INVALID_SLOT_OPERATION(7008, "Invalid slot operation", HttpStatus.BAD_REQUEST),
     BULK_OPERATION_LIMIT_EXCEEDED(7009, "Bulk operation limit exceeded", HttpStatus.BAD_REQUEST),
-    DUPLICATE_SLOT_IDS(7010, "Duplicate slot IDs found", HttpStatus.NOT_FOUND);
-    ;
+    DUPLICATE_SLOT_IDS(7010, "Duplicate slot IDs found", HttpStatus.NOT_FOUND),
+
+
+    SLOT_ALREADY_BOOKED(8001, "Slot đã được đặt bởi người khác", HttpStatus.CONFLICT),
+    INVALID_SLOT_DOCTOR(8002, "Slot không thuộc về bác sĩ được chọn", HttpStatus.BAD_REQUEST),
+    PATIENT_NOT_FOUND(8003, "Bệnh nhân không tồn tại", HttpStatus.NOT_FOUND),
+    PATIENT_INACTIVE(8004, "Tài khoản bệnh nhân không hoạt động", HttpStatus.BAD_REQUEST),
+    PATIENT_NO_ROLE(8005, "Người dùng không có quyền bệnh nhân", HttpStatus.UNAUTHORIZED),
+    DOCTOR_NOT_FOUND(8006, "Bác sĩ không tồn tại", HttpStatus.NOT_FOUND),
+    DOCTOR_INACTIVE(8007, "Tài khoản bác sĩ không hoạt động", HttpStatus.BAD_REQUEST),
+    DOCTOR_NOT_APPROVED(8008, "Bác sĩ chưa được phê duyệt", HttpStatus.BAD_REQUEST),
+    PATIENT_OVERLAPPING_APPOINTMENT(8009, "Bệnh nhân đã có lịch hẹn trùng thời gian", HttpStatus.CONFLICT),
+    PATIENT_TOO_MANY_PENDING(8010, "Bệnh nhân đã có quá nhiều lịch hẹn đang chờ (tối đa 3)", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_CREATION_FAILED(8011, "Tạo lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
+    CONCURRENT_BOOKING_CONFLICT(8012, "Xung đột khi đặt lịch đồng thời", HttpStatus.CONFLICT);
+
 
 
     private final int code;
