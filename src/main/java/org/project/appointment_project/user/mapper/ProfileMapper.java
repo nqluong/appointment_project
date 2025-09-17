@@ -20,46 +20,6 @@ import org.project.appointment_project.user.model.UserProfile;
 public interface ProfileMapper {
 
     /**
-     * Tạo UserProfile entity từ complete request (chỉ các field basic)
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    UserProfile toUserProfileFromCompleteRequest(UpdateCompleteProfileRequest request);
-
-    /**
-     * Tạo MedicalProfile entity từ complete request
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "specialty", ignore = true)
-    @Mapping(target = "isDoctorApproved", ignore = true)
-    MedicalProfile toMedicalProfileFromCompleteRequest(UpdateCompleteProfileRequest request);
-
-    /**
-     * Cập nhật UserProfile từ complete request
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
-    void updateUserProfileFromCompleteRequest(@MappingTarget UserProfile userProfile, UpdateCompleteProfileRequest request);
-
-    /**
-     * Cập nhật MedicalProfile từ complete request
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "specialty", ignore = true)
-//    @Mapping(target = "isDoctorApproved", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
-    void updateMedicalProfileFromCompleteRequest(@MappingTarget MedicalProfile medicalProfile, UpdateCompleteProfileRequest request);
-
-    /**
      * Tạo complete profile response từ User entity
      * Map tất cả thông tin từ UserProfile và MedicalProfile
      */

@@ -13,7 +13,6 @@ import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.repository.ProfileJdbcRepository;
 import org.project.appointment_project.user.repository.UserRepository;
 import org.project.appointment_project.user.service.ProfileService;
-import org.project.appointment_project.user.service.ProfileValidationService;
 import org.project.appointment_project.user.service.UserRoleService;
 import org.project.appointment_project.user.service.strategy.FieldFilterStrategy;
 import org.project.appointment_project.user.service.strategy.FieldFilterStrategyFactory;
@@ -33,7 +32,6 @@ public class ProfileServiceJdbcImpl implements ProfileService {
     ProfileJdbcRepository profileJdbcRepository;
     UserRepository userRepository;
     ProfileMapper profileMapper;
-    ProfileValidationService profileValidationService;
     UserRoleService userRoleService;
     FieldFilterStrategyFactory fieldFilterStrategyFactory;
 
