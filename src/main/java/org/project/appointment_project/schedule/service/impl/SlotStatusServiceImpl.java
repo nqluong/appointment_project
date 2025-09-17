@@ -89,7 +89,7 @@ public class SlotStatusServiceImpl implements SlotStatusService {
                 .slotDate(updatedSlot.getSlotDate())
                 .startTime(updatedSlot.getStartTime())
                 .endTime(updatedSlot.getEndTime())
-                .isAvailable(updatedSlot.isAvailable()) // This should now reflect the updated state
+                .isAvailable(updatedSlot.isAvailable())
                 .message(reason)
                 .updatedAt(LocalDateTime.now())
                 .build();

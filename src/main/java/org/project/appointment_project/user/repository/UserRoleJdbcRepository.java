@@ -14,6 +14,10 @@ public interface UserRoleJdbcRepository {
 
     void assignRoleToUserOnRegistration(UUID userId, UUID roleId);
 
+    boolean hasInactiveRole(UUID userId, UUID roleId);
+
+    void reactivateUserRole(UUID userId, UUID roleId, UUID assignedBy, LocalDateTime expiresAt);
+
     boolean hasActiveRole(UUID userId, UUID roleId);
 
     List<RoleInfo> getAvailableRoles();

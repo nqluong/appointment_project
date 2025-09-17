@@ -97,7 +97,9 @@ public enum ErrorCode {
     PATIENT_OVERLAPPING_APPOINTMENT(8009, "Bệnh nhân đã có lịch hẹn trùng thời gian", HttpStatus.CONFLICT),
     PATIENT_TOO_MANY_PENDING(8010, "Bệnh nhân đã có quá nhiều lịch hẹn đang chờ (tối đa 3)", HttpStatus.BAD_REQUEST),
     APPOINTMENT_CREATION_FAILED(8011, "Tạo lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
-    CONCURRENT_BOOKING_CONFLICT(8012, "Xung đột khi đặt lịch đồng thời", HttpStatus.CONFLICT);
+    CONCURRENT_BOOKING_CONFLICT(8012, "Xung đột khi đặt lịch đồng thời", HttpStatus.CONFLICT),
+    APPOINTMENT_FETCH_FAILED(8013, "Failed to fetch appointments", HttpStatus.BAD_REQUEST),
+    ;
 
 
 

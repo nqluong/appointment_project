@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.project.appointment_project.appoinment.enums.Status;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +27,7 @@ public class AppointmentResponse {
     LocalDate appointmentDate;
     LocalTime startTime;
     LocalTime endTime;
+    BigDecimal consultationFee;
     Status status;
     String notes;
     LocalDateTime createdAt;

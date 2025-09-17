@@ -26,9 +26,8 @@ public class AppointmentValidationServiceImpl implements AppointmentValidationSe
 
     static int MAX_PENDING_APPOINTMENTS = 3;
 
-    /**
-     * Validate slot có hợp lệ để đặt lịch không
-     */
+
+    //Validate slot có hợp lệ để đặt lịch không
     @Override
     public void validateSlotForBooking(DoctorAvailableSlot slot, UUID doctorId) {
         log.debug("Validating slot {} for doctor {}", slot.getId(), doctorId);
@@ -43,26 +42,22 @@ public class AppointmentValidationServiceImpl implements AppointmentValidationSe
             throw new CustomException(ErrorCode.SLOT_NOT_AVAILABLE);
         }
 
-        // Kiểm tra slot có trong tương lai không
         LocalDateTime slotDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getStartTime());
         if (slotDateTime.isBefore(LocalDateTime.now())) {
             throw new CustomException(ErrorCode.SLOT_IN_PAST);
         }
     }
 
-    /**
-     * Validate bệnh nhân có hợp lệ để đặt lịch không
-     */
+
+    // Validate bệnh nhân có hợp lệ để đặt lịch không
     @Override
     public void validatePatientForBooking(User patient, DoctorAvailableSlot slot) {
         log.debug("Validating patient {} for booking", patient.getId());
 
-        // Kiểm tra bệnh nhân có active không
         if (!patient.isActive()) {
             throw new CustomException(ErrorCode.PATIENT_INACTIVE);
         }
 
-        // Kiểm tra có role PATIENT không
         boolean hasPatientRole = patient.getUserRoles().stream()
                 .filter(UserRole::isActive)
                 .anyMatch(ur -> "PATIENT".equals(ur.getRole().getName()));
@@ -71,26 +66,22 @@ public class AppointmentValidationServiceImpl implements AppointmentValidationSe
             throw new CustomException(ErrorCode.PATIENT_NO_ROLE);
         }
 
-        // Kiểm tra overlapping appointment
         validateNoOverlappingAppointment(patient.getId(), slot);
 
-        // Kiểm tra số lượng pending appointments
         validatePendingAppointmentLimit(patient.getId());
     }
 
-    /**
-     * Validate bác sĩ có hợp lệ không
-     */
+
+     //Validate bác sĩ có hợp lệ không
     @Override
     public void validateDoctorForBooking(User doctor) {
         log.debug("Validating doctor {} for booking", doctor.getId());
 
-        // Kiểm tra bác sĩ có active không
         if (!doctor.isActive()) {
             throw new CustomException(ErrorCode.DOCTOR_INACTIVE);
         }
 
-        // Kiểm tra có role DOCTOR không
+
         boolean hasDoctorRole = doctor.getUserRoles().stream()
                 .filter(UserRole::isActive)
                 .anyMatch(ur -> "DOCTOR".equals(ur.getRole().getName()));
@@ -99,15 +90,14 @@ public class AppointmentValidationServiceImpl implements AppointmentValidationSe
             throw new CustomException(ErrorCode.DOCTOR_NOT_FOUND);
         }
 
-        // Kiểm tra bác sĩ có được approved không
+
         if (doctor.getMedicalProfile() == null || !doctor.getMedicalProfile().isDoctorApproved()) {
             throw new CustomException(ErrorCode.DOCTOR_NOT_APPROVED);
         }
     }
 
-    /**
-     * Kiểm tra bệnh nhân có lịch hẹn trùng thời gian không
-     */
+
+    // Kiểm tra bệnh nhân có lịch hẹn trùng thời gian không
     private void validateNoOverlappingAppointment(UUID patientId, DoctorAvailableSlot slot) {
         boolean hasOverlapping = appointmentRepository.existsOverlappingAppointment(
                 patientId,
@@ -121,9 +111,8 @@ public class AppointmentValidationServiceImpl implements AppointmentValidationSe
         }
     }
 
-    /**
-     * Kiểm tra giới hạn số lượng lịch hẹn pending
-     */
+
+     // Kiểm tra giới hạn số lượng lịch hẹn pending
     private void validatePendingAppointmentLimit(UUID patientId) {
         long pendingCount = appointmentRepository.countPendingAppointmentsByPatient(patientId);
 

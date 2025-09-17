@@ -48,19 +48,30 @@ public class RoleManagementServiceImpl implements RoleManagementService {
             throw new CustomException(ErrorCode.INVALID_EXPIRATION_DATE);
         }
         try {
-            userRoleRepositoryJdbc.assignRoleToUser(
-                    request.getUserId(),
-                    request.getRoleId(),
-                    assignedBy,
-                    request.getExpiresAt()
-            );
+            if(userRoleRepositoryJdbc.hasInactiveRole(request.getUserId(), request.getRoleId())) {
+                //Mở lại nếu có role đã bị deactivate
+                userRoleRepositoryJdbc.reactivateUserRole(
+                        request.getUserId(),
+                        request.getRoleId(),
+                        assignedBy,
+                        request.getExpiresAt()
+                );
+            } else {
+                // Nếu chưa có, tạo mới
+                userRoleRepositoryJdbc.assignRoleToUser(
+                        request.getUserId(),
+                        request.getRoleId(),
+                        assignedBy,
+                        request.getExpiresAt()
+                );
+            }
         }catch (Exception e) {
             throw new CustomException(ErrorCode.ROLE_ASSIGNMENT_FAILED);
         }
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void revokeRoleFromUser(UUID userId, UUID roleId) {
         if (!userRepository.existsById(userId)) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
@@ -78,7 +89,7 @@ public class RoleManagementServiceImpl implements RoleManagementService {
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void revokeAllUserRoles(UUID userId) {
         if (!userRepository.existsById(userId)) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
@@ -97,7 +108,7 @@ public class RoleManagementServiceImpl implements RoleManagementService {
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void updateRoleExpiration(UpdateRoleExpirationRequest request) {
         if (!userRepository.existsById(request.getUserId())) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
