@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -80,4 +81,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
             @Param("userId") UUID userId,
             @Param("status") Status status,
             Pageable pageable);
+
+    @Query("SELECT a FROM Appointment a WHERE a.status = 'PENDING' AND a.createdAt < :expiredTime")
+    List<Appointment> findExpiredPendingAppointments(@Param("expiredTime") LocalDateTime expiredTime);
 }

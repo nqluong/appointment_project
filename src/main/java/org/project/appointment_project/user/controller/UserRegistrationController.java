@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserRegistrationController {
     private final UserRegistrationService userRegistrationService;
 
-    @PostMapping("patient")
+    @PostMapping("/patient")
     public ResponseEntity<UserRegistrationResponse> registerPatient(
             @Valid @RequestBody PatientRegistrationRequest request) {
 

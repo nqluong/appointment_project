@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.payment.enums.PaymentMethod;
 import org.project.appointment_project.payment.enums.PaymentStatus;
+import org.project.appointment_project.payment.enums.PaymentType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,13 +30,18 @@ public class Payment {
     UUID id;
 
     @NotNull(message = "Appointment is required")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id")
     Appointment appointment;
 
     @Min(value = 0, message = "Amount must be non-negative")
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     BigDecimal amount;
+
+    @NotNull(message = "Payment type is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_type", nullable = false)
+    PaymentType paymentType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
@@ -47,6 +53,15 @@ public class Payment {
 
     @Column(name = "transaction_id")
     String transactionId;
+
+    @Column(name = "gateway_transaction_id")
+    String gatewayTransactionId;
+
+    @Column(name = "payment_url")
+    String paymentUrl;
+
+    @Column(name = "gateway_response", columnDefinition = "TEXT")
+    String gatewayResponse;
 
     @Column(name = "notes")
     String notes;

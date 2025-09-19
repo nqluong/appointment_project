@@ -13,4 +13,5 @@ public interface AppointmentService {
     AppointmentResponse createAppointment(CreateAppointmentRequest request);
 
     PageResponse<AppointmentResponse> getAppointments(UUID userId, Status status, Pageable pageable);
+
 }

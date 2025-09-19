@@ -26,10 +26,22 @@ spring:
       enabled: true
 
 jwt:
-    signer-key: "${SECRET_KEY}"
+    signer-key: "${SECRET_KEY_JWT}"
     expiration: 3600 # in seconds
     refresh:
         expiration: 36000
+
+vnpay:
+  version: "2.1.0"
+  command: "pay"
+  locale: "vn"
+  currCode: "VND"
+  orderType: "billpayment"
+  tmnCode: "${TMN_CODE}"
+  paymentUrl: "${PAY_URL}"
+  hashSecret: "${SECRET_KEY}"
+  returnUrl: "${RETURN_URL}"
+  refundUrl: "${REFUND_URL}"
 
 app:
   upload:

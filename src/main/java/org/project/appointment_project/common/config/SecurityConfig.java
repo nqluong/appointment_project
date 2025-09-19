@@ -43,6 +43,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, GET_PUBLIC).permitAll()
+                .requestMatchers("/api/payments/vnpay/callback").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/register/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()

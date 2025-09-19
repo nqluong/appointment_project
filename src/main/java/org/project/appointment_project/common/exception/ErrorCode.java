@@ -86,19 +86,37 @@ public enum ErrorCode {
     DUPLICATE_SLOT_IDS(7010, "Duplicate slot IDs found", HttpStatus.NOT_FOUND),
 
 
-    SLOT_ALREADY_BOOKED(8001, "Slot đã được đặt bởi người khác", HttpStatus.CONFLICT),
-    INVALID_SLOT_DOCTOR(8002, "Slot không thuộc về bác sĩ được chọn", HttpStatus.BAD_REQUEST),
-    PATIENT_NOT_FOUND(8003, "Bệnh nhân không tồn tại", HttpStatus.NOT_FOUND),
-    PATIENT_INACTIVE(8004, "Tài khoản bệnh nhân không hoạt động", HttpStatus.BAD_REQUEST),
-    PATIENT_NO_ROLE(8005, "Người dùng không có quyền bệnh nhân", HttpStatus.UNAUTHORIZED),
-    DOCTOR_NOT_FOUND(8006, "Bác sĩ không tồn tại", HttpStatus.NOT_FOUND),
-    DOCTOR_INACTIVE(8007, "Tài khoản bác sĩ không hoạt động", HttpStatus.BAD_REQUEST),
-    DOCTOR_NOT_APPROVED(8008, "Bác sĩ chưa được phê duyệt", HttpStatus.BAD_REQUEST),
-    PATIENT_OVERLAPPING_APPOINTMENT(8009, "Bệnh nhân đã có lịch hẹn trùng thời gian", HttpStatus.CONFLICT),
-    PATIENT_TOO_MANY_PENDING(8010, "Bệnh nhân đã có quá nhiều lịch hẹn đang chờ (tối đa 3)", HttpStatus.BAD_REQUEST),
-    APPOINTMENT_CREATION_FAILED(8011, "Tạo lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
-    CONCURRENT_BOOKING_CONFLICT(8012, "Xung đột khi đặt lịch đồng thời", HttpStatus.CONFLICT),
+    SLOT_ALREADY_BOOKED(8001, "The selected slot has already been booked by another patient", HttpStatus.CONFLICT),
+    INVALID_SLOT_DOCTOR(8002, "The selected slot does not belong to the chosen doctor", HttpStatus.BAD_REQUEST),
+    PATIENT_NOT_FOUND(8003, "Patient does not exist", HttpStatus.NOT_FOUND),
+    PATIENT_INACTIVE(8004, "Patient account is inactive", HttpStatus.BAD_REQUEST),
+    PATIENT_NO_ROLE(8005, "User does not have patient role", HttpStatus.UNAUTHORIZED),
+    DOCTOR_NOT_FOUND(8006, "Doctor does not exist", HttpStatus.NOT_FOUND),
+    DOCTOR_INACTIVE(8007, "Doctor account is inactive", HttpStatus.BAD_REQUEST),
+    DOCTOR_NOT_APPROVED(8008, "Doctor has not been approved", HttpStatus.BAD_REQUEST),
+    PATIENT_OVERLAPPING_APPOINTMENT(8009, "Patient already has an overlapping appointment at this time", HttpStatus.CONFLICT),
+    PATIENT_TOO_MANY_PENDING(8010, "Patient has too many pending appointments (maximum 3)", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_CREATION_FAILED(8011, "Failed to create appointment", HttpStatus.BAD_REQUEST),
+    CONCURRENT_BOOKING_CONFLICT(8012, "Conflict occurred during concurrent booking", HttpStatus.CONFLICT),
     APPOINTMENT_FETCH_FAILED(8013, "Failed to fetch appointments", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_PAYABLE(8014, "Appointment is not in a payable status", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_FOUND(8015,"Appointment not found", HttpStatus.NOT_FOUND),
+
+    PAYMENT_NOT_FOUND(9001, "Payment not found", HttpStatus.NOT_FOUND),
+    PAYMENT_INVALID_AMOUNT(9002, "Payment amount must be greater than 0", HttpStatus.BAD_REQUEST),
+    PAYMENT_INVALID_STATUS(9003, "Invalid payment status transition", HttpStatus.BAD_REQUEST),
+    PAYMENT_PROCESSING_FAILED(9004, "Payment processing failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_GATEWAY_ERROR(9005, "Payment gateway error", HttpStatus.BAD_GATEWAY),
+    PAYMENT_INVALID_SIGNATURE(9006, "Invalid payment signature", HttpStatus.BAD_REQUEST),
+    PAYMENT_EXPIRED(9007, "Payment has expired", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_PROCESSED(9008, "Payment has already been processed", HttpStatus.CONFLICT),
+    PAYMENT_CANCELLED(9009, "Payment has been cancelled", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_EXISTS(4002, "Payment already exists for this appointment", HttpStatus.CONFLICT),
+
+
+    VNPAY_INVALID_RESPONSE(1101, "Invalid VNPay response", HttpStatus.BAD_REQUEST),
+    VNPAY_SIGNATURE_VERIFICATION_FAILED(1102, "VNPay signature verification failed", HttpStatus.BAD_REQUEST),
+    VNPAY_TRANSACTION_FAILED(1103, "VNPay transaction failed", HttpStatus.BAD_REQUEST)
     ;
 
 
