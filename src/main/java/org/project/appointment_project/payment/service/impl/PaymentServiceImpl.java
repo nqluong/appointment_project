@@ -139,7 +139,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
@@ -187,19 +186,17 @@ public class PaymentServiceImpl implements PaymentService {
                 .multiply(BigDecimal.valueOf(0.3))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // Tạo payment entity
         Payment payment = Payment.builder()
                 .appointment(appointment)
                 .amount(depositAmount)
                 .paymentType(PaymentType.DEPOSIT)
-                .paymentMethod(PaymentMethod.VNPAY) // hoặc lấy từ request
+                .paymentMethod(PaymentMethod.VNPAY)
                 .paymentStatus(PaymentStatus.PENDING)
                 .transactionId(generateTransactionId())
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        // Tạo payment URL
         var gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
 
         PaymentGatewayRequest gatewayRequest = PaymentGatewayRequest.builder()
