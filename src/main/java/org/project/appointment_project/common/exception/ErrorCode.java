@@ -101,6 +101,7 @@ public enum ErrorCode {
     APPOINTMENT_FETCH_FAILED(8013, "Failed to fetch appointments", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_PAYABLE(8014, "Appointment is not in a payable status", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_FOUND(8015,"Appointment not found", HttpStatus.NOT_FOUND),
+    DOCTOR_UNAUTHORIZED(8016, "Unauthorized to manage this doctor's absence", HttpStatus.UNAUTHORIZED),
 
     PAYMENT_NOT_FOUND(9001, "Payment not found", HttpStatus.NOT_FOUND),
     PAYMENT_INVALID_AMOUNT(9002, "Payment amount must be greater than 0", HttpStatus.BAD_REQUEST),
@@ -115,10 +116,23 @@ public enum ErrorCode {
     INVALID_PAYMENT_TYPE(9011, "Payment type invalid ", HttpStatus.BAD_REQUEST),
     PAYMENT_QUERY_FAILED(9012, "Payment query failed", HttpStatus.BAD_REQUEST),
 
-
     VNPAY_INVALID_RESPONSE(1101, "Invalid VNPay response", HttpStatus.BAD_REQUEST),
     VNPAY_SIGNATURE_VERIFICATION_FAILED(1102, "VNPay signature verification failed", HttpStatus.BAD_REQUEST),
-    VNPAY_TRANSACTION_FAILED(1103, "VNPay transaction failed", HttpStatus.BAD_REQUEST)
+    VNPAY_TRANSACTION_FAILED(1103, "VNPay transaction failed", HttpStatus.BAD_REQUEST),
+
+    ABSENCE_NOT_FOUND(1201, "Doctor absence not found", HttpStatus.NOT_FOUND),
+    ABSENCE_CONFLICT(1202, "Doctor absence conflicts with existing absence", HttpStatus.CONFLICT),
+    ABSENCE_INVALID_TIME_RANGE(1203, "Invalid time range for absence",HttpStatus.BAD_REQUEST),
+    ABSENCE_PAST_DATE(1204, "Cannot create absence for past dates", HttpStatus.BAD_REQUEST),
+    ABSENCE_TIME_MISMATCH(1205, "Start time and end time must be provided together or both null", HttpStatus.BAD_REQUEST),
+    ABSENCE_INVALID_DURATION(1206, "Absence duration is invalid", HttpStatus.BAD_REQUEST),
+
+    // Validation errors
+    VALIDATION_FAILED(1301, "Input validation failed", HttpStatus.BAD_REQUEST),
+    REQUIRED_FIELD_MISSING(1302, "Required field is missing", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_FORMAT(1303, "Invalid date format", HttpStatus.BAD_REQUEST),
+    INVALID_TIME_FORMAT(1304, "Invalid time format", HttpStatus.BAD_REQUEST),
+    FIELD_TOO_LONG(1305, "Field exceeds maximum length", HttpStatus.BAD_REQUEST),
     ;
 
 

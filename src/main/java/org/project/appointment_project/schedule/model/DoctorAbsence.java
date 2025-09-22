@@ -26,7 +26,7 @@ public class DoctorAbsence {
     UUID id;
 
     @NotNull(message = "Doctor user ID is required")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_user_id", nullable = false)
     User doctor;
 

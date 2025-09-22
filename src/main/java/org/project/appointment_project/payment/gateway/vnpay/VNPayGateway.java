@@ -202,7 +202,7 @@ public class VNPayGateway implements PaymentGateway {
 
     private PaymentQueryResult parseQueryResponse(String responseBody, String transactionId) {
         try {
-            @SuppressWarnings("unchecked")
+
             Map<String, Object> response = objectMapper.readValue(responseBody, Map.class);
 
             String responseCode = (String) response.get("vnp_ResponseCode");
