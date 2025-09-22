@@ -28,4 +28,20 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     List<Payment> findValidPaymentsByAppointmentIdAndStatus(
             @Param("appointmentId") UUID appointmentId,
             @Param("statuses") List<PaymentStatus> statuses);
+
+
+    @Query("SELECT p FROM Payment p WHERE p.paymentStatus = :status " +
+            "AND p.createdAt < :createdBefore " +
+            "AND p.createdAt >= :safetyDate")
+    List<Payment> findByStatusAndCreatedAtBeforeWithSafety(
+            @Param("status") PaymentStatus status,
+            @Param("createdBefore") LocalDateTime createdBefore,
+            @Param("safetyDate") LocalDateTime safetyDate
+    );
+
+    // Đếm số lượng payment cũ để kiểm tra
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.paymentStatus = :status " +
+            "AND p.createdAt < :cutoffDate")
+    long countOldPendingPayments(@Param("status") PaymentStatus status,
+                                 @Param("cutoffDate") LocalDateTime cutoffDate);
 }

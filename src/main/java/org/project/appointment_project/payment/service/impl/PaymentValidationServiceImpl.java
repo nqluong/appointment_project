@@ -28,9 +28,6 @@ public class PaymentValidationServiceImpl implements PaymentValidationService {
 
     @Override
     public void validateCreatePaymentRequest(CreatePaymentRequest request) {
-        if(request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0){
-            throw new CustomException(ErrorCode.PAYMENT_INVALID_AMOUNT);
-        }
 
         if (!appointmentRepository.existsById(request.getAppointmentId())) {
             throw new CustomException(ErrorCode.PAYMENT_NOT_FOUND, "Appointment not found");

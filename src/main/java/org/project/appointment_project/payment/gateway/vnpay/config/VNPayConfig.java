@@ -38,6 +38,6 @@ public class VNPayConfig {
     @Value("${vnpay.orderType}")
     private String orderType;
 
-    @Value("${vnpay.refundUrl}")
-    private String refundUrl;
+    @Value("${vnpay.query-url}")
+    private String queryUrl;
 }

@@ -111,7 +111,9 @@ public enum ErrorCode {
     PAYMENT_EXPIRED(9007, "Payment has expired", HttpStatus.BAD_REQUEST),
     PAYMENT_ALREADY_PROCESSED(9008, "Payment has already been processed", HttpStatus.CONFLICT),
     PAYMENT_CANCELLED(9009, "Payment has been cancelled", HttpStatus.BAD_REQUEST),
-    PAYMENT_ALREADY_EXISTS(4002, "Payment already exists for this appointment", HttpStatus.CONFLICT),
+    PAYMENT_ALREADY_EXISTS(9010, "Payment already exists for this appointment", HttpStatus.CONFLICT),
+    INVALID_PAYMENT_TYPE(9011, "Payment type invalid ", HttpStatus.BAD_REQUEST),
+    PAYMENT_QUERY_FAILED(9012, "Payment query failed", HttpStatus.BAD_REQUEST),
 
 
     VNPAY_INVALID_RESPONSE(1101, "Invalid VNPay response", HttpStatus.BAD_REQUEST),

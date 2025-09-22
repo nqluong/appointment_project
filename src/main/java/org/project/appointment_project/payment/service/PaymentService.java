@@ -17,11 +17,15 @@ public interface PaymentService {
 
     PaymentResponse cancelPayment(UUID paymentId);
 
-    PaymentUrlResponse createDepositPayment(UUID appointmentId, String customerIp, String returnUrl, String cancelUrl);
-
     void handlePaymentSuccess(UUID paymentId);
 
     void handlePaymentFailure(UUID paymentId);
 
     void processExpiredPayments();
+
+    PaymentResponse queryPaymentStatus(UUID paymentId);
+
+    PaymentResponse queryPaymentStatus(String transactionId);
+
+    void processProcessingPayments();
 }

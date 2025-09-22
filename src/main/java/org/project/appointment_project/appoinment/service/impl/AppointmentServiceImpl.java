@@ -56,7 +56,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             validationService.validateSlotForBooking(slot, request.getDoctorId());
 
-            // Lấy thông tin bệnh nhân và bác sĩ
             User patient = getUser(request.getPatientId(), ErrorCode.PATIENT_NOT_FOUND);
             User doctor = getUser(request.getDoctorId(), ErrorCode.DOCTOR_NOT_FOUND);
 
@@ -67,7 +66,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new CustomException(ErrorCode.SLOT_ALREADY_BOOKED);
             }
 
-            // Tạo appointment
             Appointment appointment = createAppointmentEntity(request, doctor, patient, slot);
             appointment = appointmentRepository.save(appointment);
 

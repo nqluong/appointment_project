@@ -4,6 +4,7 @@ import org.project.appointment_project.payment.dto.request.PaymentCallbackReques
 import org.project.appointment_project.payment.enums.PaymentMethod;
 import org.project.appointment_project.payment.gateway.dto.PaymentGatewayRequest;
 import org.project.appointment_project.payment.gateway.dto.PaymentGatewayResponse;
+import org.project.appointment_project.payment.gateway.dto.PaymentQueryResult;
 import org.project.appointment_project.payment.gateway.dto.PaymentVerificationResult;
 import org.project.appointment_project.payment.model.Payment;
 
@@ -12,6 +13,8 @@ public interface PaymentGateway {
     PaymentGatewayResponse createPaymentUrl(Payment payment, PaymentGatewayRequest request);
 
     PaymentVerificationResult verifyPayment(PaymentCallbackRequest callbackRequest);
+
+    PaymentQueryResult queryPaymentStatus(String transactionId, String transactionDate);
 
     boolean supports(PaymentMethod paymentMethod);
 }

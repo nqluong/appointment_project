@@ -9,6 +9,8 @@ import org.project.appointment_project.payment.dto.request.CreatePaymentRequest;
 import org.project.appointment_project.payment.dto.request.PaymentCallbackRequest;
 import org.project.appointment_project.payment.dto.response.PaymentResponse;
 import org.project.appointment_project.payment.dto.response.PaymentUrlResponse;
+import org.project.appointment_project.payment.enums.PaymentMethod;
+import org.project.appointment_project.payment.enums.PaymentType;
 import org.project.appointment_project.payment.service.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,20 +27,6 @@ import java.util.UUID;
 public class PaymentController {
     private final PaymentService paymentService;
 
-    @PostMapping("/deposit/{appointmentId}")
-    public ResponseEntity<PaymentUrlResponse> createDepositPayment(
-            @PathVariable UUID appointmentId,
-            @RequestBody CreateDepositPaymentRequest request,
-            HttpServletRequest httpRequest) {
-
-        String customerIp = getClientIp(httpRequest);
-
-        PaymentUrlResponse response = paymentService.createDepositPayment(
-                appointmentId, customerIp, request.getReturnUrl(), request.getCancelUrl());
-
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping
     public ResponseEntity<PaymentUrlResponse> createPayment(
             @Valid @RequestBody CreatePaymentRequest request,
@@ -48,6 +36,59 @@ public class PaymentController {
 
         PaymentUrlResponse response = paymentService.createPayment(request, customerIp);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/deposit/{appointmentId}")
+    public ResponseEntity<PaymentUrlResponse> createDepositPayment(
+            @PathVariable UUID appointmentId,
+            HttpServletRequest httpRequest) {
+
+        String customerIp = getClientIp(httpRequest);
+
+        CreatePaymentRequest request = CreatePaymentRequest.builder()
+                .appointmentId(appointmentId)
+                .paymentType(PaymentType.DEPOSIT)
+                .paymentMethod(PaymentMethod.VNPAY)
+                .build();
+
+        PaymentUrlResponse response = paymentService.createPayment(request, customerIp);
+        return ResponseEntity.ok(response);
+    }
+
+    // Convenience endpoint for full payment
+    @PostMapping("/full/{appointmentId}")
+    public ResponseEntity<PaymentUrlResponse> createFullPayment(
+            @PathVariable UUID appointmentId,
+            HttpServletRequest httpRequest) {
+
+        String customerIp = getClientIp(httpRequest);
+
+        CreatePaymentRequest request = CreatePaymentRequest.builder()
+                .appointmentId(appointmentId)
+                .paymentType(PaymentType.FULL)
+                .paymentMethod(PaymentMethod.VNPAY)
+                .build();
+
+        PaymentUrlResponse response = paymentService.createPayment(request, customerIp);
+        return ResponseEntity.ok(response);
+    }
+
+    // Convenience endpoint for remaining payment
+    @PostMapping("/remaining/{appointmentId}")
+    public ResponseEntity<PaymentUrlResponse> createRemainingPayment(
+            @PathVariable UUID appointmentId,
+            HttpServletRequest httpRequest) {
+
+        String customerIp = getClientIp(httpRequest);
+
+        CreatePaymentRequest request = CreatePaymentRequest.builder()
+                .appointmentId(appointmentId)
+                .paymentType(PaymentType.REMAINING)
+                .paymentMethod(PaymentMethod.VNPAY)
+                .build();
+
+        PaymentUrlResponse response = paymentService.createPayment(request, customerIp);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{paymentId}")
@@ -98,6 +139,38 @@ public class PaymentController {
         log.info("Cancelling payment: {}", paymentId);
         PaymentResponse response = paymentService.cancelPayment(paymentId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{paymentId}/query")
+    public ResponseEntity<PaymentResponse> queryPaymentStatus(
+            @PathVariable UUID paymentId) {
+
+        log.info("Received request to query payment status for payment ID: {}", paymentId);
+
+        PaymentResponse response = paymentService.queryPaymentStatus(paymentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/transaction/{transactionId}/query")
+    public ResponseEntity<PaymentResponse> queryPaymentStatusByTransactionId(
+            @PathVariable String transactionId) {
+
+        log.info("Received request to query payment status for transaction ID: {}", transactionId);
+
+        PaymentResponse response = paymentService.queryPaymentStatus(transactionId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/process")
+    public ResponseEntity<String> processPendingPayments() {
+
+        log.info("Received request to process pending payments");
+
+        paymentService.processProcessingPayments();
+
+        return ResponseEntity.status(HttpStatus.OK).body("Processing completed");
     }
 
     private String getClientIp(HttpServletRequest request) {

@@ -19,10 +19,6 @@ public class CreatePaymentRequest {
     @NotNull(message = "Appointment ID is required")
     UUID appointmentId;
 
-    @NotNull(message = "Amount is required")
-    @Min(value = 1, message = "Amount must be greater than 0")
-    BigDecimal amount;
-
     @NotNull(message = "Payment type is required")
     PaymentType paymentType;
 
@@ -30,6 +26,5 @@ public class CreatePaymentRequest {
     PaymentMethod paymentMethod;
 
     String notes;
-    String returnUrl;
-    String cancelUrl;
+
 }

@@ -42,6 +42,15 @@ vnpay:
   hashSecret: "${SECRET_KEY}"
   returnUrl: "${RETURN_URL}"
   refundUrl: "${REFUND_URL}"
+  query-url: "${QUERY_URL}"
+
+payment:
+  query:
+    safety-days-before: 7        # Chỉ query payment tạo trong 7 ngày gần đây
+    min-minutes-before-query: 5  # Đợi ít nhất 5 phút trước khi query
+    max-hours-for-query: 24      # Không query payment cũ hơn 24 giờ
+    query-enabled: true          # Enable/disable tính năng query
+    allow-old-payment-query: false # Có cho phép query payment cũ không
 
 app:
   upload:
