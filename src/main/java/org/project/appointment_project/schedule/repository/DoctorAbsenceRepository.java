@@ -32,19 +32,19 @@ public interface DoctorAbsenceRepository extends JpaRepository<DoctorAbsence, UU
             @Param("endDate") LocalDate endDate
     );
 
-    @Query("SELECT COUNT(da) > 0 FROM DoctorAbsence da WHERE da.doctor.id = :doctorUserId " +
-            "AND da.absenceDate = :absenceDate " +
+    @Query(value = "SELECT COUNT(da) > 0 FROM doctor_absences da WHERE da.doctor_user_id = :doctorUserId " +
+            "AND da.absence_date = :absenceDate " +
             "AND (:excludeId IS NULL OR da.id != :excludeId) " +
             "AND (" +
-            "   (da.startTime IS NULL AND da.endTime IS NULL) " +
-            "   OR (da.startTime IS NOT NULL AND da.endTime IS NOT NULL " +
+            "   (da.start_time IS NULL AND da.end_time IS NULL) " +
+            "   OR (da.start_time IS NOT NULL AND da.end_time IS NOT NULL " +
             "       AND CAST(:startTime AS time) IS NOT NULL AND CAST(:endTime AS time) IS NOT NULL " +
-            "       AND CAST(:startTime AS time) < da.endTime AND CAST(:endTime AS time) > da.startTime) " +
-            "   OR (da.startTime IS NOT NULL AND da.endTime IS NOT NULL " +
+            "       AND CAST(:startTime AS time) < da.end_time AND CAST(:endTime AS time) > da.start_time) " +
+            "   OR (da.start_time IS NOT NULL AND da.end_time IS NOT NULL " +
             "       AND CAST(:startTime AS time) IS NULL AND CAST(:endTime AS time) IS NULL) " +
-            "   OR (da.startTime IS NULL AND da.endTime IS NULL " +
+            "   OR (da.start_time IS NULL AND da.end_time IS NULL " +
             "       AND CAST(:startTime AS time) IS NOT NULL AND CAST(:endTime AS time) IS NOT NULL)" +
-            ")")
+            ")", nativeQuery = true)
     boolean existsConflictingAbsence(
             @Param("doctorUserId") UUID doctorUserId,
             @Param("absenceDate") LocalDate absenceDate,

@@ -121,7 +121,7 @@ public class PaymentServiceImpl implements PaymentService {
         paymentRefundValidationService.validatePaymentForRefund(payment, request);
 
         // Tính phần trăm hoàn tiền dựa trên thời gian hủy
-        RefundCalculationResult calculationResult = calculateRefundAmount(payment);
+        RefundCalculationResult calculationResult = calculateRefundAmount(payment, request);
 
         // Xử lý hoàn tiền qua cổng thanh toán
         String refundTxnId = transactionIdGenerator.generateRefundTransactionId();
@@ -263,13 +263,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // Tính số tiền có thể hoàn
-    private RefundCalculationResult calculateRefundAmount(Payment payment) {
+    private RefundCalculationResult calculateRefundAmount(Payment payment, PaymentRefundRequest request) {
         BigDecimal refundPercentage = refundPolicyService.calculateRefundPercentage(
                 payment.getAppointment().getAppointmentDate(),
                 LocalDateTime.now()
         );
 
-        BigDecimal refundAmount = refundPolicyService.calculateRefundAmount(payment, refundPercentage);
+        BigDecimal refundAmount = refundPolicyService.calculateRefundAmount(payment, request);
 
         if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,

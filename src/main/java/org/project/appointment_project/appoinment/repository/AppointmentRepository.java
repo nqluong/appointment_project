@@ -84,4 +84,36 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     @Query("SELECT a FROM Appointment a WHERE a.status = 'PENDING' AND a.createdAt < :expiredTime")
     List<Appointment> findExpiredPendingAppointments(@Param("expiredTime") LocalDateTime expiredTime);
+
+    // Tìm các appointment của doctor trong ngày cụ thể với các trạng thái cụ thể
+    @Query("""
+    SELECT a FROM Appointment a 
+    JOIN a.slot s 
+    WHERE s.doctor.id = :doctorUserId 
+    AND DATE(a.appointmentDate) = :appointmentDate 
+    AND a.status IN :statuses
+    """)
+    List<Appointment> findAppointmentsByDoctorAndDateAndStatus(
+            @Param("doctorUserId") UUID doctorUserId,
+            @Param("appointmentDate") LocalDate appointmentDate,
+            @Param("statuses") List<Status> statuses
+    );
+
+    // Tìm các appointment của doctor trong khoảng thời gian cụ thể trong ngày
+    @Query("""
+    SELECT a FROM Appointment a 
+    JOIN a.slot s 
+    WHERE s.doctor.id = :doctorUserId 
+    AND DATE(a.appointmentDate) = :appointmentDate 
+    AND TIME(a.appointmentDate) >= :startTime 
+    AND TIME(a.appointmentDate) <= :endTime 
+    AND a.status IN :statuses
+    """)
+    List<Appointment> findAppointmentsByDoctorAndDateTimeRangeAndStatus(
+            @Param("doctorUserId") UUID doctorUserId,
+            @Param("appointmentDate") LocalDate appointmentDate,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("statuses") List<Status> statuses
+    );
 }
