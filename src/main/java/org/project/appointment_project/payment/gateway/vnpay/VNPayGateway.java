@@ -11,10 +11,7 @@ import org.project.appointment_project.payment.dto.request.PaymentCallbackReques
 import org.project.appointment_project.payment.enums.PaymentMethod;
 import org.project.appointment_project.payment.enums.PaymentStatus;
 import org.project.appointment_project.payment.gateway.PaymentGateway;
-import org.project.appointment_project.payment.gateway.dto.PaymentGatewayRequest;
-import org.project.appointment_project.payment.gateway.dto.PaymentGatewayResponse;
-import org.project.appointment_project.payment.gateway.dto.PaymentQueryResult;
-import org.project.appointment_project.payment.gateway.dto.PaymentVerificationResult;
+import org.project.appointment_project.payment.gateway.dto.*;
 import org.project.appointment_project.payment.gateway.vnpay.config.VNPayConfig;
 import org.project.appointment_project.payment.gateway.vnpay.util.VNPayUtil;
 import org.project.appointment_project.payment.model.Payment;
@@ -108,6 +105,33 @@ public class VNPayGateway implements PaymentGateway {
     }
 
     @Override
+    public PaymentRefundResult refundPayment(RefundRequest refundRequest) {
+        try {
+            validateRefundRequest(refundRequest);
+            Map<String, Object> requestBody = buildRefundRequest(refundRequest);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    vnPayConfig.getRefundUrl(),
+                    entity,
+                    String.class
+            );
+            return parseRefundResponse(response.getBody(),refundRequest);
+
+        }catch (Exception e) {
+            return PaymentRefundResult.builder()
+                    .success(false)
+                    .status(PaymentStatus.FAILED)
+                    .refundTransactionId(refundRequest.getRefundTransactionId())
+                    .message("Refund failed: " + e.getMessage())
+                    .errorCode("REFUND_ERROR")
+                    .build();
+        }
+    }
+
+    @Override
     public boolean supports(PaymentMethod paymentMethod) {
         return PaymentMethod.VNPAY.equals(paymentMethod);
     }
@@ -130,7 +154,6 @@ public class VNPayGateway implements PaymentGateway {
         params.put("vnp_IpAddr", request.getCustomerIp());
         params.put("vnp_CreateDate", createDate);
 
-        // Set expire date (15 minutes from now)
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         calendar.add(Calendar.MINUTE, 15);
@@ -276,6 +299,140 @@ public class VNPayGateway implements PaymentGateway {
             return null;
         }
     }
+
+    private void validateRefundRequest(RefundRequest request) {
+        if (request.getOriginalTransactionId() == null || request.getOriginalTransactionId().trim().isEmpty()) {
+            throw new IllegalArgumentException("Original transaction ID is required");
+        }
+        if (request.getRefundTransactionId() == null || request.getRefundTransactionId().trim().isEmpty()) {
+            throw new IllegalArgumentException("Refund transaction ID is required");
+        }
+        if (request.getRefundAmount() == null || request.getRefundAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Refund amount must be greater than 0");
+        }
+        if (request.getOriginalAmount() != null &&
+                request.getRefundAmount().compareTo(request.getOriginalAmount()) > 0) {
+            throw new IllegalArgumentException("Refund amount cannot be greater than original amount");
+        }
+    }
+
+    private Map<String, Object> buildRefundRequest(RefundRequest refundRequest) {
+        String requestId = vnPayUtil.generateRequestId();
+        String createDate = vnPayUtil.getCurrentDateTime();
+
+        long refundAmount = refundRequest.getRefundAmount().multiply(BigDecimal.valueOf(100)).longValue();
+
+        String transactionType = determineTransactionType(refundRequest);
+        String orderInfo = refundRequest.getOrderInfo() != null ?
+                refundRequest.getOrderInfo() :
+                "Refund for transaction: " + refundRequest.getOriginalTransactionId();
+
+        String txnDate = (refundRequest.getTransactionDate() != null) ?
+                refundRequest.getTransactionDate() :
+                vnPayUtil.extractTransactionDate(refundRequest.getOriginalTransactionId());
+
+        String secureHash = vnPayUtil.createRefundSecureHash(
+                requestId,
+                vnPayConfig.getVersion(),
+                "refund",
+                vnPayConfig.getTmnCode(),
+                transactionType,
+                refundRequest.getOriginalTransactionId(),
+                String.valueOf(refundAmount),
+                refundRequest.getGatewayTransactionId(),
+                txnDate,
+                "ADMIN",
+                refundRequest.getCustomerIp() != null ? refundRequest.getCustomerIp() : "127.0.0.1",
+                createDate,
+                orderInfo,
+                vnPayConfig.getHashSecret()
+        );
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("vnp_RequestId", requestId);
+        request.put("vnp_Version", vnPayConfig.getVersion());
+        request.put("vnp_Command", "refund");
+        request.put("vnp_TmnCode", vnPayConfig.getTmnCode());
+        request.put("vnp_TransactionType", transactionType);
+        request.put("vnp_TxnRef", refundRequest.getOriginalTransactionId());
+        request.put("vnp_Amount", refundAmount);
+        request.put("vnp_OrderInfo", orderInfo);
+        request.put("vnp_TransactionNo", refundRequest.getGatewayTransactionId());
+        request.put("vnp_TransactionDate", txnDate);
+        request.put("vnp_CreateBy", "ADMIN");
+        request.put("vnp_CreateDate", createDate);
+        request.put("vnp_IpAddr", refundRequest.getCustomerIp() != null ? refundRequest.getCustomerIp() : "127.0.0.1");
+        request.put("vnp_SecureHash", secureHash);
+        return request;
+    }
+
+    private String determineTransactionType(RefundRequest refundRequest) {
+        // 02: Hoàn trả toàn phần
+        // 03: Hoàn trả một phần
+        if (refundRequest.getOriginalAmount() != null) {
+            return refundRequest.getRefundAmount().compareTo(refundRequest.getOriginalAmount()) == 0 ? "02" : "03";
+        }
+        return "03"; // Default to partial refund
+    }
+
+    private PaymentRefundResult parseRefundResponse(String responseBody, RefundRequest refundRequest) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = objectMapper.readValue(responseBody, Map.class);
+            String responseCode = (String) response.get("vnp_ResponseCode");
+            String message = (String) response.get("vnp_Message");
+            String vnpTransactionNo = (String) response.get("vnp_TransactionNo");
+            String amountStr = (String) response.get("vnp_Amount");
+            String bankTransactionNo = (String) response.get("vnp_BankTransactionNo");
+
+            boolean success = "00".equals(responseCode);
+            PaymentStatus status = success ? PaymentStatus.COMPLETED : PaymentStatus.FAILED;
+
+            BigDecimal refundAmount = amountStr != null ?
+                    new BigDecimal(amountStr).divide(BigDecimal.valueOf(100)) : null;
+
+            return PaymentRefundResult.builder()
+                    .success(success)
+                    .refundTransactionId(refundRequest.getRefundTransactionId())
+                    .gatewayRefundId(vnpTransactionNo != null ? vnpTransactionNo : bankTransactionNo)
+                    .refundAmount(refundAmount)
+                    .status(status)
+                    .responseCode(responseCode)
+                    .message(success ? "Refund processed successfully" :
+                            (message != null ? message : getRefundResponseMessage(responseCode)))
+                    .refundDate(LocalDateTime.now())
+                    .rawResponse(responseBody)
+                    .errorCode(success ? null : responseCode)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error parsing VNPay refund response", e);
+            return PaymentRefundResult.builder()
+                    .success(false)
+                    .status(PaymentStatus.FAILED)
+                    .refundTransactionId(refundRequest.getRefundTransactionId())
+                    .message("Error parsing refund response: " + e.getMessage())
+                    .errorCode("PARSE_ERROR")
+                    .build();
+        }
+    }
+
+    private String getRefundResponseMessage(String responseCode) {
+        switch (responseCode) {
+            case "00": return "Giao dịch hoàn tiền thành công";
+            case "02": return "Merchant không hợp lệ";
+            case "03": return "Dữ liệu gửi sang không đúng định dạng";
+            case "04": return "Không cho phép hoàn tiền";
+            case "13": return "Chỉ cho phép hoàn tiền một phần";
+            case "91": return "Không tìm thấy giao dịch yêu cầu hoàn tiền";
+            case "93": return "Số tiền hoàn tiền không hợp lệ";
+            case "94": return "Giao dịch đã được hoàn tiền trước đó";
+            case "95": return "Giao dịch không thành công";
+            case "97": return "Chữ ký không hợp lệ";
+            default: return "Giao dịch hoàn tiền thất bại";
+        }
+    }
+
 
     private String extractTransactionDate(String transactionId) {
         // Extract timestamp from transaction ID (assuming format: TXN{timestamp}{uuid})

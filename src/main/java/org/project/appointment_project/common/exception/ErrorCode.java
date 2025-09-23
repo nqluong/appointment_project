@@ -114,6 +114,21 @@ public enum ErrorCode {
     PAYMENT_ALREADY_EXISTS(9010, "Payment already exists for this appointment", HttpStatus.CONFLICT),
     INVALID_PAYMENT_TYPE(9011, "Payment type invalid ", HttpStatus.BAD_REQUEST),
     PAYMENT_QUERY_FAILED(9012, "Payment query failed", HttpStatus.BAD_REQUEST),
+    REFUND_PROCESSING_ERROR(9013, "Error processing refund", HttpStatus.INTERNAL_SERVER_ERROR),
+    REFUND_GATEWAY_ERROR(9014, "Refund gateway error", HttpStatus.INTERNAL_SERVER_ERROR),
+    REFUND_TRANSACTION_FAILED(9015, "Refund transaction failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    REFUND_NOT_FOUND(9016, "Refund not found", HttpStatus.NOT_FOUND),
+    REFUND_ALREADY_PROCESSED(9017, "Refund already processed", HttpStatus.BAD_REQUEST),
+    PAYMENT_NOT_REFUNDABLE(9018, "Payment is not refundable", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_REFUNDED(9019, "Payment has been fully refunded", HttpStatus.BAD_REQUEST),
+    REFUND_PERIOD_EXPIRED(9020, "Refund period has expired", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_REFUND_AMOUNT(9021, "Refund amount exceeds available amount", HttpStatus.BAD_REQUEST),
+    INVALID_REFUND_AMOUNT(9022, "Invalid refund amount", HttpStatus.BAD_REQUEST),
+    REFUND_AMOUNT_TOO_SMALL(9023, "Refund amount is too small", HttpStatus.BAD_REQUEST),
+    REFUND_AMOUNT_TOO_LARGE(9024, "Refund amount is too large", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_FULLY_REFUNDED(9025, "Payment has been fully refunded", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_DATE_PASSED(9026, "Cannot refund payment for past appointments", HttpStatus.BAD_REQUEST),
+
 
 
     VNPAY_INVALID_RESPONSE(1101, "Invalid VNPay response", HttpStatus.BAD_REQUEST),

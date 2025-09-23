@@ -1,5 +1,6 @@
 package org.project.appointment_project.payment.repository;
 
+import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.payment.enums.PaymentStatus;
 import org.project.appointment_project.payment.enums.PaymentType;
 import org.project.appointment_project.payment.model.Payment;
@@ -15,7 +16,12 @@ import java.util.UUID;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+
+    Optional<Payment> findByAppointmentAndPaymentStatus(Appointment appointment, PaymentStatus status);
+
     Optional<Payment> findByTransactionId(String transactionId);
+
+    boolean existsByAppointmentAndPaymentStatus(Appointment appointment, PaymentStatus status);
 
     boolean existsByAppointmentIdAndPaymentStatusIn(UUID appointmentId, List<PaymentStatus> statuses);
 

@@ -8,16 +8,16 @@ import java.util.UUID;
 
 public interface SlotStatusValidationService {
 
-    //Validate status của một slot update
+    // Validate status của một slot update
     void validateSlotAvailabilityUpdate(UUID slotId, DoctorAvailableSlot slot, boolean newStatus);
 
-    //Validate status của một slot update
+    // Validate status của một slot update
     void validateMultipleSlotStatusUpdate(List<BatchSlotStatusRequest> requests);
 
-    //Validate đóng của một slot
+    // Validate đóng của một slot
     void validateSlotReservation(UUID slotId, DoctorAvailableSlot slot);
 
-    //Validate mở slot
+    // Validate mở slot
     void validateSlotRelease(UUID slotId, DoctorAvailableSlot slot);
 
     // Validate chung cho các slot

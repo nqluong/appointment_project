@@ -104,6 +104,29 @@ public class VNPayUtil {
         return hmacSHA512(hashSecret, data.toString());
     }
 
+    public String createRefundSecureHash(String requestId, String version, String command,
+                                         String tmnCode, String transactionType, String txnRef,
+                                         String amount, String transactionNo, String transactionDate, String createBy,
+                                         String ipAddr, String createDate, String orderInfo,
+                                         String hashSecret) {
+        StringBuilder data = new StringBuilder();
+        data.append(requestId).append("|")
+                .append(version).append("|")
+                .append(command).append("|")
+                .append(tmnCode).append("|")
+                .append(transactionType).append("|")
+                .append(txnRef).append("|")
+                .append(amount).append("|")
+                .append(transactionNo).append("|")
+                .append(transactionDate).append("|")
+                .append(createBy).append("|")
+                .append(createDate).append("|")
+                .append(ipAddr).append("|")
+                .append(orderInfo);
+
+        return hmacSHA512(hashSecret, data.toString());
+    }
+
     public String getCurrentDateTime() {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");

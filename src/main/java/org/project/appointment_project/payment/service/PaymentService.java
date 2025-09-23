@@ -2,6 +2,8 @@ package org.project.appointment_project.payment.service;
 
 import org.project.appointment_project.payment.dto.request.CreatePaymentRequest;
 import org.project.appointment_project.payment.dto.request.PaymentCallbackRequest;
+import org.project.appointment_project.payment.dto.request.PaymentRefundRequest;
+import org.project.appointment_project.payment.dto.response.PaymentRefundResponse;
 import org.project.appointment_project.payment.dto.response.PaymentResponse;
 import org.project.appointment_project.payment.dto.response.PaymentUrlResponse;
 
@@ -28,4 +30,7 @@ public interface PaymentService {
     PaymentResponse queryPaymentStatus(String transactionId);
 
     void processProcessingPayments();
+
+    PaymentRefundResponse refundPayment(PaymentRefundRequest request);
+
 }

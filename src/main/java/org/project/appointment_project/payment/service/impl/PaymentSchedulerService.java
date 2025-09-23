@@ -6,7 +6,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.payment.service.AppointmentExpirationService;
 import org.project.appointment_project.payment.service.PaymentQueryService;
-import org.project.appointment_project.payment.service.PaymentService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.payment.dto.request.CreateDepositPaymentRequest;
 import org.project.appointment_project.payment.dto.request.CreatePaymentRequest;
 import org.project.appointment_project.payment.dto.request.PaymentCallbackRequest;
+import org.project.appointment_project.payment.dto.request.PaymentRefundRequest;
+import org.project.appointment_project.payment.dto.response.PaymentRefundResponse;
 import org.project.appointment_project.payment.dto.response.PaymentResponse;
 import org.project.appointment_project.payment.dto.response.PaymentUrlResponse;
 import org.project.appointment_project.payment.enums.PaymentMethod;
@@ -171,6 +173,12 @@ public class PaymentController {
         paymentService.processProcessingPayments();
 
         return ResponseEntity.status(HttpStatus.OK).body("Processing completed");
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<PaymentRefundResponse> refundPayment(@RequestBody PaymentRefundRequest request) {
+        PaymentRefundResponse response = paymentService.refundPayment(request);
+        return ResponseEntity.ok(response);
     }
 
     private String getClientIp(HttpServletRequest request) {

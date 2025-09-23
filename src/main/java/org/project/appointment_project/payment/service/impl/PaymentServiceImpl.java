@@ -9,35 +9,31 @@ import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.appoinment.repository.AppointmentRepository;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
-import org.project.appointment_project.payment.config.PaymentQueryConfig;
 import org.project.appointment_project.payment.dto.request.CreatePaymentRequest;
 import org.project.appointment_project.payment.dto.request.PaymentCallbackRequest;
+import org.project.appointment_project.payment.dto.request.PaymentRefundRequest;
+import org.project.appointment_project.payment.dto.response.PaymentRefundResponse;
 import org.project.appointment_project.payment.dto.response.PaymentResponse;
 import org.project.appointment_project.payment.dto.response.PaymentUrlResponse;
 import org.project.appointment_project.payment.enums.PaymentStatus;
 import org.project.appointment_project.payment.enums.PaymentType;
 import org.project.appointment_project.payment.gateway.PaymentGateway;
 import org.project.appointment_project.payment.gateway.PaymentGatewayFactory;
-import org.project.appointment_project.payment.gateway.dto.PaymentGatewayRequest;
-import org.project.appointment_project.payment.gateway.dto.PaymentGatewayResponse;
-import org.project.appointment_project.payment.gateway.dto.PaymentQueryResult;
-import org.project.appointment_project.payment.gateway.dto.PaymentVerificationResult;
+import org.project.appointment_project.payment.gateway.dto.*;
 import org.project.appointment_project.payment.gateway.vnpay.config.VNPayConfig;
 import org.project.appointment_project.payment.mapper.PaymentMapper;
 import org.project.appointment_project.payment.model.Payment;
 import org.project.appointment_project.payment.repository.PaymentRepository;
 import org.project.appointment_project.payment.service.*;
+import org.project.appointment_project.payment.util.PaymentRefundUtil;
 import org.project.appointment_project.schedule.service.SlotStatusService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,13 +49,17 @@ public class PaymentServiceImpl implements PaymentService {
     PaymentMapper paymentMapper;
     AppointmentRepository appointmentRepository;
     VNPayConfig vnPayConfig;
+    SlotStatusService slotStatusService;
 
     PaymentAmountCalculator paymentAmountCalculator;
     PaymentStatusHandler paymentStatusHandler;
     PaymentQueryService paymentQueryService;
     AppointmentExpirationService appointmentExpirationService;
-    TransactionIdGenerator transactionIdGenerator;
     OrderInfoBuilder orderInfoBuilder;
+    PaymentRefundValidationService paymentRefundValidationService;
+    PaymentRefundUtil paymentRefundUtil;
+    PaymentResolutionService paymentResolutionService;
+    RefundPolicyService refundPolicyService;
 
     @Override
     public PaymentUrlResponse createPayment(CreatePaymentRequest request, String customerIp) {
@@ -174,19 +174,123 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    public PaymentRefundResponse refundPayment(PaymentRefundRequest request) {
+        // Validate request
+        paymentRefundValidationService.validateRefundRequest(request);
+
+        Payment payment = paymentResolutionService.resolvePayment(
+                request.getPaymentId(), request.getAppointmentId());
+
+        paymentRefundValidationService.validatePaymentForRefund(payment, request);
+
+        // Tính phần trăm hoàn tiền dựa trên thời gian hủy
+        BigDecimal refundPercentage = refundPolicyService.calculateRefundPercentage(
+                payment.getAppointment().getAppointmentDate(),
+                LocalDateTime.now());
+
+        BigDecimal refundAmount = refundPolicyService.calculateRefundAmount(payment, refundPercentage);
+
+        if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,
+                    "Calculated refund amount must be greater than 0");
+        }
+        String refundTxnId = generateRefundTransactionId();
+        PaymentRefundResult gatewayResult = processRefundThroughGateway(
+                payment, refundAmount, refundTxnId, request);
+
+        if (gatewayResult.isSuccess()) {
+            paymentRefundUtil.updateRefundInfo(
+                    payment,
+                    refundAmount,
+                    refundTxnId,
+                    gatewayResult.getGatewayRefundId(),
+                    request.getReason(),
+                    gatewayResult.getRawResponse()
+            );
+            paymentRepository.save(payment);
+            handleAppointmentAndSlotAfterRefund(payment);
+            log.info("Refund completed for payment: {}, amount: {}",
+                    request.getPaymentId(), refundAmount);
+        } else {
+            log.error("Refund failed for payment: {}, error: {}",
+                    request.getPaymentId(), gatewayResult.getMessage());
+            throw new CustomException(ErrorCode.REFUND_PROCESSING_ERROR, gatewayResult.getMessage());
+        }
+
+        return PaymentRefundResponse.builder()
+                .paymentId(payment.getId())
+                .refundTransactionId(refundTxnId)
+                .gatewayRefundId(gatewayResult.getGatewayRefundId())
+                .refundAmount(refundAmount)
+                .totalRefundedAmount(payment.getRefundedAmount())
+                .paymentStatus(payment.getPaymentStatus())
+                .message(gatewayResult.getMessage())
+                .refundDate(payment.getRefundDate())
+                .success(gatewayResult.isSuccess())
+                .refundPercentage(refundPercentage.multiply(BigDecimal.valueOf(100)))
+                .build();
+    }
+
+    private void handleAppointmentAndSlotAfterRefund(Payment payment) {
+        try {
+            Appointment appointment = payment.getAppointment();
+
+            // Cập nhật trạng thái appointment thành CANCELLED
+            if (appointment.getStatus() != Status.CANCELLED) {
+                appointment.setStatus(Status.CANCELLED);
+                appointmentRepository.save(appointment);
+                log.info("Updated appointment status to CANCELLED for appointment ID: {}",
+                        appointment.getId());
+            }
+
+            // Giải phóng slot để người khác có thể đặt
+            if (appointment.getSlot() != null) {
+                try {
+                    slotStatusService.releaseSlot(appointment.getSlot().getId());
+                    log.info("Successfully released slot ID: {} after refund for appointment ID: {}",
+                            appointment.getSlot().getId(), appointment.getId());
+                } catch (Exception e) {
+                    log.error("Failed to release slot ID: {} after refund for appointment ID: {}. Error: {}",
+                            appointment.getSlot().getId(), appointment.getId(), e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Error handling appointment and slot after refund for payment ID: {}. Error: {}",
+                    payment.getId(), e.getMessage());
+        }
+    }
+
+    private String generateRefundTransactionId() {
+        return "RFD" + System.currentTimeMillis() +
+                UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private PaymentRefundResult processRefundThroughGateway(Payment payment,
+                                                            BigDecimal refundAmount, String refundTxnId, PaymentRefundRequest request) {
+
+        PaymentGateway gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
+
+        RefundRequest gatewayRequest =
+                RefundRequest.builder()
+                        .originalTransactionId(payment.getTransactionId())
+                        .refundTransactionId(refundTxnId)
+                        .gatewayTransactionId(payment.getGatewayTransactionId())
+                        .refundAmount(refundAmount)
+                        .originalAmount(payment.getAmount())
+                        .reason(request.getReason())
+                        .transactionDate(payment.getPaymentDate().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
+                        .customerIp("127.0.0.1")
+                        .orderInfo("Hoàn tiền cho giao dịch: " + payment.getTransactionId())
+                        .build();
+
+        return gateway.refundPayment(gatewayRequest);
+    }
+
+    @Override
+    @Transactional
     public void processProcessingPayments() {
         paymentQueryService.processProcessingPayments();
-    }
-
-    private Appointment getAppointment(UUID appointmentId) {
-        return appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.APPOINTMENT_NOT_FOUND));
-    }
-
-    private void validateAppointmentForPayment(Appointment appointment) {
-        if (appointment.getStatus() != Status.PENDING) {
-            throw new CustomException(ErrorCode.APPOINTMENT_NOT_PAYABLE);
-        }
     }
 
     private void validateExistingPayment(UUID appointmentId, PaymentType paymentType) {
@@ -199,34 +303,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private String buildOrderInfo(PaymentType paymentType, UUID appointmentId) {
-        switch (paymentType) {
-            case DEPOSIT:
-                return "Thanh toán tiền cọc cho lịch hẹn: " + appointmentId;
-            case FULL:
-                return "Thanh toán đầy đủ cho lịch hẹn: " + appointmentId;
-            case REMAINING:
-                return "Thanh toán số tiền còn lại cho lịch hẹn: " + appointmentId;
-            default:
-                return "Thanh toán cho lịch hẹn: " + appointmentId;
-        }
-    }
 
     private String generateTransactionId() {
         return "TXN" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    private Payment createPaymentEntity(CreatePaymentRequest request, Appointment appointment, BigDecimal amount) {
-        return Payment.builder()
-                .appointment(appointment)
-                .amount(amount)
-                .paymentType(request.getPaymentType())
-                .paymentMethod(request.getPaymentMethod())
-                .paymentStatus(PaymentStatus.PENDING)
-                .transactionId(transactionIdGenerator.generateTransactionId())
-                .notes(request.getNotes())
-                .build();
-    }
 
     private String createPaymentUrl(Payment payment, CreatePaymentRequest request, String customerIp) {
         PaymentGateway gateway = paymentGatewayFactory.getGateway(request.getPaymentMethod());

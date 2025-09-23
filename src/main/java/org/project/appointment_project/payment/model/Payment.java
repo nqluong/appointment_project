@@ -70,6 +70,24 @@ public class Payment {
     @Column(name = "payment_date")
     LocalDateTime paymentDate;
 
+    @Column(name = "refunded_amount", precision = 10, scale = 2)
+    BigDecimal refundedAmount = BigDecimal.ZERO;
+
+    @Column(name = "refund_transaction_id")
+    String refundTransactionId;
+
+    @Column(name = "gateway_refund_id")
+    String gatewayRefundId;
+
+    @Column(name = "refund_reason", columnDefinition = "TEXT")
+    String refundReason;
+
+    @Column(name = "refund_date")
+    LocalDateTime refundDate;
+
+    @Column(name = "refund_gateway_response", columnDefinition = "TEXT")
+    String refundGatewayResponse;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;

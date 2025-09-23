@@ -40,4 +40,7 @@ public class VNPayConfig {
 
     @Value("${vnpay.query-url}")
     private String queryUrl;
+
+    @Value("${vnpay.refundUrl}")
+    private String refundUrl;
 }
