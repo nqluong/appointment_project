@@ -433,25 +433,6 @@ public class VNPayGateway implements PaymentGateway {
         }
     }
 
-
-    private String extractTransactionDate(String transactionId) {
-        // Extract timestamp from transaction ID (assuming format: TXN{timestamp}{uuid})
-        try {
-            String timestampStr = transactionId.substring(3, 16); // Remove "TXN" and get timestamp
-            long timestamp = Long.parseLong(timestampStr);
-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-            cal.setTimeInMillis(timestamp);
-
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-            return formatter.format(cal.getTime());
-        } catch (Exception e) {
-            // Fallback to current date
-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-            return formatter.format(cal.getTime());
-        }
-    }
-
     private String getTransactionStatusMessage(String status) {
         switch (status) {
             case "00": return "Giao dịch thanh toán được thực hiện thành công";

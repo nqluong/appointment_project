@@ -16,29 +16,33 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentSchedulerService {
 
+    private static final long EXPIRED_PAYMENT_INTERVAL = 300_000; // 5 phút
+    private static final long PENDING_PAYMENT_INTERVAL = 600_000;
+
     AppointmentExpirationService appointmentExpirationService;
     PaymentQueryService paymentQueryService;
 
-    @Scheduled(fixedRate = 300000) //5 phut
+    @Scheduled(fixedRate = EXPIRED_PAYMENT_INTERVAL) //5 phut
     @Async
     public void processExpiredPayments(){
+        String taskName = "processExpiredPayments";
         try {
-            log.debug("Starting scheduled task: processExpiredPayments");
             appointmentExpirationService.processExpiredAppointments();
-            log.debug("Completed scheduled task: processExpiredPayments");
+            log.debug("Hoàn thành scheduled task: {}", taskName);
         } catch (Exception e) {
-            log.error("Error in scheduled task processExpiredPayments: {}", e.getMessage(), e);
+            log.error("Lỗi trong scheduled task {}: {}", taskName, e.getMessage());
         }
     }
 
-    @Scheduled(fixedRate = 600000) // 10 minutes
+    @Scheduled(fixedRate = PENDING_PAYMENT_INTERVAL) // 10 minutes
     public void processPendingPayments() {
-        log.info("Starting scheduled processing of pending payments");
+        String taskName = "processPendingPayments";
 
         try {
             paymentQueryService.processProcessingPayments();
+            log.info("Hoàn thành scheduled task: {}", taskName);
         } catch (Exception e) {
-            log.error("Error in scheduled processing of pending payments", e);
+            log.error("Lỗi trong scheduled task {}: {}", taskName, e.getMessage());
         }
     }
 }
