@@ -2,19 +2,11 @@ package org.project.appointment_project.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project.appointment_project.auth.dto.request.LoginRequest;
-import org.project.appointment_project.auth.dto.request.LogoutRequest;
-import org.project.appointment_project.auth.dto.request.RefreshTokenRequest;
-import org.project.appointment_project.auth.dto.request.VerifyTokenRequest;
-import org.project.appointment_project.auth.dto.response.LoginResponse;
-import org.project.appointment_project.auth.dto.response.TokenResponse;
-import org.project.appointment_project.auth.dto.response.VerifyTokenResponse;
+import org.project.appointment_project.auth.dto.request.*;
+import org.project.appointment_project.auth.dto.response.*;
 import org.project.appointment_project.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,5 +36,34 @@ public class AuthController {
     public ResponseEntity<VerifyTokenResponse> verifyToken(@RequestBody VerifyTokenRequest request) {
         VerifyTokenResponse response = authService.verifyToken(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        ForgotPasswordResponse response = authService.forgotPassword(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<PasswordResetResponse> resetPassword(
+            @Valid @RequestBody PasswordResetRequest request) {
+
+
+        PasswordResetResponse response = authService.resetPassword(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/validate-reset-token")
+    public ResponseEntity<String> validateResetToken(
+            @RequestParam String token) {
+
+        boolean isValid = authService.validateResetToken(token);
+        String message = isValid ? "Token hợp lệ" : "Token không hợp lệ hoặc đã hết hạn";
+
+        return ResponseEntity.ok(message);
     }
 }

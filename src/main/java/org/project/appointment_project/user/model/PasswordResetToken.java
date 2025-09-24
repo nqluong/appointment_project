@@ -37,4 +37,12 @@ public class PasswordResetToken {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     User user;
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    public boolean isValid() {
+        return (isUsed == null || !isUsed) && !isExpired();
+    }
 }

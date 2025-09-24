@@ -3,6 +3,7 @@ package org.project.appointment_project.common.security.jwt.validator;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -142,6 +143,54 @@ public class TokenValidator {
         }
     }
 
+    public boolean validatePasswordResetToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWSVerifier verifier = new MACVerifier(jwtSecret.getBytes());
+
+            if (!signedJWT.verify(verifier)) {
+                return false;
+            }
+
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+
+            String tokenType = claimsSet.getStringClaim("type");
+            if (!"PASSWORD_RESET".equals(tokenType)) {
+                return false;
+            }
+
+            Date expirationTime = claimsSet.getExpirationTime();
+            return expirationTime != null && expirationTime.after(new Date());
+
+        } catch (Exception e) {
+            log.error("Password reset token validation failed", e);
+            return false;
+        }
+    }
+
+    public UUID getUserIdFromPasswordResetToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+            String subject = claimsSet.getSubject();
+            return UUID.fromString(subject);
+        } catch (Exception e) {
+            log.error("Error extracting user ID from password reset token", e);
+            return null;
+        }
+    }
+
+    public String getEmailFromPasswordResetToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+            return claimsSet.getStringClaim("email");
+        } catch (Exception e) {
+            log.error("Error extracting email from password reset token", e);
+            return null;
+        }
+    }
+
     private SignedJWT verifyTokenInternal(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(jwtSecret.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -156,6 +205,23 @@ public class TokenValidator {
             throw new CustomException(ErrorCode.UNAUTHENTICATED);
         }
 
+
         return signedJWT;
+    }
+
+    public LocalDateTime getIssuedTime(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            Date issuedAt = signedJWT.getJWTClaimsSet().getIssueTime();
+            if (issuedAt == null) {
+                log.error("Token does not contain issued time");
+                throw new CustomException(ErrorCode.TOKEN_INVALID, "Token lacks issued time");
+            }
+            return LocalDateTime.ofInstant(issuedAt.toInstant(), ZoneId.systemDefault())
+                    .truncatedTo(ChronoUnit.SECONDS);
+        } catch (ParseException e) {
+            log.error("Error parsing token to get issued time", e);
+            throw new CustomException(ErrorCode.TOKEN_PARSE_ERROR, e);
+        }
     }
 }

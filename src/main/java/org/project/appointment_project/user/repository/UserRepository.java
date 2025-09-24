@@ -20,6 +20,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
 
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isActive = true")
+    Optional<User> findByEmailAndDeletedAtIsNull(@Param("email") String email);
+
     @Query("SELECT u FROM User u " +
             "LEFT JOIN FETCH u.userRoles ur " +
             "LEFT JOIN FETCH ur.role " +
@@ -96,4 +99,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
                            @Param("userType") String userType,
                            @Param("isDeleted") Boolean isDeleted,
                            Pageable pageable);
+
+
 }

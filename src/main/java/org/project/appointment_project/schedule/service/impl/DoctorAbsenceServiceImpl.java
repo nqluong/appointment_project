@@ -79,7 +79,7 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
         DoctorAbsence savedAbsence = doctorAbsenceRepository.save(absence);
 
         log.info("Đã tạo lịch nghỉ mới với ID: {}", savedAbsence.getId());
-        // handleAffectedAppointmentsAsync(savedAbsence);
+        handleAffectedAppointmentsAsync(savedAbsence);
         return doctorAbsenceMapper.toDto(savedAbsence);
     }
 
@@ -274,7 +274,7 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
     private void releaseSlotSafely(Appointment appointment) {
         if (appointment.getSlot() != null) {
             try {
-                slotStatusService.releaseSlot(appointment.getSlot().getId());
+                slotStatusService.reserveSlot(appointment.getSlot().getId());
                 log.info("Đã giải phóng khung giờ ID: {} cho lịch hẹn đã hủy: {}",
                         appointment.getSlot().getId(), appointment.getId());
             } catch (Exception e) {

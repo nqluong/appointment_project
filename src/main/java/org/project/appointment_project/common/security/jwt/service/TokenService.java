@@ -16,4 +16,9 @@ public interface TokenService {
 
     boolean isTokenExpired(String token);
     String hashToken(String token);
+
+    String generatePasswordResetToken(UUID userId, String email, Long expirationMinutes);
+    boolean validatePasswordResetToken(String token);
+    UUID getUserIdFromPasswordResetToken(String token);
+    String getEmailFromPasswordResetToken(String token);
 }

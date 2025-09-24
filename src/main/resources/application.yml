@@ -8,6 +8,20 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: "org.postgresql.Driver"
+  application:
+    name: appointment
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nguyenluong052004@gmail.com
+    password: "${PASS_MAIL}"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 
   jpa:
     hibernate:
@@ -53,6 +67,11 @@ payment:
     allow-old-payment-query: false # Có cho phép query payment cũ không
 
 app:
+  name: Hệ thống Đặt lịch khám chữa bệnh
+  password-reset:
+    token-expiry-minutes: 30
+  frontend:
+    reset-password-url: http://localhost:3000/reset-password
   upload:
     dir: uploads/avatars
     max-size: 5242880 # 5MB

@@ -9,6 +9,7 @@ import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.appoinment.repository.AppointmentRepository;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
+import org.project.appointment_project.notification.service.NotificationService;
 import org.project.appointment_project.payment.dto.request.CreatePaymentRequest;
 import org.project.appointment_project.payment.dto.request.PaymentCallbackRequest;
 import org.project.appointment_project.payment.dto.request.PaymentRefundRequest;
@@ -52,6 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
     AppointmentRepository appointmentRepository;
     VNPayConfig vnPayConfig;
     SlotStatusService slotStatusService;
+    NotificationService notificationService;
 
     PaymentAmountCalculator paymentAmountCalculator;
     PaymentStatusHandler paymentStatusHandler;
@@ -102,6 +104,10 @@ public class PaymentServiceImpl implements PaymentService {
         updatePaymentFromVerification(payment, verificationResult);
 
         Payment updatedPayment = paymentRepository.save(payment);
+
+        if(PaymentStatus.COMPLETED.equals(updatedPayment.getPaymentStatus())) {
+            notificationService.sendPaymentSuccessNotification(updatedPayment);
+        }
 
         log.info("Payment callback processed for ID: {}, Status: {}",
                 payment.getId(), payment.getPaymentStatus());

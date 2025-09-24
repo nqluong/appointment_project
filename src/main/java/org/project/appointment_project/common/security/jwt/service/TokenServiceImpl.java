@@ -8,6 +8,7 @@ import org.project.appointment_project.auth.dto.response.TokenResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.generator.AccessTokenGenerator;
+import org.project.appointment_project.common.security.jwt.generator.PasswordResetTokenGenerator;
 import org.project.appointment_project.common.security.jwt.generator.RefreshTokenGenerator;
 import org.project.appointment_project.common.security.jwt.validator.TokenValidator;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,20 +21,20 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TokenServiceImpl implements TokenService {
     @Value("${jwt.signer-key}")
-    String jwtSecret;
+    private String jwtSecret;
 
     @Value("${jwt.expiration}")
-    Long accessTokenExpiration;
+    private Long accessTokenExpiration;
 
     @Value("${jwt.refresh.expiration}")
-    Long refreshTokenExpiration;
+    private Long refreshTokenExpiration;
 
-    final AccessTokenGenerator accessTokenGenerator;
-    final RefreshTokenGenerator refreshTokenGenerator;
-    final TokenValidator tokenValidator;
+     private final AccessTokenGenerator accessTokenGenerator;
+     private final RefreshTokenGenerator refreshTokenGenerator;
+     private final PasswordResetTokenGenerator passwordResetTokenGenerator;
+     private final TokenValidator tokenValidator;
 
     @Override
     public TokenResponse generateTokens(UUID userId, String username, String email, List<String> roles) {
@@ -75,5 +76,35 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String hashToken(String token) {
         return tokenValidator.hash(token);
+    }
+
+    @Override
+    public String generatePasswordResetToken(UUID userId, String email, Long expirationMinutes) {
+        try {
+            return passwordResetTokenGenerator.generate(userId, email, expirationMinutes);
+        } catch (Exception e) {
+            log.error("Error generating password reset token for user: {}", userId, e);
+            throw new CustomException(ErrorCode.TOKEN_GENERATION_FAILED);
+        }
+    }
+
+    @Override
+    public boolean validatePasswordResetToken(String token) {
+        try {
+            return tokenValidator.validatePasswordResetToken(token);
+        } catch (Exception e) {
+            log.error("Error validating password reset token", e);
+            return false;
+        }
+    }
+
+    @Override
+    public UUID getUserIdFromPasswordResetToken(String token) {
+        return tokenValidator.getUserIdFromPasswordResetToken(token);
+    }
+
+    @Override
+    public String getEmailFromPasswordResetToken(String token) {
+        return tokenValidator.getEmailFromPasswordResetToken(token);
     }
 }

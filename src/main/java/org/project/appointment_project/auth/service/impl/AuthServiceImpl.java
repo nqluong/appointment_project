@@ -5,13 +5,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.project.appointment_project.auth.dto.request.LoginRequest;
-import org.project.appointment_project.auth.dto.request.LogoutRequest;
-import org.project.appointment_project.auth.dto.request.RefreshTokenRequest;
-import org.project.appointment_project.auth.dto.request.VerifyTokenRequest;
-import org.project.appointment_project.auth.dto.response.LoginResponse;
-import org.project.appointment_project.auth.dto.response.TokenResponse;
-import org.project.appointment_project.auth.dto.response.VerifyTokenResponse;
+import org.project.appointment_project.auth.dto.request.*;
+import org.project.appointment_project.auth.dto.response.*;
 import org.project.appointment_project.auth.service.*;
 
 import org.springframework.stereotype.Service;
@@ -27,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
     TokenManager tokenManager;
     SessionManager sessionManager;
     TokenVerificationService tokenVerificationService;
+    PasswordResetService passwordResetService;
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -47,5 +43,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public VerifyTokenResponse verifyToken(VerifyTokenRequest request) {
         return tokenVerificationService.verifyToken(request);
+    }
+
+    @Override
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
+        return passwordResetService.forgotPassword(request);
+    }
+
+    @Override
+    public PasswordResetResponse resetPassword(PasswordResetRequest request) {
+        return passwordResetService.passwordReset(request);
+    }
+
+    @Override
+    public boolean validateResetToken(String token) {
+        return passwordResetService.validateResetToken(token);
     }
 }

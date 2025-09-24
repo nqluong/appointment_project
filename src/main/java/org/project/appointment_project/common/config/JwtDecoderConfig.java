@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.auth.service.TokenStatusChecker;
 import org.project.appointment_project.common.security.jwt.validator.TokenValidator;
+import org.project.appointment_project.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,13 +21,13 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class JwtDecoderConfig {
     @Value("${jwt.signer-key}")
     String signerKey;
 
-    final TokenValidator tokenValidator;
-    final TokenStatusChecker tokenStatusChecker;
+    private final TokenValidator tokenValidator;
+    private final TokenStatusChecker tokenStatusChecker;
+    private final UserRepository userRepository;
 
     @Bean
     public JwtDecoder baseJwtDecoder() {
@@ -40,6 +41,6 @@ public class JwtDecoderConfig {
     @Bean
     @Primary
     public JwtDecoder jwtDecoder() {
-        return new BlacklistAwareJwtDecoder(baseJwtDecoder(), tokenValidator, tokenStatusChecker);
+        return new BlacklistAwareJwtDecoder(baseJwtDecoder(), tokenValidator, tokenStatusChecker,userRepository);
     }
 }

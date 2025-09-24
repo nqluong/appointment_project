@@ -67,6 +67,9 @@ public class User {
     @Column(name = "deleted_by")
     UUID deletedBy;
 
+    @Column(name = "tokens_invalid_before")
+    LocalDateTime tokensInvalidBefore;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<UserRole> userRoles;
 
@@ -81,4 +84,12 @@ public class User {
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<DoctorSchedule> doctorSchedules;
+
+    public void invalidateAllTokens() {
+        this.tokensInvalidBefore = LocalDateTime.now();
+    }
+
+    public boolean areTokensValidAfter(LocalDateTime tokenIssuedAt) {
+        return tokensInvalidBefore == null || tokenIssuedAt.isAfter(tokensInvalidBefore);
+    }
 }
