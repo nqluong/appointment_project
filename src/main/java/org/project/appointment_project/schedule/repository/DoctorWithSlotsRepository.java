@@ -74,6 +74,24 @@ public interface DoctorWithSlotsRepository extends JpaRepository<User, UUID> {
     );
 
     @Query(value = """
+    SELECT 
+        das.id as slotId,
+        das.slot_date as slotDate,
+        das.start_time as startTime,
+        das.end_time as endTime,
+        das.is_available as isAvailable
+    FROM doctor_available_slots das
+    WHERE das.doctor_user_id = :doctorId
+        AND das.slot_date BETWEEN :startDate AND :endDate
+    ORDER BY das.slot_date, das.start_time ASC 
+    """, nativeQuery = true)
+    List<SlotProjection> findAllAvailableSlotsByDoctorId(
+            @Param("doctorId") UUID doctorId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
     SELECT DISTINCT
         u.id as userId,
         up.first_name as firstName,

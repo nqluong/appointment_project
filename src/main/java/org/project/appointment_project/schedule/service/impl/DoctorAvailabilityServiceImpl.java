@@ -96,7 +96,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
         DoctorWithSlotsResponse response = doctorAvailabilityMapper.toBaseDoctorResponse(doctorProjection);
 
         // Lấy tất cả slots có sẵn trong khoảng thời gian
-        List<SlotProjection> slots = repository.findAvailableSlotsByDoctorId(doctorId, startDate, endDate);
+        List<SlotProjection> slots = repository.findAllAvailableSlotsByDoctorId(doctorId, startDate, endDate);
 
         // Chuyển đổi slots thành AvailableSlotInfo
         List<AvailableSlotInfo> slotInfos = slots.stream()

@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
+import org.project.appointment_project.schedule.enums.ValidationType;
 import org.project.appointment_project.schedule.dto.request.BatchSlotStatusRequest;
 import org.project.appointment_project.schedule.dto.response.SlotStatusUpdateResponse;
 import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
@@ -58,46 +59,73 @@ public class SlotStatusServiceImpl implements SlotStatusService {
     @Override
     @Transactional
     public SlotStatusUpdateResponse reserveSlot(UUID slotId) {
-        DoctorAvailableSlot slot = findSlotWithDoctor(slotId);
-        slotStatusValidationService.validateSlotReservation(slotId, slot);
-
-        return updateSlotStatus(slotId, false, "Reserved for appointment booking");
+        return updateSlotStatusWithValidation(slotId, false, "Reserved for appointment booking",
+                ValidationType.RESERVATION);
     }
 
     @Override
     @Transactional
     public SlotStatusUpdateResponse releaseSlot(UUID slotId) {
+        return updateSlotStatusWithValidation(slotId, true, "Released from reservation",
+                ValidationType.RELEASE);
+    }
+
+
+    private SlotStatusUpdateResponse updateSlotStatusWithValidation(UUID slotId, boolean isAvailable,
+                                                                    String reason, ValidationType validationType) {
 
         DoctorAvailableSlot slot = findSlotWithDoctor(slotId);
-        slotStatusValidationService.validateSlotRelease(slotId, slot);
 
-        return updateSlotStatus(slotId, true, "Released from reservation");
+        // Thực hiện validation phù hợp
+        switch (validationType) {
+            case RESERVATION:
+                slotStatusValidationService.validateSlotReservation(slotId, slot);
+                break;
+            case RELEASE:
+                slotStatusValidationService.validateSlotRelease(slotId, slot);
+                break;
+            case UPDATE:
+                slotStatusValidationService.validateSlotAvailabilityUpdate(slotId, slot, isAvailable);
+                break;
+        }
+
+        // Cập nhật và lưu slot
+        return saveAndBuildResponse(slot, isAvailable, reason);
     }
 
     private SlotStatusUpdateResponse updateSlotStatus(UUID slotId, boolean isAvailable, String reason) {
-        DoctorAvailableSlot slot = findSlotWithDoctor(slotId);
+        DoctorAvailableSlot slot = slotStatusValidationService.findAndValidateSlotForUpdate(slotId, isAvailable);
 
-        slotStatusValidationService.validateSlotAvailabilityUpdate(slotId, slot, isAvailable);
+        return saveAndBuildResponse(slot, isAvailable, reason);
 
-        slot.setAvailable(isAvailable);
-        DoctorAvailableSlot updatedSlot = slotStatusRepository.save(slot);
-
-
-        return SlotStatusUpdateResponse.builder()
-                .slotId(updatedSlot.getId())
-                .doctorId(updatedSlot.getDoctor().getId())
-                .slotDate(updatedSlot.getSlotDate())
-                .startTime(updatedSlot.getStartTime())
-                .endTime(updatedSlot.getEndTime())
-                .isAvailable(updatedSlot.isAvailable())
-                .message(reason)
-                .updatedAt(LocalDateTime.now())
-                .build();
     }
 
     private DoctorAvailableSlot findSlotWithDoctor(UUID slotId) {
         return slotStatusRepository.findByIdWithDoctor(slotId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SLOT_NOT_FOUND));
+    }
+
+    private SlotStatusUpdateResponse buildSlotStatusUpdateResponse(DoctorAvailableSlot slot, String message) {
+        return SlotStatusUpdateResponse.builder()
+                .slotId(slot.getId())
+                .doctorId(slot.getDoctor().getId())
+                .slotDate(slot.getSlotDate())
+                .startTime(slot.getStartTime())
+                .endTime(slot.getEndTime())
+                .isAvailable(slot.isAvailable())
+                .message(message)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private SlotStatusUpdateResponse saveAndBuildResponse(DoctorAvailableSlot slot, boolean isAvailable, String reason) {
+        boolean oldStatus = slot.isAvailable();
+        slot.setAvailable(isAvailable);
+
+        log.debug("Slot {} thay đổi trạng thái từ {} sang {}", slot.getId(), oldStatus, isAvailable);
+
+        DoctorAvailableSlot updatedSlot = slotStatusRepository.save(slot);
+        return buildSlotStatusUpdateResponse(updatedSlot, reason);
     }
 
 }

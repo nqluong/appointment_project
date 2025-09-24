@@ -8,6 +8,7 @@ import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.schedule.dto.request.BatchSlotStatusRequest;
 import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
+import org.project.appointment_project.schedule.repository.SlotStatusRepository;
 import org.project.appointment_project.schedule.service.SlotStatusValidationService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -22,11 +23,22 @@ import java.util.UUID;
 @Slf4j
 public class SlotStatusValidationServiceImpl implements SlotStatusValidationService {
 
+    SlotStatusRepository slotStatusRepository;
+
+    // Validate slot cho việc cập nhật trạng thái
+    @Override
+    public DoctorAvailableSlot findAndValidateSlotForUpdate(UUID slotId, boolean newStatus) {
+        DoctorAvailableSlot slot = findSlotWithDoctor(slotId);
+        validateSlotAvailabilityUpdate(slotId, slot, newStatus);
+        return slot;
+    }
+
     @Override
     public void validateSlotAvailabilityUpdate(UUID slotId, DoctorAvailableSlot slot, boolean newStatus) {
-        validateSlotOperation(slotId, slot);
+        // Validate các điều kiện cơ bản của slot
+        validateBasicSlotConditions(slot);
 
-        // Check if status is actually changing
+        // Kiểm tra xem trạng thái có thực sự thay đổi không
         if (slot.isAvailable() == newStatus) {
             if (newStatus) {
                 throw new CustomException(ErrorCode.SLOT_ALREADY_AVAILABLE);
@@ -35,6 +47,7 @@ public class SlotStatusValidationServiceImpl implements SlotStatusValidationServ
             }
         }
     }
+
 
     @Override
     public void validateMultipleSlotStatusUpdate(List<BatchSlotStatusRequest> requests) {
@@ -59,8 +72,7 @@ public class SlotStatusValidationServiceImpl implements SlotStatusValidationServ
 
     @Override
     public void validateSlotReservation(UUID slotId, DoctorAvailableSlot slot) {
-        validateSlotExists(slot, slotId);
-        validateSlotNotInPast(slot);
+        validateBasicSlotConditions(slot);
 
         if (!slot.isAvailable()) {
             throw new CustomException(ErrorCode.SLOT_ALREADY_RESERVED);
@@ -70,16 +82,28 @@ public class SlotStatusValidationServiceImpl implements SlotStatusValidationServ
 
     @Override
     public void validateSlotRelease(UUID slotId, DoctorAvailableSlot slot) {
-        validateSlotExists(slot, slotId);
+        validateSlotExists(slot);
     }
 
     @Override
     public void validateSlotOperation(UUID slotId, DoctorAvailableSlot slot) {
-        validateSlotExists(slot, slotId);
+        validateBasicSlotConditions(slot);
+    }
+
+
+    // Validate các điều kiện cơ bản của slot (tồn tại và không ở quá khứ)
+    private void validateBasicSlotConditions(DoctorAvailableSlot slot) {
+        validateSlotExists(slot);
         validateSlotNotInPast(slot);
     }
 
-    private void validateSlotExists(DoctorAvailableSlot slot, UUID slotId) {
+    private DoctorAvailableSlot findSlotWithDoctor(UUID slotId) {
+        return slotStatusRepository.findByIdWithDoctor(slotId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SLOT_NOT_FOUND));
+    }
+
+    // Kiểm tra slot có tồn tại không
+    private void validateSlotExists(DoctorAvailableSlot slot) {
         if (slot == null) {
             throw new CustomException(ErrorCode.SLOT_NOT_FOUND);
         }
@@ -92,7 +116,5 @@ public class SlotStatusValidationServiceImpl implements SlotStatusValidationServ
             throw new CustomException(ErrorCode.SLOT_IN_PAST);
         }
     }
-
-
 
 }

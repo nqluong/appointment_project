@@ -68,7 +68,7 @@ public class DoctorAvailabilityController {
             @PathVariable UUID doctorId,
             @RequestParam(defaultValue = "#{T(java.time.LocalDate).now()}")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().plusDays(30)}")
+            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().plusDays(7)}")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         DoctorWithSlotsResponse response = doctorAvailabilityService
