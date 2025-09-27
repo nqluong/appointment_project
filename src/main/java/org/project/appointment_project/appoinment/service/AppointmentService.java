@@ -14,4 +14,10 @@ public interface AppointmentService {
 
     PageResponse<AppointmentResponse> getAppointments(UUID userId, Status status, Pageable pageable);
 
+    AppointmentResponse updateAppointmentStatus(UUID appointmentId, Status newStatus);
+
+    AppointmentResponse completeAppointment(UUID appointmentId);
+
+    AppointmentResponse cancelAppointment(UUID appointmentId, String reason);
+
 }

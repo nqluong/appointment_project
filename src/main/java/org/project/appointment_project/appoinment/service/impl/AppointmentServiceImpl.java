@@ -106,6 +106,94 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    @Override
+    @Transactional
+    public AppointmentResponse updateAppointmentStatus(UUID appointmentId, Status newStatus) {
+        try {
+            // Lấy appointment với lock
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+
+            validateStatusTransition(appointment.getStatus(), newStatus);
+
+            // Cập nhật status
+            appointment.setStatus(newStatus);
+            appointment = appointmentRepository.save(appointment);
+
+            handleStatusSideEffects(appointment, newStatus);
+
+            log.info("Successfully updated appointment {} status to {}", appointmentId, newStatus);
+            return appointmentMapper.toResponse(appointment);
+
+        } catch (CustomException e) {
+            log.error("Failed to update appointment status: {} - {}", e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while updating appointment status", e);
+            throw new CustomException(ErrorCode.APPOINTMENT_STATUS_UPDATE_FAILED);
+        }
+    }
+
+    @Transactional
+    @Override
+    public AppointmentResponse completeAppointment(UUID appointmentId) {
+        try {
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+
+            // Validate có thể complete không
+            validateAppointmentCanBeCompleted(appointment);
+
+            // Cập nhật status thành COMPLETED
+            appointment.setStatus(Status.COMPLETED);
+            appointment = appointmentRepository.save(appointment);
+
+
+            log.info("Successfully completed appointment {}", appointmentId);
+            return appointmentMapper.toResponse(appointment);
+
+        } catch (CustomException e) {
+            log.error("Failed to complete appointment: {} - {}", e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while completing appointment", e);
+            throw new CustomException(ErrorCode.APPOINTMENT_COMPLETION_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AppointmentResponse cancelAppointment(UUID appointmentId, String reason) {
+        try {
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+
+            // Validate có thể cancel không
+            validateAppointmentCanBeCancelled(appointment);
+
+            appointment.setStatus(Status.CANCELLED);
+            if (reason != null && !reason.trim().isEmpty()) {
+                String currentNotes = appointment.getNotes();
+                String cancelReason = "CANCELLED: " + reason.trim();
+                appointment.setNotes(currentNotes == null ? cancelReason : currentNotes + " | " + cancelReason);
+            }
+
+            appointment = appointmentRepository.save(appointment);
+
+            // Giải phóng slot để có thể book lại
+            if (appointment.getSlot() != null) {
+                slotStatusService.releaseSlot(appointment.getSlot().getId());
+            }
+
+            log.info("Successfully cancelled appointment {}", appointmentId);
+            return appointmentMapper.toResponse(appointment);
+
+        } catch (CustomException e) {
+            log.error("Failed to cancel appointment: {} - {}", e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while cancelling appointment", e);
+            throw new CustomException(ErrorCode.APPOINTMENT_CANCELLATION_FAILED);
+        }
+    }
+
     //Lấy và lock slot để tránh concurrent access
     private DoctorAvailableSlot getAndLockSlot(UUID slotId) {
         return slotRepository.findByIdWithLock(slotId)
@@ -133,11 +221,71 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .build();
     }
 
+    private Appointment getAppointmentWithLock(UUID appointmentId) {
+        return appointmentRepository.findByIdWithLock(appointmentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPOINTMENT_NOT_FOUND));
+    }
 
-    //Cập nhật trạng thái slot
-    private void updateSlotStatus(DoctorAvailableSlot slot, boolean isAvailable) {
-        slot.setAvailable(isAvailable);
-        slotRepository.save(slot);
+    private void validateStatusTransition(Status currentStatus, Status newStatus) {
+        if (currentStatus == newStatus) {
+            throw new CustomException(ErrorCode.APPOINTMENT_STATUS_ALREADY_SET);
+        }
+
+        boolean isValidTransition = switch (currentStatus) {
+            case PENDING -> newStatus == Status.CONFIRMED || newStatus == Status.CANCELLED;
+            case CONFIRMED -> newStatus == Status.COMPLETED || newStatus == Status.CANCELLED;
+            case COMPLETED -> false;
+            case CANCELLED -> false;
+            default -> false;
+        };
+
+        if (!isValidTransition) {
+            log.warn("Invalid status transition from {} to {}", currentStatus, newStatus);
+            throw new CustomException(ErrorCode.INVALID_STATUS_TRANSITION);
+        }
+    }
+
+    private void validateAppointmentCanBeCompleted(Appointment appointment) {
+        // Chỉ appointment CONFIRMED mới có thể complete
+        if (appointment.getStatus() != Status.CONFIRMED) {
+            throw new CustomException(ErrorCode.APPOINTMENT_NOT_CONFIRMED);
+        }
+
+        // - Kiểm tra appointment date đã qua chưa
+
+        if (appointment.getDoctorNotes() == null || appointment.getDoctorNotes().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.DOCTOR_NOTES_REQUIRED);
+        }
+    }
+
+    private void validateAppointmentCanBeCancelled(Appointment appointment) {
+        if (appointment.getStatus() == Status.COMPLETED) {
+            throw new CustomException(ErrorCode.APPOINTMENT_ALREADY_COMPLETED);
+        }
+
+        if (appointment.getStatus() == Status.CANCELLED) {
+            throw new CustomException(ErrorCode.APPOINTMENT_ALREADY_CANCELLED);
+        }
+    }
+
+    private void handleStatusSideEffects(Appointment appointment, Status newStatus) {
+        switch (newStatus) {
+            case CONFIRMED -> {
+                log.debug("Appointment {} confirmed, sending notifications", appointment.getId());
+            }
+            case COMPLETED -> {
+                log.debug("Appointment {} completed, slot released", appointment.getId());
+            }
+            case CANCELLED -> {
+                if (appointment.getSlot() != null) {
+                    slotStatusService.releaseSlot(appointment.getSlot().getId());
+                }
+                log.debug("Appointment {} cancelled, slot released", appointment.getId());
+            }
+            default -> {
+                // No side effects for other statuses
+            }
+        }
     }
 
     private void validateUserExists(UUID userId) {

@@ -75,7 +75,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
                 .anyMatch(entry -> existingDaysOfWeek.contains(entry.getDayOfWeek()));
 
         if (hasConflict) {
-            log.warn("Doctor {} already has schedule(s) for requested day(s)", doctor.getId());
+            log.warn("Bác sĩ {} đã có lịch làm việc cho (các) ngày yêu cầu", doctor.getId());
             throw new CustomException(ErrorCode.SCHEDULE_ALREADY_EXISTS);
         }
 
@@ -88,7 +88,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
 
         List<DoctorSchedule> savedSchedules = doctorScheduleRepository.saveAll(schedules);
 
-        log.info("Successfully created {} schedule entries for doctor: {}",
+        log.info("Đã tạo thành công {} lịch làm việc cho bác sĩ: {}",
                 savedSchedules.size(), doctor.getId());
 
         return doctorScheduleMapper.toDoctorScheduleResponse(doctor, savedSchedules);
@@ -101,7 +101,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         List<DoctorSchedule> schedules = doctorScheduleRepository.findByDoctorIdAndIsActiveTrue(doctorId);
 
         if (schedules.isEmpty()) {
-            log.warn("No active schedule found for doctor: {}", doctorId);
+            log.warn("Không tìm thấy lịch làm việc đang hoạt động nào cho bác sĩ: {}", doctorId);
             throw new CustomException(ErrorCode.SCHEDULE_NOT_FOUND);
         }
 
@@ -152,7 +152,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
                 savedSchedules.stream().filter(DoctorSchedule::isActive)
         ).collect(Collectors.toList());
 
-        log.info("Successfully updated schedule for doctor: {}", doctorId);
+        log.info("Đã cập nhật thành công lịch làm việc cho bác sĩ: {}", doctorId);
 
         return doctorScheduleMapper.toDoctorScheduleResponse(doctor, activeSchedules);
     }
@@ -166,11 +166,11 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         int deactivatedCount = doctorScheduleRepository.deactivateSchedulesByDoctorId(doctorId);
 
         if (deactivatedCount == 0) {
-            log.warn("No schedule found to delete for doctor: {}", doctorId);
+            log.warn("Không tìm thấy lịch làm việc nào để xóa cho bác sĩ: {}", doctorId);
             throw new CustomException(ErrorCode.SCHEDULE_NOT_FOUND);
         }
 
-        log.info("Successfully deactivated {} schedule entries for doctor: {}", deactivatedCount, doctorId);
+        log.info("Đã vô hiệu hóa thành công {} lịch làm việc của bác sĩ: {}", deactivatedCount, doctorId);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
             return doctorSearchMapper.toDoctorSearchResponse(doctor, schedules);
         });
 
-        log.debug("Found {} doctors matching search criteria", response.getTotalElements());
+        log.debug("Tìm thấy {} bác sĩ phù hợp với tiêu chí tìm kiếm", response.getTotalElements());
 
         return response;
     }

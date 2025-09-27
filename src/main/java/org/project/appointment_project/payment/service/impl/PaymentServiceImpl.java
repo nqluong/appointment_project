@@ -1,9 +1,12 @@
 package org.project.appointment_project.payment.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.appoinment.repository.AppointmentRepository;
@@ -21,23 +24,34 @@ import org.project.appointment_project.payment.enums.PaymentStatus;
 import org.project.appointment_project.payment.enums.PaymentType;
 import org.project.appointment_project.payment.gateway.PaymentGateway;
 import org.project.appointment_project.payment.gateway.PaymentGatewayFactory;
-import org.project.appointment_project.payment.gateway.dto.*;
+import org.project.appointment_project.payment.gateway.dto.PaymentGatewayRequest;
+import org.project.appointment_project.payment.gateway.dto.PaymentGatewayResponse;
+import org.project.appointment_project.payment.gateway.dto.PaymentRefundResult;
+import org.project.appointment_project.payment.gateway.dto.PaymentVerificationResult;
+import org.project.appointment_project.payment.gateway.dto.RefundRequest;
 import org.project.appointment_project.payment.gateway.vnpay.config.VNPayConfig;
 import org.project.appointment_project.payment.mapper.PaymentMapper;
 import org.project.appointment_project.payment.model.Payment;
 import org.project.appointment_project.payment.repository.PaymentRepository;
-import org.project.appointment_project.payment.service.*;
+import org.project.appointment_project.payment.service.AppointmentExpirationService;
+import org.project.appointment_project.payment.service.OrderInfoBuilder;
+import org.project.appointment_project.payment.service.PaymentAmountCalculator;
+import org.project.appointment_project.payment.service.PaymentQueryService;
+import org.project.appointment_project.payment.service.PaymentResolutionService;
+import org.project.appointment_project.payment.service.PaymentService;
+import org.project.appointment_project.payment.service.PaymentStatusHandler;
+import org.project.appointment_project.payment.service.PaymentValidationService;
+import org.project.appointment_project.payment.service.RefundPolicyService;
+import org.project.appointment_project.payment.service.TransactionIdGenerator;
 import org.project.appointment_project.payment.util.PaymentRefundUtil;
 import org.project.appointment_project.schedule.service.SlotStatusService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -109,7 +123,7 @@ public class PaymentServiceImpl implements PaymentService {
             notificationService.sendPaymentSuccessNotification(updatedPayment);
         }
 
-        log.info("Payment callback processed for ID: {}, Status: {}",
+        log.info("Đã xử lý phản hồi thanh toán cho ID: {}, Trạng thái: {}",
                 payment.getId(), payment.getPaymentStatus());
 
         return paymentMapper.toResponse(updatedPayment);
@@ -154,7 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentStatus(PaymentStatus.CANCELLED);
         Payment updatedPayment = paymentRepository.save(payment);
 
-        log.info("Payment cancelled: {}", paymentId);
+        log.info("Đã hủy thanh toán: {}", paymentId);
 
         return paymentMapper.toResponse(updatedPayment);
     }
@@ -346,7 +360,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (appointment.getStatus() != Status.CANCELLED) {
                 appointment.setStatus(Status.CANCELLED);
                 appointmentRepository.save(appointment);
-                log.info("Updated appointment status to CANCELLED for appointment ID: {}",
+                log.info("Đã cập nhật trạng thái lịch hẹn thành ĐÃ HỦY cho lịch hẹn có ID: {}",
                         appointment.getId());
             }
 
@@ -354,16 +368,16 @@ public class PaymentServiceImpl implements PaymentService {
             if (appointment.getSlot() != null) {
                 try {
                     slotStatusService.releaseSlot(appointment.getSlot().getId());
-                    log.info("Successfully released slot ID: {} after refund for appointment ID: {}",
+                    log.info("Đã giải phóng thành công khung giờ ID: {} sau khi hoàn tiền cho lịch hẹn ID: {}",
                             appointment.getSlot().getId(), appointment.getId());
                 } catch (Exception e) {
-                    log.error("Failed to release slot ID: {} after refund for appointment ID: {}. Error: {}",
+                    log.error("Không thể giải phóng khung giờ ID: {} sau khi hoàn tiền cho lịch hẹn ID: {}. Lỗi: {}",
                             appointment.getSlot().getId(), appointment.getId(), e.getMessage());
                 }
             }
 
         } catch (Exception e) {
-            log.error("Error handling appointment and slot after refund for payment ID: {}. Error: {}",
+            log.error("Lỗi xử lý lịch hẹn và khung giờ sau khi hoàn tiền cho thanh toán ID: {}. Lỗi: {}",
                     payment.getId(), e.getMessage());
         }
     }
@@ -444,8 +458,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void logPaymentCreation(CreatePaymentRequest request, Payment savedPayment) {
         String logMessage = request.getPaymentType() == PaymentType.DEPOSIT
-                ? "Created deposit payment {} for appointment {}"
-                : "Created full payment {} for appointment {}";
+                ? "Đã tạo thanh toán đặt cọc {} cho lịch hẹn {}"
+                : "Đã tạo thanh toán toàn bộ {} cho lịch hẹn {}";
         log.info(logMessage, savedPayment.getId(), request.getAppointmentId());
     }
 }

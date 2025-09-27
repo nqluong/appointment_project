@@ -108,6 +108,19 @@ public enum ErrorCode {
     APPOINTMENT_NOT_PAYABLE(8014, "Lịch hẹn không ở trạng thái có thể thanh toán", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_FOUND(8015, "Không tìm thấy lịch hẹn", HttpStatus.NOT_FOUND),
     DOCTOR_UNAUTHORIZED(8016, "Không có quyền quản lý lịch nghỉ của bác sĩ này", HttpStatus.UNAUTHORIZED),
+    APPOINTMENT_STATUS_UPDATE_FAILED(8017, "Cập nhật trạng thái lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_COMPLETION_FAILED(8018, "Hoàn tất lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_CANCELLATION_FAILED(8019, "Hủy lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_CONFIRMATION_FAILED(8020, "Xác nhận lịch hẹn thất bại", HttpStatus.BAD_REQUEST),
+
+    // Lỗi kiểm tra trạng thái
+    INVALID_STATUS_TRANSITION(8021, "Chuyển đổi trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_STATUS_ALREADY_SET(8022, "Trạng thái lịch hẹn đã được đặt thành giá trị này", HttpStatus.CONFLICT),
+    APPOINTMENT_NOT_CONFIRMED(8023, "Lịch hẹn phải được xác nhận trước khi hoàn tất", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_ALREADY_COMPLETED(8024, "Lịch hẹn đã được hoàn tất", HttpStatus.CONFLICT),
+    APPOINTMENT_ALREADY_CANCELLED(8025, "Lịch hẹn đã bị hủy", HttpStatus.CONFLICT),
+    DOCTOR_NOTES_REQUIRED(8026, "Cần có ghi chú của bác sĩ để hoàn tất lịch hẹn", HttpStatus.BAD_REQUEST),
+
 
     // Lỗi thanh toán
     PAYMENT_NOT_FOUND(9001, "Không tìm thấy thông tin thanh toán", HttpStatus.NOT_FOUND),
@@ -156,6 +169,24 @@ public enum ErrorCode {
     INVALID_DATE_FORMAT(1303, "Định dạng ngày không hợp lệ", HttpStatus.BAD_REQUEST),
     INVALID_TIME_FORMAT(1304, "Định dạng thời gian không hợp lệ", HttpStatus.BAD_REQUEST),
     FIELD_TOO_LONG(1305, "Trường thông tin vượt quá độ dài tối đa", HttpStatus.BAD_REQUEST),
+
+    MEDICAL_RECORD_NOT_FOUND(1401, "Không tìm thấy hồ sơ y tế", HttpStatus.NOT_FOUND),
+    MEDICAL_RECORD_ALREADY_EXISTS(1402, "Hồ sơ y tế đã tồn tại cho cuộc hẹn này", HttpStatus.CONFLICT),
+    MEDICAL_RECORD_CREATION_FAILED(1403, "Tạo hồ sơ y tế thất bại", HttpStatus.BAD_REQUEST),
+    MEDICAL_RECORD_UPDATE_FAILED(1404, "Cập nhật hồ sơ y tế thất bại", HttpStatus.BAD_REQUEST),
+    MEDICAL_RECORD_FETCH_FAILED(1405, "Lấy dữ liệu hồ sơ y tế thất bại", HttpStatus.BAD_REQUEST),
+    MEDICAL_RECORD_SEARCH_FAILED(1406, "Tìm kiếm hồ sơ y tế thất bại", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED_MEDICAL_RECORD_ACCESS(1407, "Truy cập hồ sơ y tế không được phép", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_MEDICAL_RECORD_UPDATE(1408, "Không có quyền cập nhật hồ sơ y tế", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_PATIENT_RECORD_ACCESS(1409, "Không có quyền truy cập hồ sơ bệnh nhân", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_DOCTOR_RECORD_ACCESS(1410, "Không có quyền truy cập hồ sơ bác sĩ", HttpStatus.FORBIDDEN),
+    INVALID_APPOINTMENT_STATUS_FOR_MEDICAL_RECORD(1411, "Trạng thái cuộc hẹn không hợp lệ để tạo hồ sơ y tế", HttpStatus.BAD_REQUEST),
+    DOCTOR_PERMISSION_REQUIRED(1412, "Yêu cầu quyền bác sĩ", HttpStatus.FORBIDDEN),
+    ADMIN_PERMISSION_REQUIRED(1413, "Yêu cầu quyền quản trị viên", HttpStatus.FORBIDDEN),
+    APPOINTMENT_MUST_BE_IN_PROGRESS_OR_COMPLETED(1414, "Cuộc hẹn phải đang diễn ra hoặc đã hoàn thành mới được tạo hồ sơ y tế", HttpStatus.BAD_REQUEST),
+    MEDICAL_RECORD_CANNOT_BE_DELETED(1415, "Hồ sơ y tế không thể bị xóa", HttpStatus.BAD_REQUEST),
+    INVALID_MEDICAL_RECORD_DATA(1416, "Dữ liệu hồ sơ y tế không hợp lệ", HttpStatus.BAD_REQUEST)
+
     ;
 
     private final int code;

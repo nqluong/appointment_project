@@ -35,6 +35,7 @@ public class PaymentSchedulerService {
     }
 
     @Scheduled(fixedRate = PENDING_PAYMENT_INTERVAL) // 10 minutes
+    @Async
     public void processPendingPayments() {
         String taskName = "processPendingPayments";
 

@@ -67,7 +67,6 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
 
     /**
      - Tạo lịch nghỉ mới cho bác sĩ
-     - Tạo và lưu lịch nghỉ mới
      - Xử lý các lịch hẹn bị ảnh hưởng
      */
     @Override
@@ -80,7 +79,6 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
             throw new CustomException(ErrorCode.ABSENCE_CONFLICT);
         }
 
-        // Tạo và lưu lịch nghỉ mới
         DoctorAbsence absence = doctorAbsenceMapper.toEntity(request);
         DoctorAbsence savedAbsence = doctorAbsenceRepository.save(absence);
 
@@ -175,7 +173,7 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
         }
 
         try {
-            //Tìm và xử lý các appointments bị ảnh hưởng
+            //Tìm các appointments bị ảnh hưởng
             List<Appointment> affectedAppointments = findAffectedAppointments(absence);
 
             if (!affectedAppointments.isEmpty()) {
@@ -311,7 +309,6 @@ public class DoctorAbsenceServiceImpl implements DoctorAbsenceService {
     /**
      - Xử lý lịch hẹn bị ảnh hưởng bởi lịch nghỉ của bác sĩ
      - Hủy lịch hẹn
-     - Khóa slot
      - Hoàn tiền cho các thanh toán qua VNPAY
      */
     private void processAffectedAppointment(Appointment appointment, String reason) {

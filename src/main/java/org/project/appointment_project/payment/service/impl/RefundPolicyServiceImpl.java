@@ -1,7 +1,11 @@
 package org.project.appointment_project.payment.service.impl;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.payment.dto.request.PaymentRefundRequest;
@@ -10,11 +14,8 @@ import org.project.appointment_project.payment.model.Payment;
 import org.project.appointment_project.payment.service.RefundPolicyService;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,7 +28,7 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
     @Override
     public BigDecimal calculateRefundAmount(Payment payment, PaymentRefundRequest request) {
         if (payment == null || request == null) {
-            throw new IllegalArgumentException("Payment and refund request cannot be null");
+            throw new IllegalArgumentException("Thông tin thanh toán và yêu cầu hoàn tiền không được để trống");
         }
 
         RefundType refundType = request.getRefundType() != null ? request.getRefundType() : RefundType.POLICY_BASED;
@@ -47,7 +48,7 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
         BigDecimal customAmount = request.getCustomRefundAmount();
         if (customAmount == null) {
             throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,
-                    "Custom refund amount is required for CUSTOM_AMOUNT type");
+                    "Cần phải nhập số tiền hoàn trả cho loại hoàn tiền tùy chỉnh");
         }
 
         validateCustomRefundAmount(payment.getAmount(), customAmount);
@@ -57,12 +58,12 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
     private void validateCustomRefundAmount(BigDecimal originalAmount, BigDecimal customAmount) {
         if (customAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,
-                    "Custom refund amount must be greater than 0");
+                    "Số tiền hoàn trả phải lớn hơn 0");
         }
 
         if (customAmount.compareTo(originalAmount) > 0) {
             throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,
-                    "Custom refund amount cannot exceed original payment amount");
+                    "Số tiền hoàn trả không thể vượt quá số tiền thanh toán ban đầu");
         }
     }
 
@@ -71,7 +72,7 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
         LocalDate appointmentDate = payment.getAppointment().getAppointmentDate();
 
         if (appointmentDate == null) {
-            throw new IllegalArgumentException("Appointment date cannot be null");
+            throw new IllegalArgumentException("Ngày hẹn không được để trống");
         }
 
         BigDecimal refundPercentage = calculateRefundPercentage(appointmentDate, cancellationTime);
@@ -81,7 +82,7 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
 
         if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorCode.INVALID_REFUND_AMOUNT,
-                    "Calculated refund amount must be greater than 0");
+                    "Số tiền hoàn trả tính toán phải lớn hơn 0");
         }
 
         return refundAmount;
@@ -90,7 +91,7 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
     @Override
     public BigDecimal calculateRefundPercentage(LocalDate appointmentDate, LocalDateTime cancellationDateTime) {
         if (appointmentDate == null || cancellationDateTime == null) {
-            throw new IllegalArgumentException("Appointment and cancellation dates cannot be null");
+            throw new IllegalArgumentException("Ngày hẹn và ngày hủy không được để trống");
         }
 
         long daysUntilAppointment = ChronoUnit.DAYS.between(cancellationDateTime.toLocalDate(), appointmentDate);

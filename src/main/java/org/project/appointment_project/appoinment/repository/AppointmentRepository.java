@@ -1,10 +1,12 @@
 package org.project.appointment_project.appoinment.repository;
 
+import jakarta.persistence.LockModeType;
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.model.Appointment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -110,5 +113,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime,
             @Param("statuses") List<Status> statuses
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Appointment a WHERE a.id = :appointmentId")
+    Optional<Appointment> findByIdWithLock(@Param("appointmentId") UUID appointmentId);
+
+    @Query("SELECT a FROM Appointment a WHERE a.status = :status AND a.appointmentDate < :date")
+    List<Appointment> findAppointmentsToAutoComplete(
+            @Param("status") Status status,
+            @Param("date") LocalDate date
     );
 }

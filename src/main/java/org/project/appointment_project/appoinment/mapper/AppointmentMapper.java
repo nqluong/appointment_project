@@ -29,9 +29,11 @@ public interface AppointmentMapper {
         String firstName = user.getUserProfile().getFirstName();
         String lastName = user.getUserProfile().getLastName();
 
-        return String.format("%s %s",
-                firstName != null ? firstName : "",
-                lastName != null ? lastName : "").trim();
+        if (firstName != null && lastName != null) {
+            String cleanedLastName = lastName.replace("BS.", "").trim();
+            return "BS. " + firstName + " " + cleanedLastName;
+        }
+        return "BS. " + user.getUsername();
     }
 
     @Named("getSpecialtyName")

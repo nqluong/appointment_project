@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.appoinment.repository.AppointmentRepository;
+import org.project.appointment_project.payment.dto.response.ExpirationDecision;
+import org.project.appointment_project.payment.dto.response.ExpirationResult;
+import org.project.appointment_project.payment.enums.ExpirationAction;
 import org.project.appointment_project.payment.enums.PaymentStatus;
 import org.project.appointment_project.payment.model.Payment;
 import org.project.appointment_project.payment.repository.PaymentRepository;
@@ -16,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +31,13 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AppointmentExpirationServiceImpl implements AppointmentExpirationService {
 
-    static final int EXPIRATION_MINUTES = 15;
+    private static final int EXPIRATION_MINUTES = 15;
+    private static final int PAYMENT_GRACE_PERIOD_MINUTES = 30;
+    private static final List<PaymentStatus> CANCELLABLE_PAYMENT_STATUSES =
+            List.of(PaymentStatus.PENDING);
+    private static final List<PaymentStatus> PROCESSING_PAYMENT_STATUSES =
+            List.of(PaymentStatus.PROCESSING);
+    private static final String CANCELLATION_NOTE = "Hủy do appointment hết hạn";
 
     AppointmentRepository appointmentRepository;
     PaymentRepository paymentRepository;
@@ -59,8 +68,25 @@ public class AppointmentExpirationServiceImpl implements AppointmentExpirationSe
                 return;
             }
 
-            executeExpirationProcess(appointment);
-            log.info("Đã xử lý thành công appointment hết hạn: {}", appointmentId);
+            ExpirationDecision decision = determineExpirationAction(appointment);
+
+            switch (decision.getAction()) {
+                case CANCEL_IMMEDIATELY:
+                    executeExpirationProcess(appointment);
+                    log.info("Đã xử lý thành công appointment hết hạn: {}", appointmentId);
+                    break;
+
+                case DEFER:
+                    log.info("Appointment {} có payment PROCESSING, tạm hoãn hủy trong grace period (còn {} phút)",
+                            appointmentId, decision.getRemainingGraceMinutes());
+                    break;
+
+                case FORCE_CANCEL:
+                    log.warn("Appointment {} có payment PROCESSING nhưng đã quá grace period. Buộc phải hủy",
+                            appointmentId);
+                    executeExpirationProcess(appointment);
+                    break;
+            }
 
         } catch (Exception e) {
             log.error("Lỗi khi xử lý appointment hết hạn {}: {}", appointmentId, e.getMessage(), e);
@@ -68,20 +94,53 @@ public class AppointmentExpirationServiceImpl implements AppointmentExpirationSe
         }
     }
 
-    // Tìm các appointment đã hết hạn dựa trên thời gian
     private List<Appointment> findExpiredAppointments(LocalDateTime expirationThreshold) {
-        return appointmentRepository.findExpiredPendingAppointments(expirationThreshold);
+        List<Appointment> expiredAppointments = appointmentRepository
+                .findExpiredPendingAppointments(expirationThreshold);
+
+        return expiredAppointments.stream()
+                .filter(this::shouldProcessImmediately)
+                .toList();
+    }
+
+    private ExpirationDecision determineExpirationAction(Appointment appointment) {
+        List<Payment> processingPayments = findProcessingPayments(appointment.getId());
+
+        if (processingPayments.isEmpty()) {
+            return ExpirationDecision.cancelImmediately();
+        }
+
+        LocalDateTime gracePeriodExpiry = calculateGracePeriodExpiry(appointment);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(gracePeriodExpiry)) {
+            return ExpirationDecision.forceCancel();
+        } else {
+            long remainingMinutes = Duration.between(now, gracePeriodExpiry).toMinutes();
+            return ExpirationDecision.defer(remainingMinutes);
+        }
+    }
+
+    private boolean shouldProcessImmediately(Appointment appointment) {
+        return determineExpirationAction(appointment).getAction() != ExpirationAction.DEFER;
+    }
+
+    private List<Payment> findProcessingPayments(UUID appointmentId) {
+        return paymentRepository.findValidPaymentsByAppointmentIdAndStatus(
+                appointmentId, PROCESSING_PAYMENT_STATUSES);
+    }
+
+    private LocalDateTime calculateGracePeriodExpiry(Appointment appointment) {
+        return appointment.getCreatedAt()
+                .plusMinutes(EXPIRATION_MINUTES + PAYMENT_GRACE_PERIOD_MINUTES);
     }
 
     private Appointment findAppointmentById(UUID appointmentId) {
-        return appointmentRepository.findById(appointmentId).orElse(null);
+        return appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found: " + appointmentId));
     }
 
     private boolean isEligibleForExpiration(Appointment appointment) {
-        if (appointment == null) {
-            return false;
-        }
-
         if (appointment.getStatus() != Status.PENDING) {
             return false;
         }
@@ -90,44 +149,51 @@ public class AppointmentExpirationServiceImpl implements AppointmentExpirationSe
                 .isBefore(LocalDateTime.now().minusMinutes(EXPIRATION_MINUTES));
     }
 
-    // Hủy appointment, hủy payment, giải phóng slot
     private void executeExpirationProcess(Appointment appointment) {
-        cancelAppointment(appointment);
-        cancelAssociatedPayments(appointment.getId());
-        releaseAssociatedSlot(appointment);
+        ExpirationResult result = new ExpirationResult();
+
+        try {
+            cancelAppointment(appointment);
+            result.setAppointmentCancelled(true);
+
+            int cancelledPayments = cancelAssociatedPayments(appointment.getId());
+            result.setPaymentsCancelled(cancelledPayments);
+
+            releaseAssociatedSlot(appointment);
+            result.setSlotReleased(true);
+
+            log.info("Expiration process completed for appointment {}: {}",
+                    appointment.getId(), result);
+
+        } catch (Exception e) {
+            log.error("Partial failure in expiration process for appointment {}: {}",
+                    appointment.getId(), result, e);
+            throw e;
+        }
     }
 
-    // Hủy appointment
     private void cancelAppointment(Appointment appointment) {
         appointment.setStatus(Status.CANCELLED);
         appointmentRepository.save(appointment);
         log.debug("Đã hủy appointment: {}", appointment.getId());
     }
 
-    // Hủy những payment ở pending và processing
-    private void cancelAssociatedPayments(UUID appointmentId) {
-        List<PaymentStatus> cancellableStatuses = Arrays.asList(
-                PaymentStatus.PENDING,
-                PaymentStatus.PROCESSING
-        );
-
+    private int cancelAssociatedPayments(UUID appointmentId) {
         List<Payment> paymentsToCancel = paymentRepository
-                .findValidPaymentsByAppointmentIdAndStatus(appointmentId, cancellableStatuses);
+                .findValidPaymentsByAppointmentIdAndStatus(appointmentId, CANCELLABLE_PAYMENT_STATUSES);
 
         paymentsToCancel.forEach(this::cancelPayment);
 
-        log.debug("Đã hủy {} payment cho appointment: {}",
-                paymentsToCancel.size(), appointmentId);
+        log.debug("Đã hủy {} payment cho appointment: {}", paymentsToCancel.size(), appointmentId);
+        return paymentsToCancel.size();
     }
 
-    // Hủy appointment cụ thể
     private void cancelPayment(Payment payment) {
         payment.setPaymentStatus(PaymentStatus.CANCELLED);
-        payment.setNotes("Hủy do appointment hết hạn");
+        payment.setNotes(CANCELLATION_NOTE);
         paymentRepository.save(payment);
     }
 
-    //Giải phóng các slot liên quan tới appointment
     private void releaseAssociatedSlot(Appointment appointment) {
         if (appointment.getSlot() != null) {
             try {
@@ -136,6 +202,7 @@ public class AppointmentExpirationServiceImpl implements AppointmentExpirationSe
             } catch (Exception e) {
                 log.warn("Không thể giải phóng slot {}: {}",
                         appointment.getSlot().getId(), e.getMessage());
+                // Không throw exception để không làm fail toàn bộ process
             }
         }
     }
@@ -153,22 +220,4 @@ public class AppointmentExpirationServiceImpl implements AppointmentExpirationSe
         appointmentRepository.save(appointment);
     }
 
-    private void cancelRelatedPayments(UUID appointmentId) {
-        List<Payment> pendingPayments = paymentRepository
-                .findValidPaymentsByAppointmentIdAndStatus(
-                        appointmentId,
-                        Arrays.asList(PaymentStatus.PENDING, PaymentStatus.PROCESSING));
-
-        for (Payment payment : pendingPayments) {
-            payment.setPaymentStatus(PaymentStatus.CANCELLED);
-            payment.setNotes("Cancelled due to expired appointment");
-            paymentRepository.save(payment);
-        }
-    }
-
-    private void releaseSlot(Appointment appointment) {
-        if (appointment.getSlot() != null) {
-            slotStatusService.releaseSlot(appointment.getSlot().getId());
-        }
-    }
 }

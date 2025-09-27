@@ -1,21 +1,29 @@
 package org.project.appointment_project.common.util;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.security.jwt.converter.CustomJwtAuthenticationToken;
 import org.project.appointment_project.common.security.jwt.principal.JwtUserPrincipal;
+import org.project.appointment_project.user.model.User;
+import org.project.appointment_project.user.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityUtils {
+
+    private final UserRepository userRepository;
 
     public void validateUserAccess(UUID targetUserId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -131,5 +139,27 @@ public class SecurityUtils {
         log.error("Cannot get JwtUserPrincipal from authentication type: {}",
                 authentication != null ? authentication.getClass().getSimpleName() : "null");
         throw new CustomException(ErrorCode.UNAUTHORIZED);
+    }
+
+    public User getCurrentUser() {
+        UUID currentUserId = getCurrentUserId();
+        return userRepository.findById(currentUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public List<String> getCurrentUserRoles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.debug("No authenticated user found when getting roles");
+            return List.of();
+        }
+
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .collect(Collectors.toList());
+
+        log.debug("Current user roles: {}", roles);
+        return roles;
     }
 }

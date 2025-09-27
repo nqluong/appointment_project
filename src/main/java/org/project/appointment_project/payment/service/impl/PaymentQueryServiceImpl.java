@@ -1,9 +1,10 @@
 package org.project.appointment_project.payment.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.payment.config.PaymentQueryConfig;
@@ -20,10 +21,10 @@ import org.project.appointment_project.payment.service.PaymentStatusHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         if (!isPaymentSafeToQuery(payment)) {
-            log.warn("Payment {} is too old to query safely, created at: {}",
+            log.warn("Giao dịch {} đã quá cũ để truy vấn an toàn, được tạo lúc: {}",
                     paymentId, payment.getCreatedAt());
             return paymentMapper.toResponse(payment);
         }
@@ -62,7 +63,7 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
             );
             return processQueryResult(payment, queryResult);
         } catch (Exception e) {
-            log.error("Error querying payment status for payment: {}", paymentId, e);
+            log.error("Lỗi khi truy vấn trạng thái giao dịch: {}", paymentId, e);
             throw new CustomException(ErrorCode.PAYMENT_QUERY_FAILED);
         }
     }
@@ -77,7 +78,7 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
     @Override
     public void processProcessingPayments() {
         if (!paymentQueryConfig.isQueryEnabled()) {
-            log.info("Payment query is disabled, skipping pending payments processing");
+            log.info("Truy vấn giao dịch đã bị vô hiệu hóa, bỏ qua xử lý các giao dịch đang chờ");
             return;
         }
 
@@ -120,12 +121,12 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
                 Thread.sleep(1000);
 
             } catch (Exception e) {
-                log.error("Error processing pending payment: {}", payment.getTransactionId(), e);
+                log.error("Lỗi khi xử lý giao dịch đang chờ: {}", payment.getTransactionId(), e);
                 errorCount++;
             }
         }
 
-        log.info("Completed processing pending payments. Processed: {}, Errors: {}, Total found: {}",
+        log.info("Đã hoàn thành xử lý các giao dịch đang chờ. Đã xử lý: {}, Lỗi: {}, Tổng số: {}",
                 processedCount, errorCount, payments.size());
     }
 
@@ -153,7 +154,7 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
 
     private PaymentResponse processQueryResult(Payment payment, PaymentQueryResult queryResult) {
         if (!queryResult.isSuccess()) {
-            log.warn("Payment query failed for transaction: {}, message: {}",
+            log.warn("Truy vấn giao dịch thất bại cho mã giao dịch: {}, thông báo: {}",
                     payment.getTransactionId(), queryResult.getMessage());
             return paymentMapper.toResponse(payment);
         }

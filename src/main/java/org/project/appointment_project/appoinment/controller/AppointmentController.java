@@ -5,7 +5,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project.appointment_project.appoinment.dto.request.CancelAppointmentRequest;
 import org.project.appointment_project.appoinment.dto.request.CreateAppointmentRequest;
+import org.project.appointment_project.appoinment.dto.request.UpdateAppointmentStatusRequest;
 import org.project.appointment_project.appoinment.dto.response.AppointmentResponse;
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.service.AppointmentService;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -51,6 +54,51 @@ public class AppointmentController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         PageResponse<AppointmentResponse> response = appointmentService.getAppointments(userId, status, pageable);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{appointmentId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AppointmentResponse> updateAppointmentStatus(
+            @PathVariable UUID appointmentId,
+            @Valid @RequestBody UpdateAppointmentStatusRequest request) {
+
+        log.info("Admin updating appointment {} status to {}", appointmentId, request.getStatus());
+
+        AppointmentResponse response = appointmentService.updateAppointmentStatus(
+                appointmentId,
+                request.getStatus()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PutMapping("/{appointmentId}/complete")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<AppointmentResponse> completeAppointment(
+            @PathVariable UUID appointmentId) {
+
+        log.info("Completing appointment {}", appointmentId);
+
+        AppointmentResponse response = appointmentService.completeAppointment(appointmentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{appointmentId}/cancel")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<AppointmentResponse> cancelAppointment(
+            @PathVariable UUID appointmentId,
+            @Valid @RequestBody CancelAppointmentRequest request) {
+
+        log.info("Cancelling appointment {} with reason: {}", appointmentId, request.getReason());
+
+        AppointmentResponse response = appointmentService.cancelAppointment(
+                appointmentId,
+                request.getReason()
+        );
 
         return ResponseEntity.ok(response);
     }

@@ -1,9 +1,7 @@
 package org.project.appointment_project.payment.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
+
 import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.model.Appointment;
 import org.project.appointment_project.appoinment.repository.AppointmentRepository;
@@ -16,7 +14,10 @@ import org.project.appointment_project.payment.service.PaymentStatusHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -33,13 +34,22 @@ public class PaymentStatusHandlerImpl implements PaymentStatusHandler {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
+        Appointment appointment = payment.getAppointment();
+
         if (payment.getPaymentType() == PaymentType.DEPOSIT) {
-            Appointment appointment = payment.getAppointment();
             appointment.setStatus(Status.CONFIRMED);
             appointmentRepository.save(appointment);
 
-            log.info("Appointment {} confirmed after successful deposit payment {}",
+            log.info("Lịch hẹn {} đã được xác nhận sau khi thanh toán đặt cọc {} thành công",
                     appointment.getId(), paymentId);
+
+        } else if (payment.getPaymentType() == PaymentType.FULL) {
+            appointment.setStatus(Status.CONFIRMED);
+            appointmentRepository.save(appointment);
+
+            log.info("Lịch hẹn {} đã được xác nhận sau khi thanh toán toàn bộ {} thành công",
+                    appointment.getId(), paymentId);
+
         }
     }
 
@@ -48,7 +58,7 @@ public class PaymentStatusHandlerImpl implements PaymentStatusHandler {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        log.info("Payment {} failed, appointment {} remains PENDING",
+        log.info("Thanh toán {} thất bại, lịch hẹn {} vẫn ở trạng thái CHỜ XỬ LÝ",
                 paymentId, payment.getAppointment().getId());
     }
 }
