@@ -16,6 +16,10 @@ import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.mapper.PageMapper;
+import org.project.appointment_project.medicalrecord.dto.request.CreateMedicalRecordRequest;
+import org.project.appointment_project.medicalrecord.dto.request.UpdateMedicalRecordRequest;
+import org.project.appointment_project.medicalrecord.dto.response.MedicalRecordResponse;
+import org.project.appointment_project.medicalrecord.service.MedicalRecordService;
 import org.project.appointment_project.schedule.model.DoctorAvailableSlot;
 import org.project.appointment_project.schedule.repository.DoctorAvailableSlotRepository;
 import org.project.appointment_project.schedule.service.SlotStatusService;
@@ -42,6 +46,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     PageMapper pageMapper;
     AppointmentMapper appointmentMapper;
     SlotStatusService slotStatusService;
+    MedicalRecordService medicalRecordService;
 
     //Tạo lịch hẹn mới vả xử lý transaction, lock
     @Transactional
@@ -193,6 +198,134 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new CustomException(ErrorCode.APPOINTMENT_CANCELLATION_FAILED);
         }
     }
+
+    @Override
+    @Transactional
+    public AppointmentResponse startExamination(UUID appointmentId) {
+        try {
+            log.info("Bắt đầu quá trình khám bệnh cho cuộc hẹn {}", appointmentId);
+
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+
+            validateAppointmentCanStartExamination(appointment);
+
+            appointment.setStatus(Status.IN_PROGRESS);
+            appointment = appointmentRepository.save(appointment);
+
+            return appointmentMapper.toResponse(appointment);
+
+        } catch (CustomException e) {
+            log.error("Không thể bắt đầu khám bệnh: {} - {}", e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi không mong đợi khi bắt đầu khám bệnh cho cuộc hẹn {}", appointmentId, e);
+            throw new CustomException(ErrorCode.EXAMINATION_START_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordResponse completeAppointmentWithMedicalRecord(CreateMedicalRecordRequest request) {
+        try {
+            UUID appointmentId = request.getAppointmentId();
+
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+
+            validateAppointmentCanBeCompletedWithMedicalRecord(appointment);
+
+            MedicalRecordResponse medicalRecordResponse = medicalRecordService.createMedicalRecord(request);
+
+            appointment.setStatus(Status.COMPLETED);
+
+            if (request.getDoctorNotes() != null && !request.getDoctorNotes().trim().isEmpty()) {
+                appointment.setDoctorNotes(request.getDoctorNotes());
+            }
+
+            appointment = appointmentRepository.save(appointment);
+
+            return medicalRecordResponse;
+
+        } catch (CustomException e) {
+            log.error("Không thể hoàn thành cuộc hẹn với hồ sơ bệnh án: {} - {}",
+                    e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi không mong đợi khi hoàn thành cuộc hẹn với hồ sơ bệnh án", e);
+            throw new CustomException(ErrorCode.APPOINTMENT_COMPLETION_WITH_MEDICAL_RECORD_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordResponse updateMedicalRecordForAppointment(UUID appointmentId, UpdateMedicalRecordRequest request) {
+        try {
+            log.info("Cập nhật hồ sơ bệnh án cho cuộc hẹn {}", appointmentId);
+
+            Appointment appointment = getAppointmentWithLock(appointmentId);
+            validateAppointmentForMedicalRecordUpdate(appointment);
+
+            if (!medicalRecordService.hasMedicalRecord(appointmentId)) {
+                throw new CustomException(ErrorCode.MEDICAL_RECORD_NOT_FOUND);
+            }
+
+            MedicalRecordResponse currentRecord = medicalRecordService.getMedicalRecordByAppointmentId(appointmentId);
+
+            MedicalRecordResponse updatedRecord = medicalRecordService.updateMedicalRecord(
+                    currentRecord.getId(), request);
+
+            // Cập nhật doctor notes trong appointment nếu có
+            if (request.getDoctorNotes() != null && !request.getDoctorNotes().trim().isEmpty()) {
+                appointment.setDoctorNotes(request.getDoctorNotes());
+                appointmentRepository.save(appointment);
+            }
+
+            return updatedRecord;
+
+        } catch (CustomException e) {
+            log.error("Không thể cập nhật hồ sơ bệnh án: {} - {}", e.getErrorCode().getCode(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi không mong đợi khi cập nhật hồ sơ bệnh án cho cuộc hẹn {}", appointmentId, e);
+            throw new CustomException(ErrorCode.MEDICAL_RECORD_UPDATE_FAILED);
+        }
+    }
+
+    private void validateAppointmentCanStartExamination(Appointment appointment) {
+        if (appointment.getStatus() != Status.CONFIRMED) {
+            throw new CustomException(ErrorCode.APPOINTMENT_NOT_CONFIRMED);
+        }
+    }
+
+    /**
+     * Kiểm tra appointment có thể hoàn thành với hồ sơ bệnh án không
+     * Chỉ appointment ở trạng thái IN_PROGRESS mới có thể hoàn thành
+     */
+    private void validateAppointmentCanBeCompletedWithMedicalRecord(Appointment appointment) {
+        if (appointment.getStatus() != Status.IN_PROGRESS) {
+            log.warn("Cuộc hẹn {} không thể hoàn thành - trạng thái hiện tại: {}",
+                    appointment.getId(), appointment.getStatus());
+            throw new CustomException(ErrorCode.APPOINTMENT_NOT_IN_PROGRESS);
+        }
+
+        // Kiểm tra xem đã có medical record chưa
+        if (medicalRecordService.hasMedicalRecord(appointment.getId())) {
+            log.warn("Cuộc hẹn {} đã có hồ sơ bệnh án", appointment.getId());
+            throw new CustomException(ErrorCode.MEDICAL_RECORD_ALREADY_EXISTS);
+        }
+    }
+
+    /**
+     * Kiểm tra appointment có thể cập nhật hồ sơ bệnh án không
+     * Chỉ appointment đã COMPLETED mới có thể cập nhật medical record
+     */
+    private void validateAppointmentForMedicalRecordUpdate(Appointment appointment) {
+        if (appointment.getStatus() != Status.COMPLETED) {
+            log.warn("Không thể cập nhật hồ sơ bệnh án cho cuộc hẹn {} - trạng thái hiện tại: {}",
+                    appointment.getId(), appointment.getStatus());
+            throw new CustomException(ErrorCode.APPOINTMENT_NOT_COMPLETED);
+        }
+    }
+
 
     //Lấy và lock slot để tránh concurrent access
     private DoctorAvailableSlot getAndLockSlot(UUID slotId) {

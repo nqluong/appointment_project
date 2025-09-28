@@ -13,6 +13,9 @@ import org.project.appointment_project.appoinment.enums.Status;
 import org.project.appointment_project.appoinment.service.AppointmentService;
 import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.security.annotation.RequireOwnershipOrAdmin;
+import org.project.appointment_project.medicalrecord.dto.request.CreateMedicalRecordRequest;
+import org.project.appointment_project.medicalrecord.dto.request.UpdateMedicalRecordRequest;
+import org.project.appointment_project.medicalrecord.dto.response.MedicalRecordResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -103,4 +106,35 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
+
+    @PutMapping("/{appointmentId}/start-examination")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<AppointmentResponse> startExamination(@PathVariable UUID appointmentId) {
+        AppointmentResponse response = appointmentService.startExamination(appointmentId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("/{appointmentId}/complete-with-medical-record")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<MedicalRecordResponse> completeAppointmentWithMedicalRecord(
+            @PathVariable UUID appointmentId,
+            @Valid @RequestBody CreateMedicalRecordRequest request) {
+
+        request.setAppointmentId(appointmentId);
+
+        MedicalRecordResponse response = appointmentService.completeAppointmentWithMedicalRecord(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
+    @PutMapping("/{appointmentId}/update-medical-record")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<MedicalRecordResponse> updateMedicalRecordForAppointment(
+            @PathVariable UUID appointmentId,
+            @Valid @RequestBody UpdateMedicalRecordRequest request) {
+
+        MedicalRecordResponse response = appointmentService.updateMedicalRecordForAppointment(appointmentId, request);
+        return ResponseEntity.ok(response);
+    }
 }

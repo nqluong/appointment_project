@@ -185,7 +185,12 @@ public enum ErrorCode {
     ADMIN_PERMISSION_REQUIRED(1413, "Yêu cầu quyền quản trị viên", HttpStatus.FORBIDDEN),
     APPOINTMENT_MUST_BE_IN_PROGRESS_OR_COMPLETED(1414, "Cuộc hẹn phải đang diễn ra hoặc đã hoàn thành mới được tạo hồ sơ y tế", HttpStatus.BAD_REQUEST),
     MEDICAL_RECORD_CANNOT_BE_DELETED(1415, "Hồ sơ y tế không thể bị xóa", HttpStatus.BAD_REQUEST),
-    INVALID_MEDICAL_RECORD_DATA(1416, "Dữ liệu hồ sơ y tế không hợp lệ", HttpStatus.BAD_REQUEST)
+    INVALID_MEDICAL_RECORD_DATA(1416, "Dữ liệu hồ sơ y tế không hợp lệ", HttpStatus.BAD_REQUEST),
+    EXAMINATION_START_FAILED(1417, "Không thể bắt đầu khám bệnh", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_IN_PROGRESS(1418, "Cuộc hẹn không ở trạng thái đang khám", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_COMPLETION_WITH_MEDICAL_RECORD_FAILED(1419, "Không thể hoàn thành cuộc hẹn với hồ sơ bệnh án", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_COMPLETED(1420, "Cuộc hẹn chưa được hoàn thành", HttpStatus.BAD_REQUEST),
+
 
     ;
 

@@ -309,7 +309,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         }
         appointmentRepository.save(appointment);
 
-        log.debug("Đã cập nhật trạng thái cuộc hẹn {} thành ĐÃ HOÀN THÀNH", appointment.getId());
     }
 
 }
