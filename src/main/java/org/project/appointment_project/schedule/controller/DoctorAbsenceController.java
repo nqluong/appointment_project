@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.dto.PageResponse;
+import org.project.appointment_project.common.redis.RedisCacheService;
 import org.project.appointment_project.common.security.annotation.RequireOwnershipOrAdmin;
 import org.project.appointment_project.schedule.dto.request.CreateAbsenceRequest;
 import org.project.appointment_project.schedule.dto.request.UpdateAbsenceRequest;
 import org.project.appointment_project.schedule.dto.response.DoctorAbsenceResponse;
 import org.project.appointment_project.schedule.model.DoctorAbsence;
 import org.project.appointment_project.schedule.service.DoctorAbsenceService;
+import org.project.appointment_project.user.dto.response.DoctorResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,25 @@ import java.util.UUID;
 public class DoctorAbsenceController {
 
     private final DoctorAbsenceService absenceService;
+    private final RedisCacheService redisCacheService;
+
+    @GetMapping("/test-redis")
+    public ResponseEntity<String> testRedis() {
+        String testKey = "testKey1";
+        String testValue = "Hello, Redis!";
+        redisCacheService.leftPush(testKey, testValue);
+        return ResponseEntity.ok("Success");
+    }
+
+    @GetMapping("/test-redis/{userId}")
+    public ResponseEntity<DoctorResponse> getDoctorFromRedis(@PathVariable UUID userId) {
+        String cacheKey = "doctor:profile:" + userId;
+        DoctorResponse doctorResponse = redisCacheService.get(cacheKey, DoctorResponse.class);
+        if (doctorResponse == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(doctorResponse);
+    }
 
     @PostMapping
     @RequireOwnershipOrAdmin(userIdParam = "doctorUserId", allowedRoles = {"DOCTOR", "ADMIN"})
@@ -58,8 +79,18 @@ public class DoctorAbsenceController {
             @PathVariable UUID doctorUserId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
+        String key = "doctor:absences:" + doctorUserId + ":page:" + page + ":size:" + size;
+        if(redisCacheService.exists(key)) {
+            PageResponse<DoctorAbsenceResponse> cachedResponse = redisCacheService.get(key, PageResponse.class);
+            if(cachedResponse != null) {
+                return ResponseEntity.ok(cachedResponse);
+            }
+        }
+
         Pageable pageable = PageRequest.of(page, size);
         PageResponse<DoctorAbsenceResponse> absences = absenceService.getAbsencesByDoctor(doctorUserId, pageable);
+        redisCacheService.set(key, absences);
         return ResponseEntity.ok(absences);
     }
 

@@ -26,7 +26,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -75,3 +75,20 @@ app:
   upload:
     dir: uploads/avatars
     max-size: 5242880 # 5MB
+
+redis:
+  host: localhost
+  port: 6379
+  password: NguyenLuong1405
+
+cache:
+  thread:
+    doctor-profile:
+      count: 3  # Số threads xử lý doctor profile cache
+    doctor-availability:
+      count: 3  # Số threads xử lý availability cache
+
+task:
+  scheduling:
+    pool:
+      size: 2  # Thread pool cho schedulers

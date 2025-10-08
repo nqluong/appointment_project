@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
+import org.project.appointment_project.common.redis.CacheInvalidationService;
 import org.project.appointment_project.schedule.enums.ValidationType;
 import org.project.appointment_project.schedule.dto.request.BatchSlotStatusRequest;
 import org.project.appointment_project.schedule.dto.response.SlotStatusUpdateResponse;
@@ -29,6 +30,7 @@ public class SlotStatusServiceImpl implements SlotStatusService {
 
     SlotStatusRepository slotStatusRepository;
     SlotStatusValidationService slotStatusValidationService;
+    CacheInvalidationService cacheInvalidationService;
 
     @Override
     public SlotStatusUpdateResponse markSlotAvailable(UUID slotId) {
@@ -88,9 +90,10 @@ public class SlotStatusServiceImpl implements SlotStatusService {
                 slotStatusValidationService.validateSlotAvailabilityUpdate(slotId, slot, isAvailable);
                 break;
         }
+        SlotStatusUpdateResponse response = saveAndBuildResponse(slot, isAvailable, reason);
+        cacheInvalidationService.updateSlotInCache(slot);
 
-        // Cập nhật và lưu slot
-        return saveAndBuildResponse(slot, isAvailable, reason);
+        return response;
     }
 
     private SlotStatusUpdateResponse updateSlotStatus(UUID slotId, boolean isAvailable, String reason) {

@@ -30,7 +30,7 @@ public class MedicalProfile {
     String licenseNumber;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "specialty_id")
     Specialty specialty;
 

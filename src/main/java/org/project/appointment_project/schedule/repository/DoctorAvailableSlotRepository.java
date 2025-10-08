@@ -20,6 +20,25 @@ public interface DoctorAvailableSlotRepository extends JpaRepository <DoctorAvai
     @Query("SELECT s FROM DoctorAvailableSlot s WHERE s.id = :slotId")
     Optional<DoctorAvailableSlot> findByIdWithLock(@Param("slotId") UUID slotId);
 
+
+    @Query("SELECT s FROM DoctorAvailableSlot s " +
+            "JOIN FETCH s.doctor d " +
+            "WHERE s.slotDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY d.id, s.slotDate, s.startTime")
+    List<DoctorAvailableSlot> findSlotsByDateRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("SELECT s FROM DoctorAvailableSlot s " +
+            "WHERE s.doctor.id = :doctorId " +
+            "AND s.slotDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY s.slotDate, s.startTime")
+    List<DoctorAvailableSlot> findSlotsByDoctorAndDateRange(
+            @Param("doctorId") UUID doctorId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
     /**
      * Tìm tất cả slots của bác sĩ trong một ngày cụ thể
      */

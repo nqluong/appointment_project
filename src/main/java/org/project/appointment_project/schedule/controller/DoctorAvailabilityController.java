@@ -72,7 +72,21 @@ public class DoctorAvailabilityController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         DoctorWithSlotsResponse response = doctorAvailabilityService
-                .getDoctorAvailableSlots(doctorId, startDate, endDate);
+                .getDoctorAvailableSlots1(doctorId, startDate, endDate);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{doctorId}/available-slots/cache")
+    public ResponseEntity<DoctorWithSlotsResponse> getDoctorAvailableSlots2(
+            @PathVariable UUID doctorId,
+            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().plusDays(7)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        DoctorWithSlotsResponse response = doctorAvailabilityService
+                .getDoctorAvailableSlots2(doctorId, startDate, endDate);
 
         return ResponseEntity.ok(response);
     }
