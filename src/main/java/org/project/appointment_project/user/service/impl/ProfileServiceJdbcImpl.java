@@ -79,16 +79,58 @@ public class ProfileServiceJdbcImpl implements ProfileService {
     public CompleteProfileResponse getCompleteProfile(UUID userId) {
         try {
             log.info("Getting complete profile for userId: {}", userId);
-
             User user = findUserByIdOrThrow(userId);
-
             return getCompleteProfileFromRepository(userId);
-
         } catch (CustomException e) {
             log.error("Failed to retrieve complete profile for userId: {} - {}", userId, e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error retrieving complete profile for userId: {}", userId, e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public CompleteProfileResponse getCompleteProfileInternal(UUID userId) {
+        try {
+            log.info("[Internal] Getting complete profile for userId: {}", userId);
+            findUserByIdOrThrow(userId);
+            return getCompleteProfileFromRepository(userId);
+        } catch (CustomException e) {
+            log.error("[Internal] Failed to retrieve complete profile for userId: {} - {}", userId, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("[Internal] Unexpected error retrieving complete profile for userId: {}", userId, e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    @Transactional
+    public CompleteProfileResponse updateProfileInternal(UUID userId, ProfileUpdateRequest request) {
+        try {
+            log.info("[Internal] Starting unified profile update for userId: {}", userId);
+
+            findUserByIdOrThrow(userId);
+
+            Set<String> userRoles = getUserRoles(userId);
+            FieldFilterStrategy strategy = fieldFilterStrategyFactory.getStrategy(userRoles);
+            ProfileUpdateRequest filteredRequest = strategy.filterFields(request);
+
+            boolean updateSuccess = profileJdbcRepository.updateProfile(userId, filteredRequest);
+            if (!updateSuccess) {
+                log.warn("[Internal] Không có trường nào được cập nhật cho userId: {}", userId);
+            }
+
+            CompleteProfileResponse response = getCompleteProfileFromRepository(userId);
+            log.info("[Internal] Unified profile update completed successfully for userId: {}", userId);
+            return response;
+
+        } catch (CustomException e) {
+            log.error("[Internal] Failed to update unified profile for userId: {} - {}", userId, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("[Internal] Unexpected error updating unified profile for userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zk>
+    <library-property>
+        <name>org.zkoss.zk.ui.prefer.locale</name>
+        <value>en</value>
+    </library-property>
+
     <preference>
         <name>org.zkoss.zk.ui.prefer.locale</name>
         <value>en</value>

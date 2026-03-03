@@ -1,19 +1,5 @@
 package org.project.appointment_project.ui.viewmodel.admin;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.project.appointment_project.user.dto.request.DoctorRegistrationRequest;
-import org.project.appointment_project.user.dto.response.SpecialtyResponse;
-import org.project.appointment_project.user.enums.Gender;
-import org.project.appointment_project.user.service.SpecialtyService;
-import org.project.appointment_project.user.service.UserRegistrationService;
-import org.zkoss.bind.BindUtils;
-import org.zkoss.bind.annotation.Command;
-import org.zkoss.bind.annotation.Init;
-import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zul.ListModelList;
-import org.zkoss.zkplus.spring.SpringUtil;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,17 +7,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.project.appointment_project.user.dto.request.DoctorRegistrationRequest;
+import org.project.appointment_project.user.dto.response.SpecialtyResponse;
+import org.project.appointment_project.user.enums.Gender;
+import org.project.appointment_project.user.service.SpecialtyService;
+import org.project.appointment_project.user.service.UserRegistrationService;
+import org.zkoss.bind.BindUtils;
+import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.ContextParam;
+import org.zkoss.bind.annotation.ContextType;
+import org.zkoss.bind.annotation.Init;
+import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.zk.ui.Component;
+import org.zkoss.zkplus.spring.SpringUtil;
+import org.zkoss.zul.ListModelList;
+
+import lombok.Getter;
+import lombok.Setter;
+
 public class AddDoctorViewModel {
 
     private UserRegistrationService userRegistrationService;
     private SpecialtyService specialtyService;
 
 
-    // ===== Form fields =====
-    @Getter @Setter private String username = "";
-    @Getter @Setter private String email = "";
-    @Getter @Setter private String password = "";
-    @Getter @Setter private String firstName = "";
+    @Getter
+    @Setter
+    private String username = "";
+
+    @Getter
+    @Setter
+    private String email = "";
+
+    @Getter
+    @Setter
+    private String password = "";
+
+    @Getter
+    @Setter
+    private String firstName = "";
     @Getter @Setter private String lastName = "";
     @Getter @Setter private String phone = "";
     @Getter @Setter private String address = "";
@@ -142,24 +156,24 @@ public class AddDoctorViewModel {
             userRegistrationService.registerDoctor(request);
             successMessage = "Thêm bác sĩ thành công!";
 
-            // Notify DoctorListViewModel reload
-            Map<String, Object> args = new HashMap<>();
-            args.put("refreshDoctors", true);
-            BindUtils.postGlobalCommand(null, null, "onDoctorAdded", args);
-
         } catch (Exception e) {
             String msg = e.getMessage();
             errorMessage = (msg != null && !msg.isBlank()) ? msg : "Đã có lỗi xảy ra, vui lòng thử lại";
         } finally {
             loading = false;
         }
+
+        // Notify DoctorListViewModel reload (outside try-catch to not affect error/success state)
+        if (successMessage != null && !successMessage.isBlank()) {
+            try {
+                BindUtils.postGlobalCommand(null, null, "onDoctorAdded", new HashMap<>());
+            } catch (Exception ignored) {}
+        }
     }
 
     @Command
-    public void closeDialog() {
-        // Tìm window cha và đóng
-        Map<String, Object> args = new HashMap<>();
-        BindUtils.postGlobalCommand(null, null, "closeAddDoctorDialog", args);
+    public void closeDialog(@ContextParam(ContextType.VIEW) Component view) {
+        view.detach();
     }
 
     @Command

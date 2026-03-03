@@ -1,0 +1,152 @@
+﻿<window id="doctorDetailWin"
+        title="Chi Tiết Bác Sĩ"
+        border="normal"
+        width="620px"
+        closable="true"
+        position="center"
+        sclass="doctor-detail-win"
+        viewModel="@id('ddvm') @init('org.project.appointment_project.ui.viewmodel.admin.DoctorDetailViewModel', doctorId=arg.doctorId)"
+        onClose="@command('closeDialog')">
+
+    <vlayout spacing="0" sclass="doctor-detail-body">
+
+        <!-- Error -->
+        <div visible="@load(not empty ddvm.errorMessage)" sclass="detail-alert detail-alert-error">
+            <label value="@load(ddvm.errorMessage)"/>
+        </div>
+
+        <!-- Avatar + Tên + Badge -->
+        <div sclass="detail-header-section">
+            <div sclass="detail-avatar-wrap">
+                <image src="@load(ddvm.avatarUrl)" visible="@load(ddvm.hasAvatar)" sclass="detail-avatar-img"/>
+                <div visible="@load(not ddvm.hasAvatar)" sclass="detail-avatar-placeholder">
+                    <span sclass="fa-solid fa-user-doctor" style="font-size:36px; color:#3D5A42;"/>
+                </div>
+            </div>
+            <div sclass="detail-header-info">
+                <label value="@load(ddvm.fullName)" sclass="detail-fullname"/>
+                <hlayout spacing="6px">
+                    <label value="@load(ddvm.specialtyName)" sclass="detail-specialty-badge"/>
+                    <label value="✓ Đã duyệt"   sclass="detail-approved-badge" visible="@load(ddvm.doctorApproved)"/>
+                    <label value="⊜ Chưa duyệt" sclass="detail-pending-badge"  visible="@load(not ddvm.doctorApproved)"/>
+                </hlayout>
+            </div>
+        </div>
+
+        <div sclass="detail-divider"/>
+
+        <!-- SECTION: Thông tin cá nhân -->
+        <div sclass="detail-section-title">
+            <span sclass="fa-solid fa-id-card detail-section-icon"/>  Thông tin cá nhân
+        </div>
+        <grid sclass="detail-grid">
+            <columns><column width="175px"/><column/></columns>
+            <rows>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-venus-mars detail-icon"/>Giới tính</div>
+                    <label value="@load(ddvm.gender)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-cake-candles detail-icon"/>Ngày sinh</div>
+                    <label value="@load(ddvm.dateOfBirth)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-phone detail-icon"/>Điện thoại</div>
+                    <label value="@load(ddvm.phone)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-location-dot detail-icon"/>Địa chỉ</div>
+                    <label value="@load(ddvm.address)" sclass="detail-row-value"/>
+                </row>
+            </rows>
+        </grid>
+
+        <div sclass="detail-divider"/>
+
+        <!-- SECTION: Thông tin chuyên môn -->
+        <div sclass="detail-section-title">
+            <span sclass="fa-solid fa-stethoscope detail-section-icon"/>  Thông tin chuyên môn
+        </div>
+        <grid sclass="detail-grid">
+            <columns><column width="175px"/><column/></columns>
+            <rows>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-id-card detail-icon"/>Số GP hành nghề</div>
+                    <label value="@load(ddvm.licenseNumber)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-stethoscope detail-icon"/>Chuyên khoa</div>
+                    <label value="@load(ddvm.specialtyName)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-graduation-cap detail-icon"/>Bằng cấp</div>
+                    <label value="@load(ddvm.qualification)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-clock detail-icon"/>Kinh nghiệm</div>
+                    <label value="@load(ddvm.yearsOfExperience)" sclass="detail-row-value"/>
+                </row>
+                <row>
+                    <div sclass="detail-row-label"><span sclass="fa-solid fa-money-bill detail-icon"/>Giá khám</div>
+                    <label value="@load(ddvm.consultationFee)" sclass="detail-row-value detail-fee"/>
+                </row>
+            </rows>
+        </grid>
+
+        <!-- Bio -->
+        <div visible="@load(ddvm.hasBio)" sclass="detail-bio-section">
+            <div sclass="detail-section-title">
+                <span sclass="fa-solid fa-circle-info detail-section-icon"/>  Giới thiệu
+            </div>
+            <label value="@load(ddvm.bio)" sclass="detail-bio-text" multiline="true"/>
+        </div>
+
+        <!-- SECTION: Hồ sơ y tế (chỉ hiện nếu có dữ liệu) -->
+        <div visible="@load(ddvm.hasMedicalInfo)">
+            <div sclass="detail-divider"/>
+            <div sclass="detail-section-title">
+                <span sclass="fa-solid fa-notes-medical detail-section-icon"/>  Hồ sơ y tế
+            </div>
+            <grid sclass="detail-grid">
+                <columns><column width="175px"/><column/></columns>
+                <rows>
+                    <row>
+                        <div sclass="detail-row-label"><span sclass="fa-solid fa-droplet detail-icon"/>Nhóm máu</div>
+                        <label value="@load(ddvm.bloodType)" sclass="detail-row-value"/>
+                    </row>
+                    <row>
+                        <div sclass="detail-row-label"><span sclass="fa-solid fa-triangle-exclamation detail-icon"/>Dị ứng</div>
+                        <label value="@load(ddvm.allergies)" sclass="detail-row-value"/>
+                    </row>
+                    <row>
+                        <div sclass="detail-row-label"><span sclass="fa-solid fa-file-medical detail-icon"/>Tiền sử bệnh</div>
+                        <label value="@load(ddvm.medicalHistory)" sclass="detail-row-value"/>
+                    </row>
+                    <row>
+                        <div sclass="detail-row-label"><span sclass="fa-solid fa-phone-volume detail-icon"/>Liên hệ khẩn cấp</div>
+                        <label value="@load(ddvm.emergencyContactName)" sclass="detail-row-value"/>
+                    </row>
+                    <row>
+                        <div sclass="detail-row-label"><span sclass="fa-solid fa-mobile detail-icon"/>SĐT khẩn cấp</div>
+                        <label value="@load(ddvm.emergencyContactPhone)" sclass="detail-row-value"/>
+                    </row>
+                </rows>
+            </grid>
+        </div>
+
+        <!-- Timestamps -->
+        <div sclass="detail-divider"/>
+        <hlayout spacing="20px" sclass="detail-timestamps">
+            <label value="@load(('Hồ sơ cập nhật: ' += ddvm.userProfileUpdatedAt))"    sclass="detail-timestamp-label"/>
+            <label value="@load(('Y tế cập nhật: '  += ddvm.medicalProfileUpdatedAt))" sclass="detail-timestamp-label"/>
+        </hlayout>
+
+        <!-- Footer -->
+        <div sclass="detail-footer">
+            <button label="Đóng" iconSclass="fa-solid fa-xmark"
+                    sclass="btn-close-doctor"
+                    onClick="@command('closeDialog')"/>
+        </div>
+
+    </vlayout>
+</window>

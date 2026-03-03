@@ -8,6 +8,7 @@ import org.project.appointment_project.user.dto.request.UpdateMedicalProfileRequ
 import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
 import org.project.appointment_project.user.enums.Gender;
 import org.project.appointment_project.user.model.MedicalProfile;
+import org.project.appointment_project.user.model.Specialty;
 import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.model.UserProfile;
 import org.project.appointment_project.user.repository.ProfileJdbcRepository;
@@ -57,11 +58,14 @@ public class ProfileJdbcRepositoryImpl implements ProfileJdbcRepository {
                mp.emergency_contact_name, mp.emergency_contact_phone, mp.license_number,
                mp.qualification, mp.years_of_experience, mp.consultation_fee, mp.bio,
                mp.is_doctor_approved, mp.specialty_id,
-               mp.created_at as medical_created_at, mp.updated_at as medical_updated_at
+               mp.created_at as medical_created_at, mp.updated_at as medical_updated_at,
+               s.id as spectialty_id,
+               s.name as specialty_name
                
         FROM users u
         LEFT JOIN user_profiles up ON u.id = up.user_id
         LEFT JOIN medical_profiles mp ON u.id = mp.user_id
+        LEFT JOIN specialties s ON mp.specialty_id = s.id
         WHERE u.id = :userId
         """;
 
@@ -539,6 +543,13 @@ public class ProfileJdbcRepositoryImpl implements ProfileJdbcRepository {
                         .user(user)
                         .build();
                 user.setMedicalProfile(medicalProfile);
+            }
+            if(rs.getString("specialty_id") != null) {
+               Specialty specialty = Specialty.builder()
+                       .id(UUID.fromString(rs.getString("specialty_id")))
+                       .name(rs.getString("specialty_name"))
+                       .build();
+               user.getMedicalProfile().setSpecialty(specialty);
             }
             return user;
         }

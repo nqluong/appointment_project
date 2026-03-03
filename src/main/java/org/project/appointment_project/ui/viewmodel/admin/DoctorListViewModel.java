@@ -1,31 +1,29 @@
 package org.project.appointment_project.ui.viewmodel.admin;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.project.appointment_project.common.dto.PageResponse;
-import org.project.appointment_project.user.dto.request.DoctorRegistrationRequest;
 import org.project.appointment_project.user.dto.response.DoctorResponse;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;
-import org.project.appointment_project.user.enums.Gender;
 import org.project.appointment_project.user.service.DoctorService;
 import org.project.appointment_project.user.service.SpecialtyService;
-import org.project.appointment_project.user.service.UserRegistrationService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.GlobalCommand;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zk.ui.Execution;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zkplus.spring.SpringUtil;
 import org.zkoss.zul.ListModelList;
+import org.zkoss.zul.Window;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.zkoss.zkplus.spring.SpringUtil;
 
 public class DoctorListViewModel {
 
@@ -98,7 +96,6 @@ public class DoctorListViewModel {
         }
     }
 
-    // ===================== Commands: tìm kiếm & phân trang =====================
     @Command
     @NotifyChange({"doctors", "currentPage", "totalPages", "totalElements", "pageInfo"})
     public void search() {
@@ -126,13 +123,40 @@ public class DoctorListViewModel {
 
     @Command
     public void openAddDoctor() {
-        Executions.createComponents("/user/add-doctor-dialog.zul", null, null);
+        Window win = (Window) Executions.createComponents(
+                "/user/add-doctor-dialog.zul",
+                null,
+                null);
+        win.doModal();
     }
 
-    // ===================== Commands: edit / delete =====================
+    @Command
+    public void viewDoctor(@BindingParam("doctor") DoctorResponse doctor) {
+        Map<String, Object> args = new HashMap<>();
+        args.put("doctorId", doctor.getId());
+        Window win = (Window) Executions.createComponents(
+                "/user/doctor-detail-dialog.zul",
+                null,
+                args);
+        win.doModal();
+    }
+
+    @GlobalCommand("onDoctorAdded")
+    @NotifyChange({"doctors", "totalPages", "totalElements", "pageInfo"})
+    public void onDoctorAdded() {
+        currentPage = 0;
+        loadDoctors();
+    }
+
     @Command
     public void editDoctor(@BindingParam("doctor") DoctorResponse doctor) {
-        // TODO: mở form chỉnh sửa
+        Map<String, Object> args = new HashMap<>();
+        args.put("userId", doctor.getId());
+        Window win = (Window) Executions.createComponents(
+                "/user/edit-profile-dialog.zul",
+                null,
+                args);
+        win.doModal();
     }
 
     @Command
@@ -140,7 +164,6 @@ public class DoctorListViewModel {
         // TODO: xác nhận xóa
     }
 
-    // ===================== Helpers =====================
     public boolean isFirstPage() { return currentPage == 0; }
     public boolean isLastPage()  { return currentPage >= totalPages - 1; }
     public int getDisplayPage()  { return currentPage + 1; }

@@ -3,6 +3,8 @@
 <?link rel="stylesheet" type="text/css" href="/css/layout.css"?>
 <?link rel="stylesheet" type="text/css" href="/css/dashboard.css"?>
 <?link rel="stylesheet" type="text/css" href="/css/doctor-list.css"?>
+<?link rel="stylesheet" type="text/css" href="/css/add-doctor-dialog.css"?>
+<?link rel="stylesheet" type="text/css" href="/css/doctor-detail-dialog.css"?>
 <zk>
     <window viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.admin.DashboardViewModel')"
             width="100%" vflex="1" border="none"

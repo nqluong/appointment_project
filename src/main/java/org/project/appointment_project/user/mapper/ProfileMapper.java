@@ -1,15 +1,8 @@
 package org.project.appointment_project.user.mapper;
 
 import org.mapstruct.*;
-import org.project.appointment_project.user.dto.request.UpdateCompleteProfileRequest;
-import org.project.appointment_project.user.dto.request.UpdateMedicalProfileRequest;
-import org.project.appointment_project.user.dto.request.UpdateUserProfileRequest;
 import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
-import org.project.appointment_project.user.dto.response.UpdateMedicalProfileResponse;
-import org.project.appointment_project.user.dto.response.UpdateUserProfileResponse;
-import org.project.appointment_project.user.model.MedicalProfile;
 import org.project.appointment_project.user.model.User;
-import org.project.appointment_project.user.model.UserProfile;
 
 @Mapper(
         componentModel = "spring",
@@ -44,6 +37,7 @@ public interface ProfileMapper {
     @Mapping(source = "medicalProfile.qualification", target = "qualification")
     @Mapping(source = "medicalProfile.yearsOfExperience", target = "yearsOfExperience")
     @Mapping(source = "medicalProfile.consultationFee", target = "consultationFee")
+    @Mapping(source = "medicalProfile.doctorApproved", target = "isDoctorApproved")
     @Mapping(source = "medicalProfile.bio", target = "bio")
     @Mapping(source = "medicalProfile.updatedAt", target = "medicalProfileUpdatedAt")
     CompleteProfileResponse toCompleteProfileResponse(User user);

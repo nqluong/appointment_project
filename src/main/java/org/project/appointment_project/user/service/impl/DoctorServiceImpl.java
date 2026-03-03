@@ -1,9 +1,8 @@
 package org.project.appointment_project.user.service.impl;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.common.redis.RedisCacheService;
@@ -15,8 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,7 @@ public class DoctorServiceImpl implements DoctorService {
         return pageMapper.toPageResponse(doctorPage);
     }
 
+    @Override
     public DoctorResponse getDoctorById(UUID doctorId) {
         String cacheKey = PROFILE_CACHE_PREFIX + doctorId;
         Object cached = redisCacheService.get(cacheKey);

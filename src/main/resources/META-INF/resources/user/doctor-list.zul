@@ -49,7 +49,8 @@
                     <column label="Thao tác"    align="center" />
                 </columns>
                 <template name="model" var="doctor" status="s">
-                    <row>
+                    <row sclass="doctor-row" style="cursor:pointer;"
+                         onClick="@command('viewDoctor', doctor=doctor)">
                         <label value="@load(s.index + 1)" />
                         <label value="@load(doctor.fullName)"/>
                         <label value="@load(doctor.specialtyName)" />

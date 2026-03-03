@@ -8,21 +8,17 @@ html, body {
     overflow: hidden;
 }
 
-/* ZK root containers */
+/* ZK root containers - exclude modal wrappers */
 .z-page,
 .z-page > div,
 .z-client-info,
-body > div {
+body > div:not(.z-modal-backdrop):not(.z-window-modal):not([class*="z-window"]) {
     height: 100% !important;
-    width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-/* ZK window reset */
-.z-window,
-.z-window-content,
 .z-window-noborder,
 .z-window-noborder > .z-window-content {
     height: 100% !important;
@@ -33,7 +29,18 @@ body > div {
     box-shadow: none !important;
 }
 
-/* ZK borderlayout fill */
+.z-window-modal,
+.z-window-overlapped,
+.z-window-highlighted,
+.z-window-modal > .z-window-content,
+.z-window-overlapped > .z-window-content,
+.z-window-highlighted > .z-window-content {
+    height: auto !important;
+    width: auto !important;
+    margin: auto !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
+}
+
 .z-borderlayout {
     height: 100% !important;
     width: 100% !important;

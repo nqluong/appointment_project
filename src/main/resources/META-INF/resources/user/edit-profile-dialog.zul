@@ -1,0 +1,191 @@
+<window id="editProfileWin"
+        title="Chỉnh Sửa Hồ Sơ"
+        border="normal"
+        width="680px"
+        closable="true"
+        position="center"
+        sclass="add-doctor-win"
+        viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.user.UpdateProfileViewModel', userId=userId)"
+        onClose="@command('closeDialog')">
+
+    <vlayout spacing="0" sclass="add-doctor-body">
+
+        <!-- Alert: Error -->
+        <div sclass="add-doctor-alert add-doctor-alert-error"
+             visible="@load(not empty vm.errorMessage)">
+            <span sclass="bi bi-exclamation-circle" style="margin-right:6px;"/>
+            <label value="@load(vm.errorMessage)"/>
+        </div>
+
+        <!-- Alert: Success -->
+        <div sclass="add-doctor-alert add-doctor-alert-success"
+             visible="@load(not empty vm.successMessage)">
+            <span sclass="bi bi-check-circle" style="margin-right:6px;"/>
+            <label value="@load(vm.successMessage)"/>
+        </div>
+
+        <!-- ===== Section: Thông tin cá nhân ===== -->
+        <div sclass="add-doctor-section-title">
+            <span sclass="fa-solid fa-id-card" style="margin-right:6px;"/>
+            Thông tin cá nhân
+        </div>
+        <grid sclass="add-doctor-grid">
+            <columns>
+                <column width="170px"/>
+                <column/>
+            </columns>
+            <rows>
+                <row>
+                    <label value="Họ" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.lastName)" placeholder="VD: Nguyễn"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="Tên" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.firstName)" placeholder="VD: Văn A"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="Giới tính" sclass="add-doctor-label"/>
+                    <listbox mold="select" model="@load(vm.genderModel)"
+                             sclass="add-doctor-select" width="140px">
+                        <template name="model" var="g">
+                            <listitem label="@load(g)" value="@load(g)"/>
+                        </template>
+                    </listbox>
+                </row>
+                <row>
+                    <label value="Ngày sinh" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.dateOfBirthStr)" placeholder="YYYY-MM-DD"
+                             sclass="add-doctor-input" width="150px"/>
+                </row>
+                <row>
+                    <label value="Số điện thoại" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.phone)" placeholder="VD: 0901234567"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="Địa chỉ" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.address)" placeholder="Địa chỉ..."
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+            </rows>
+        </grid>
+
+        <!-- ===== Section: Thông tin chuyên môn (bác sĩ) ===== -->
+        <div sclass="add-doctor-section-title" visible="@load(vm.doctorProfile)">
+            <span sclass="fa-solid fa-stethoscope" style="margin-right:6px;"/>
+            Thông tin chuyên môn
+        </div>
+        <grid sclass="add-doctor-grid" visible="@load(vm.doctorProfile)">
+            <columns>
+                <column width="170px"/>
+                <column/>
+            </columns>
+            <rows>
+                <row>
+                    <label value="Số GP hành nghề" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.licenseNumber)" placeholder="VD: GP123456"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="Chuyên khoa" sclass="add-doctor-label"/>
+                    <listbox mold="select" model="@load(vm.specialtyModel)"
+                             sclass="add-doctor-select" width="100%">
+                        <template name="model" var="sp">
+                            <listitem label="@load(sp.name)" value="@load(sp)"/>
+                        </template>
+                    </listbox>
+                </row>
+                <row>
+                    <label value="Bằng cấp / Học vị" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.qualification)" placeholder="VD: Tiến sĩ Y khoa"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="Năm kinh nghiệm" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.yearsOfExperienceStr)" placeholder="VD: 5"
+                             sclass="add-doctor-input" width="80px"/>
+                </row>
+                <row>
+                    <label value="Giá khám (VNĐ)" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.consultationFeeStr)" placeholder="VD: 200000"
+                             sclass="add-doctor-input" width="160px"/>
+                </row>
+                <row>
+                    <label value="Giới thiệu" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.bio)"
+                             placeholder="Mô tả ngắn về kinh nghiệm, chuyên môn..."
+                             multiline="true" rows="3"
+                             sclass="add-doctor-input add-doctor-textarea" width="100%"/>
+                </row>
+            </rows>
+        </grid>
+
+        <!-- ===== Section: Hồ sơ y tế (bệnh nhân) ===== -->
+        <div sclass="add-doctor-section-title" visible="@load(vm.patientProfile)">
+            <span sclass="fa-solid fa-notes-medical" style="margin-right:6px;"/>
+            Hồ sơ y tế
+        </div>
+        <grid sclass="add-doctor-grid" visible="@load(vm.patientProfile)">
+            <columns>
+                <column width="170px"/>
+                <column/>
+            </columns>
+            <rows>
+                <row>
+                    <label value="Nhóm máu" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.bloodType)" placeholder="VD: A+, B-, O+"
+                             sclass="add-doctor-input" width="120px"/>
+                </row>
+                <row>
+                    <label value="Dị ứng" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.allergies)"
+                             placeholder="Liệt kê các dị ứng nếu có..."
+                             multiline="true" rows="3"
+                             sclass="add-doctor-input add-doctor-textarea" width="100%"/>
+                </row>
+                <row>
+                    <label value="Tiền sử bệnh" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.medicalHistory)"
+                             placeholder="Mô tả tiền sử bệnh lý..."
+                             multiline="true" rows="3"
+                             sclass="add-doctor-input add-doctor-textarea" width="100%"/>
+                </row>
+                <row>
+                    <label value="Liên hệ khẩn cấp" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.emergencyContactName)"
+                             placeholder="Họ và tên người liên hệ"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+                <row>
+                    <label value="SĐT khẩn cấp" sclass="add-doctor-label"/>
+                    <textbox value="@bind(vm.emergencyContactPhone)"
+                             placeholder="VD: 0901234567"
+                             sclass="add-doctor-input" width="100%"/>
+                </row>
+            </rows>
+        </grid>
+
+        <!-- ===== Footer buttons ===== -->
+        <div sclass="add-doctor-footer">
+            <hlayout spacing="10px">
+                <button label="Lưu thay đổi"
+                        iconSclass="fa-solid fa-floppy-disk"
+                        sclass="btn-save-doctor"
+                        disabled="@load(vm.loading)"
+                        onClick="@command('save')"/>
+                <button label="Đặt lại"
+                        iconSclass="fa-solid fa-rotate-left"
+                        sclass="btn-reset-doctor"
+                        disabled="@load(vm.loading)"
+                        onClick="@command('resetForm')"/>
+                <button label="Đóng"
+                        iconSclass="fa-solid fa-xmark"
+                        sclass="btn-close-doctor"
+                        onClick="@command('closeDialog')"/>
+            </hlayout>
+        </div>
+
+    </vlayout>
+</window>
