@@ -1,0 +1,40 @@
+.header-nav {
+    text-align: center;
+    background: #FDFCF0;
+    padding: 0 28px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    z-index: 100;
+    border-bottom: 1px solid #283593;
+}
+
+.header-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #163020;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-user {
+    font-size: 14px;
+    color: #4A5D4E;
+    margin-right: 16px;
+    font-weight: 500;
+}
+
+.btn-logout {
+    background: #3D5A42 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 7px 20px !important;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    letter-spacing: 0.3px;
+}
+.btn-logout:hover {
+    background: #2D4331 !important;
+    transform: translateY(-1px);
+}

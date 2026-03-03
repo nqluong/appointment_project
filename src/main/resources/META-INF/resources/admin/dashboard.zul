@@ -1,0 +1,49 @@
+<?link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"?>
+<?link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"?>
+<?link rel="stylesheet" type="text/css" href="/css/layout.css"?>
+<?link rel="stylesheet" type="text/css" href="/css/dashboard.css"?>
+<?link rel="stylesheet" type="text/css" href="/css/doctor-list.css"?>
+<zk>
+    <window viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.admin.DashboardViewModel')"
+            width="100%" vflex="1" border="none"
+            style="position:fixed; top:0; left:0; right:0; bottom:0;">
+
+        <borderlayout width="100%" vflex="1">
+
+            <north height="60px" sclass="header-nav">
+                <hlayout valign="middle" spacing="0">
+                    <span sclass="bi bi-hospital" style="font-size:24px; margin-right:10px; color: #163020" />
+                    <label value="HỆ THỐNG ĐẶT LỊCH KHÁM" sclass="header-title" />
+                    <space hflex="1" />
+                    <label value="Xin chào, Admin" sclass="header-user bi bi-person-circle" />
+                    <button label="Đăng xuất" sclass="btn-logout bi bi-box-arrow-right" />
+                </hlayout>
+            </north>
+
+            <west width="240px" border="none" sclass="sidebar">
+                <vlayout spacing="0">
+                    <label value="ĐIỀU HƯỚNG" sclass="sidebar-section-title" />
+
+                    <button label="Quản lý Bác sĩ" width="100%" height="46px"
+                            iconSclass="fa-solid fa-user-doctor"
+                            sclass="menu-item "
+                            onClick="@command('navigate', page='/user/doctor-list.zul')" />
+
+                    <button label="Quản lý Lịch hẹn" width="100%" height="46px"
+                            iconSclass="fa-solid fa-book-medical"
+                            sclass="menu-item"
+                            onClick="@command('navigate', page='/admin/appointments.zul')" />
+
+                    <separator sclass="sidebar-divider" />
+                </vlayout>
+            </west>
+
+            <!-- ===== MAIN CONTENT ===== -->
+            <center sclass="main-bg" style="overflow:auto;">
+                <include src="@load(vm.currentContent)" />
+            </center>
+
+        </borderlayout>
+
+    </window>
+</zk>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?page title="Appointment System"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul https://www.zkoss.org/2005/zul/zul.xsd">
+    <window title="Appointment System" border="normal" width="100%" height="100%" >
+    </window>
+</zk>

@@ -46,6 +46,13 @@ public class RedisCacheService {
         }
     }
 
+    public List<Object> mget(List<String> keys){
+        if(keys == null || keys.isEmpty()){
+            return List.of();
+        }
+        return redisTemplate.opsForValue().multiGet(keys);
+    }
+
     // Lưu giá trị với TTL
     public void set(String key, Object value, long timeout, TimeUnit timeUnit) {
         try {

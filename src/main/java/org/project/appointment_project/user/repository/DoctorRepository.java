@@ -1,5 +1,6 @@
 package org.project.appointment_project.user.repository;
 
+import org.project.appointment_project.user.dto.response.DoctorResponse;
 import org.project.appointment_project.user.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +14,11 @@ import java.util.UUID;
 @Repository
 public interface DoctorRepository extends JpaRepository<User, UUID> {
 
-    @Query("SELECT DISTINCT u FROM User u " +
+    @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
+            "u.id, up.firstName, up.lastName, up.avatarUrl, " +
+            "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
+            "CAST(up.gender AS string), up.phone, s.name) " +
+            "FROM User u " +
             "JOIN u.userRoles ur " +
             "JOIN ur.role r " +
             "JOIN u.userProfile up " +
@@ -23,9 +28,13 @@ public interface DoctorRepository extends JpaRepository<User, UUID> {
             "AND u.isActive = true " +
             "AND ur.isActive = true " +
             "AND mp.isDoctorApproved = true")
-    Page<User> findAllApprovedDoctors(Pageable pageable);
+    Page<DoctorResponse> findAllApprovedDoctors(Pageable pageable);
 
-    @Query("SELECT DISTINCT u FROM User u " +
+    @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
+            "u.id, up.firstName, up.lastName, up.avatarUrl, " +
+            "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
+            "CAST(up.gender AS string), up.phone, s.name) " +
+            "FROM User u " +
             "JOIN u.userRoles ur " +
             "JOIN ur.role r " +
             "JOIN u.userProfile up " +
@@ -36,5 +45,17 @@ public interface DoctorRepository extends JpaRepository<User, UUID> {
             "AND ur.isActive = true " +
             "AND mp.isDoctorApproved = true " +
             "AND (COALESCE(:specialtyName, '') = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :specialtyName, '%')))")
-    Page<User> findDoctorsWithFilters(@Param("specialtyName") String specialtyName, Pageable pageable);
+    Page<DoctorResponse> findDoctorsWithFilters(@Param("specialtyName") String specialtyName, Pageable pageable);
+
+    @Query("SELECT DISTINCT u FROM User u " +
+            "JOIN u.userRoles ur " +
+            "JOIN ur.role r " +
+            "JOIN u.userProfile up " +
+            "JOIN u.medicalProfile mp " +
+            "LEFT JOIN mp.specialty s " +
+            "WHERE r.name = 'DOCTOR' " +
+            "AND u.isActive = true " +
+            "AND ur.isActive = true " +
+            "AND mp.isDoctorApproved = true")
+    Page<User> findAllApprovedDoctors2(Pageable pageable);
 }

@@ -1,0 +1,85 @@
+<zk>
+    <div>
+        <!-- Page Title -->
+        <hlayout valign="middle" style="margin-bottom:24px;">
+            <label value="📅" style="font-size:26px; margin-right:10px;" />
+            <label value="Quản Lý Lịch Hẹn" style="font-size:22px; font-weight:800; color:#1a237e;" />
+        </hlayout>
+
+        <!-- Filter / Action Bar -->
+        <div sclass="content-card" style="margin-bottom:20px;">
+            <hlayout valign="middle" spacing="12px">
+                <label value="Tìm kiếm:" style="font-weight:600; color:#37474f;" />
+                <textbox placeholder="Tên bệnh nhân, bác sĩ..." width="260px" />
+                <label value="Trạng thái:" style="font-weight:600; color:#37474f;" />
+                <combobox width="160px">
+                    <comboitem label="Tất cả" />
+                    <comboitem label="Chờ xác nhận" />
+                    <comboitem label="Đã xác nhận" />
+                    <comboitem label="Đã hủy" />
+                </combobox>
+                <button label="🔍 Tìm" sclass="btn-primary" height="34px" />
+                <space hflex="1" />
+                <button label="+ Tạo lịch hẹn" sclass="btn-primary" height="34px" />
+            </hlayout>
+        </div>
+
+        <!-- Appointments Table -->
+        <div sclass="content-card">
+            <label value="📋 Danh Sách Lịch Hẹn" style="font-size:16px; font-weight:700; color:#1a237e; display:block; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #e8eaf6;" />
+            <grid width="100%">
+                <columns>
+                    <column label="#" width="60px" />
+                    <column label="Bệnh nhân" width="180px" />
+                    <column label="Bác sĩ" width="180px" />
+                    <column label="Chuyên khoa" width="150px" />
+                    <column label="Ngày hẹn" width="160px" />
+                    <column label="Giờ" width="80px" />
+                    <column label="Trạng thái" width="140px" />
+                    <column label="Thao tác" />
+                </columns>
+                <rows>
+                    <row>
+                        <label value="001" />
+                        <label value="Nguyễn Văn A" />
+                        <label value="BS. Trần Thị B" />
+                        <label value="Tim mạch" />
+                        <label value="02/03/2026" />
+                        <label value="09:00" />
+                        <label value="✅ Xác nhận" style="color:#2e7d32; font-weight:600;" />
+                        <hlayout spacing="6px">
+                            <button label="✏️" sclass="btn-primary" height="30px" width="36px" />
+                            <button label="🗑️" sclass="btn-danger" height="30px" width="36px" />
+                        </hlayout>
+                    </row>
+                    <row>
+                        <label value="002" />
+                        <label value="Lê Thị C" />
+                        <label value="BS. Phạm Văn D" />
+                        <label value="Nội khoa" />
+                        <label value="02/03/2026" />
+                        <label value="10:30" />
+                        <label value="⏳ Chờ xác nhận" style="color:#e65100; font-weight:600;" />
+                        <hlayout spacing="6px">
+                            <button label="✏️" sclass="btn-primary" height="30px" width="36px" />
+                            <button label="🗑️" sclass="btn-danger" height="30px" width="36px" />
+                        </hlayout>
+                    </row>
+                    <row>
+                        <label value="003" />
+                        <label value="Phạm Minh E" />
+                        <label value="BS. Nguyễn Thị F" />
+                        <label value="Da liễu" />
+                        <label value="02/03/2026" />
+                        <label value="14:00" />
+                        <label value="✅ Xác nhận" style="color:#2e7d32; font-weight:600;" />
+                        <hlayout spacing="6px">
+                            <button label="✏️" sclass="btn-primary" height="30px" width="36px" />
+                            <button label="🗑️" sclass="btn-danger" height="30px" width="36px" />
+                        </hlayout>
+                    </row>
+                </rows>
+            </grid>
+        </div>
+    </div>
+</zk>

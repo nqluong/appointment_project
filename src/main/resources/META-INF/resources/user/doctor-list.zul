@@ -1,0 +1,85 @@
+<zk>
+    <div viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.admin.DoctorListViewModel')"
+         width="100%">
+
+        <!-- Page Title -->
+        <hlayout valign="middle" sclass="doctor-page-title">
+            <label value="Quản Lý Bác Sĩ" sclass="doctor-page-title" />
+        </hlayout>
+
+        <!-- Filter / Action Bar -->
+        <div sclass="content-card" style="margin-bottom:20px;">
+            <hlayout valign="middle" spacing="12px">
+                <label value="Tìm kiếm:" sclass="doctor-filter-label" />
+                <textbox value="@bind(vm.searchKeyword)"
+                         placeholder="Tên bác sĩ, chuyên khoa..."
+                         width="260px"
+                         onOK="@command('search')" />
+                <label value="Chuyên khoa:" sclass="doctor-filter-label" />
+                <listbox width="180px"
+                         mold="select"
+                         sclass="filter-listbox"
+                         model="@load(vm.specialtyModel)"
+                         onSelect="@command('search')">
+                    <template name="model" var="item">
+                        <listitem label="@load(item)" value="@load(item)" />
+                    </template>
+                </listbox>
+                <button label="Tìm" sclass="btn-search" height="34px"
+                        onClick="@command('search')" />
+                <space hflex="1" />
+                <button label="+ Thêm bác sĩ" sclass="btn-add-doctor" height="34px"
+                        onClick="@command('openAddDoctor')" />
+            </hlayout>
+        </div>
+
+        <!-- Doctors Table -->
+        <div sclass="content-card">
+            <label sclass="doctor-table-title"
+                   value="Danh Sách Bác Sĩ" />
+            <grid width="100%" model="@load(vm.doctors)" emptyMessage="Không có dữ liệu bác sĩ">
+                <columns sclass="doctor-table-header">
+                    <column label="#"           width="60px"  />
+                    <column label="Họ tên"      width="200px" />
+                    <column label="Chuyên khoa" width="160px" />
+                    <column label="Điện thoại"  width="140px" />
+                    <column label="Bằng cấp"    width="180px" />
+                    <column label="Kinh nghiệm" width="120px" />
+                    <column label="Giá khám"    width="130px" />
+                    <column label="Thao tác"    align="center" />
+                </columns>
+                <template name="model" var="doctor" status="s">
+                    <row>
+                        <label value="@load(s.index + 1)" />
+                        <label value="@load(doctor.fullName)"/>
+                        <label value="@load(doctor.specialtyName)" />
+                        <label value="@load(doctor.phone)" />
+                        <label value="@load(doctor.qualification)" />
+                        <label value="@load(vm.getExperienceLabel(doctor))" />
+                        <label value="@load(doctor.consultationFee)" />
+                        <hlayout spacing="6px" sclass="action-cell">
+                            <button iconSclass="fa-solid fa-pen-to-square"
+                                    sclass="btn-edit"
+                                    onClick="@command('editDoctor', doctor=doctor)" />
+                            <button iconSclass="bi bi-trash-fill"
+                                    sclass="btn-delete"
+                                    onClick="@command('deleteDoctor', doctor=doctor)" />
+                        </hlayout>
+                    </row>
+                </template>
+            </grid>
+
+            <!-- Pagination -->
+            <hlayout spacing="8px" sclass="pagination-bar" style="margin-top:16px; justify-content:flex-end;">
+                <button label="Trước" sclass="btn-page"
+                        disabled="@load(vm.firstPage)"
+                        onClick="@command('prevPage')" />
+                <label value="@load(vm.pageInfo)"
+                       sclass="page-info" />
+                <button label="Tiếp" sclass="btn-page"
+                        disabled="@load(vm.lastPage)"
+                        onClick="@command('nextPage')" />
+            </hlayout>
+        </div>
+    </div>
+</zk>

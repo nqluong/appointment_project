@@ -72,13 +72,13 @@ public class DoctorAvailabilityController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         DoctorWithSlotsResponse response = doctorAvailabilityService
-                .getDoctorAvailableSlots1(doctorId, startDate, endDate);
+                .getDoctorAvailableSlots(doctorId, startDate, endDate);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{doctorId}/available-slots/cache")
-    public ResponseEntity<DoctorWithSlotsResponse> getDoctorAvailableSlots2(
+    public ResponseEntity<DoctorWithSlotsResponse> getDoctorAvailableSlotsCache(
             @PathVariable UUID doctorId,
             @RequestParam(defaultValue = "#{T(java.time.LocalDate).now()}")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -86,7 +86,7 @@ public class DoctorAvailabilityController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         DoctorWithSlotsResponse response = doctorAvailabilityService
-                .getDoctorAvailableSlots2(doctorId, startDate, endDate);
+                .getDoctorAvailableSlotsCache(doctorId, startDate, endDate);
 
         return ResponseEntity.ok(response);
     }

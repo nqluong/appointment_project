@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,92 +36,40 @@ public class DoctorCacheScheduler {
     RedisCacheService redisCacheService;
 
     private static final String AVAILABILITY_QUEUE_KEY = "doctor_availability_cache_queue";
-    private static final int BATCH_SIZE = 50;
     private static final long PROFILE_CACHE_TTL = 7;
     private static final String PROFILE_CACHE_PREFIX = "doctor:profile:";
+
+    private static final int PROFILE_PAGE_SIZE = 20;
+    private static final int MAX_PROFILE_PAGES = 2;
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
         try {
             cacheDoctorProfiles();
-            cacheDoctorAvailability();
             cleanupExpiredSlots();
         } catch (Exception ex) {
             log.error("Lỗi trong khởi động cache bác sĩ: {}", ex.getMessage(), ex);
         }
     }
 
-    @Async("taskExecutor")
+    @Async("    taskExecutor")
     @Scheduled(cron = "0 0 0,6,12,18 * * * ")
     public void cacheDoctorProfiles() {
         try {
-            int page = 0;
-            long totalCached = 0;
-            while (true) {
-                Pageable pageable = PageRequest.of(page, BATCH_SIZE);
-                Page<User> doctorPage = doctorRepository.findAllApprovedDoctors(pageable);
+            List<User> doctors = fetchAllApprovedDoctors();
 
-                if (doctorPage.isEmpty()) {
-                    break;
-                }
+            for (User doctor : doctors) {
+                DoctorResponse doctorResponse = doctorMapper.toResponse(doctor);
+                String cacheKey = PROFILE_CACHE_PREFIX + doctor.getId();
 
-                for (User doctor : doctorPage.getContent()) {
-                    DoctorResponse doctorResponse = doctorMapper.toResponse(doctor);
-                    String cacheKey = PROFILE_CACHE_PREFIX + doctor.getId();
-
-                    redisCacheService.set(cacheKey, doctorResponse, PROFILE_CACHE_TTL, TimeUnit.DAYS);
-                    totalCached++;
-                }
-
-                log.info("Pushed batch {} ({} doctors) to profile queue", page + 1, doctorPage.getContent().size());
-
-                page++;
-
-                // Nếu là trang cuối thì break
-                if (!doctorPage.hasNext()) {
-                    break;
-                }
+                redisCacheService.set(cacheKey, doctorResponse, PROFILE_CACHE_TTL, TimeUnit.DAYS);
+                redisCacheService.leftPush(AVAILABILITY_QUEUE_KEY, doctor.getId().toString());
             }
+
+            log.info("Cached {} doctor profiles", doctors.size());
 
         } catch (Exception ex) {
             log.error("Lỗi trong job cache profile bác sĩ: {}", ex.getMessage(), ex);
-        }
-    }
-
-    @Async("taskExecutor")
-    @Scheduled(cron = "0 */15 * * * *")
-    public void cacheDoctorAvailability() {
-        try {
-            long oldQueueSize = redisCacheService.listSize(AVAILABILITY_QUEUE_KEY);
-            if (oldQueueSize > 0) {
-                redisCacheService.delete(AVAILABILITY_QUEUE_KEY);
-                log.info("Đã xóa queue cũ ({} items)", oldQueueSize);
-            }
-
-            int page = 0;
-
-            while (true) {
-                Pageable pageable = PageRequest.of(page, BATCH_SIZE);
-                Page<User> doctorPage = doctorRepository.findAllApprovedDoctors(pageable);
-
-                if (doctorPage.isEmpty()) {
-                    break;
-                }
-
-                // Push doctorId vào queue để worker threads xử lý
-                for (User doctor : doctorPage.getContent()) {
-                    redisCacheService.leftPush(AVAILABILITY_QUEUE_KEY, doctor.getId().toString());
-                }
-
-                page++;
-
-                if (!doctorPage.hasNext()) {
-                    break;
-                }
-            }
-
-        } catch (Exception ex) {
-            log.error("Lỗi trong đẩy vào availability queue: {}", ex.getMessage(), ex);
         }
     }
 
@@ -168,6 +115,27 @@ public class DoctorCacheScheduler {
         } catch (Exception ex) {
             log.error("Lỗi trong job cleanup: {}", ex.getMessage(), ex);
         }
+    }
+
+    private List<User> fetchAllApprovedDoctors() {
+        List<User> allDoctors = new ArrayList<>();
+
+        for (int pageNumber = 0; pageNumber < MAX_PROFILE_PAGES; pageNumber++) {
+            Pageable pageable = PageRequest.of(pageNumber, PROFILE_PAGE_SIZE);
+            Page<User> doctorPage = doctorRepository.findAllApprovedDoctors2(pageable);
+
+            if (doctorPage.isEmpty()) {
+                break;
+            }
+
+            allDoctors.addAll(doctorPage.getContent());
+
+            if (doctorPage.isLast()) {
+                break;
+            }
+        }
+
+        return allDoctors;
     }
 
 }

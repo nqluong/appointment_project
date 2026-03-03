@@ -1,0 +1,76 @@
+<zk>
+    <div sclass="main-content-wrapper">
+
+        <!-- Page Title -->
+        <hlayout valign="middle" style="margin-bottom:24px;">
+            <label value="📊" style="font-size:26px; margin-right:10px;" />
+            <label value="Tổng Quan Hệ Thống" style="font-size:22px; font-weight:800; color:#1a237e;" />
+        </hlayout>
+
+        <!-- Stat Cards Row -->
+        <hlayout spacing="16px" style="margin-bottom:24px;" width="100%">
+            <div sclass="stat-box" hflex="1">
+                <label value="📅" sclass="stat-icon" />
+                <label value="128" sclass="stat-value" style="display:block;" />
+                <label value="Lịch hẹn hôm nay" sclass="stat-label" style="display:block;" />
+            </div>
+            <div sclass="stat-box stat-box-green" hflex="1">
+                <label value="👨‍⚕️" sclass="stat-icon" />
+                <label value="36" sclass="stat-value" style="display:block; color:#2e7d32;" />
+                <label value="Bác sĩ hoạt động" sclass="stat-label" style="display:block;" />
+            </div>
+            <div sclass="stat-box stat-box-orange" hflex="1">
+                <label value="🧑‍💼" sclass="stat-icon" />
+                <label value="1,024" sclass="stat-value" style="display:block; color:#e65100;" />
+                <label value="Bệnh nhân" sclass="stat-label" style="display:block;" />
+            </div>
+            <div sclass="stat-box stat-box-red" hflex="1">
+                <label value="⏳" sclass="stat-icon" />
+                <label value="14" sclass="stat-value" style="display:block; color:#c62828;" />
+                <label value="Chờ xác nhận" sclass="stat-label" style="display:block;" />
+            </div>
+        </hlayout>
+
+        <!-- Recent Appointments Card -->
+        <div sclass="content-card">
+            <hlayout valign="middle" style="margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #e8eaf6;">
+                <label value="📋 Lịch Hẹn Gần Đây" style="font-size:16px; font-weight:700; color:#1a237e; flex:1;" />
+                <button label="+ Xem tất cả" sclass="btn-primary" height="34px" />
+            </hlayout>
+
+            <grid width="100%">
+                <columns>
+                    <column label="Bệnh nhân" width="200px" />
+                    <column label="Bác sĩ" width="200px" />
+                    <column label="Ngày giờ" width="180px" />
+                    <column label="Chuyên khoa" width="160px" />
+                    <column label="Trạng thái" />
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Nguyễn Văn A" />
+                        <label value="BS. Trần Thị B" />
+                        <label value="02/03/2026 – 09:00" />
+                        <label value="Tim mạch" />
+                        <label value="✅ Xác nhận" style="color:#2e7d32; font-weight:600;" />
+                    </row>
+                    <row>
+                        <label value="Lê Thị C" />
+                        <label value="BS. Phạm Văn D" />
+                        <label value="02/03/2026 – 10:30" />
+                        <label value="Nội khoa" />
+                        <label value="⏳ Chờ xác nhận" style="color:#e65100; font-weight:600;" />
+                    </row>
+                    <row>
+                        <label value="Phạm Minh E" />
+                        <label value="BS. Nguyễn Thị F" />
+                        <label value="02/03/2026 – 14:00" />
+                        <label value="Da liễu" />
+                        <label value="✅ Xác nhận" style="color:#2e7d32; font-weight:600;" />
+                    </row>
+                </rows>
+            </grid>
+        </div>
+
+    </div>
+</zk>

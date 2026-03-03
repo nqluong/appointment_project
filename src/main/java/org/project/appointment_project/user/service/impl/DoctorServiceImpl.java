@@ -8,8 +8,6 @@ import org.project.appointment_project.common.dto.PageResponse;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.common.redis.RedisCacheService;
 import org.project.appointment_project.user.dto.response.DoctorResponse;
-import org.project.appointment_project.user.mapper.DoctorMapper;
-import org.project.appointment_project.user.model.User;
 import org.project.appointment_project.user.repository.DoctorRepository;
 import org.project.appointment_project.user.service.DoctorService;
 import org.springframework.data.domain.Page;
@@ -27,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 public class DoctorServiceImpl implements DoctorService {
 
     DoctorRepository doctorRepository;
-    DoctorMapper doctorMapper;
     PageMapper pageMapper;
     RedisCacheService redisCacheService;
     private static final String PROFILE_CACHE_PREFIX = "doctor:profile:";
@@ -35,21 +32,18 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DoctorResponse> getAllDoctors(Pageable pageable) {
-        Page<User> doctorPage = doctorRepository.findAllApprovedDoctors(pageable);
-
-        return pageMapper.toPageResponse(doctorPage, doctorMapper::toResponse);
+        Page<DoctorResponse> doctorPage = doctorRepository.findAllApprovedDoctors(pageable);
+        return pageMapper.toPageResponse(doctorPage);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DoctorResponse> getDoctorsWithFilters(String specialtyName, Pageable pageable) {
-        Page<User> doctorPage = doctorRepository.findDoctorsWithFilters(specialtyName, pageable);
-
-        return pageMapper.toPageResponse(doctorPage, doctorMapper::toResponse);
+        Page<DoctorResponse> doctorPage = doctorRepository.findDoctorsWithFilters(specialtyName, pageable);
+        return pageMapper.toPageResponse(doctorPage);
     }
 
     public DoctorResponse getDoctorById(UUID doctorId) {
-        // Try to get from cache first
         String cacheKey = PROFILE_CACHE_PREFIX + doctorId;
         Object cached = redisCacheService.get(cacheKey);
 
@@ -60,15 +54,26 @@ public class DoctorServiceImpl implements DoctorService {
 
         log.debug("Doctor profile cache MISS for ID: {}", doctorId);
 
-        // Cache miss - query from DB
-        User doctor = doctorRepository.findById(doctorId)
+        DoctorResponse response = doctorRepository.findById(doctorId)
+                .map(user -> {
+                    var up = user.getUserProfile();
+                    var mp = user.getMedicalProfile();
+                    return new DoctorResponse(
+                            user.getId(),
+                            up.getFirstName(),
+                            up.getLastName(),
+                            up.getAvatarUrl(),
+                            mp.getQualification(),
+                            mp.getConsultationFee(),
+                            mp.getYearsOfExperience(),
+                            up.getGender() != null ? up.getGender().toString() : null,
+                            up.getPhone(),
+                            mp.getSpecialty() != null ? mp.getSpecialty().getName() : null
+                    );
+                })
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        DoctorResponse response = doctorMapper.toResponse(doctor);
-
-        // Cache for 7 days
         redisCacheService.set(cacheKey, response, 7 * 24 * 60 * 60, TimeUnit.SECONDS);
-
         return response;
     }
 }

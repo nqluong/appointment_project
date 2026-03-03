@@ -25,13 +25,13 @@ public interface DoctorAvailabilityService {
     );
 
     //Lấy danh sách các khung giờ có sẵn của một bác sĩ trong khoảng thời gian
-    DoctorWithSlotsResponse getDoctorAvailableSlots1(
+    DoctorWithSlotsResponse getDoctorAvailableSlots(
             UUID doctorId,
             LocalDate startDate,
             LocalDate endDate
     );
 
-    DoctorWithSlotsResponse getDoctorAvailableSlots2(
+    DoctorWithSlotsResponse getDoctorAvailableSlotsCache(
             UUID doctorId,
             LocalDate startDate,
             LocalDate endDate

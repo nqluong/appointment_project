@@ -1,11 +1,9 @@
 package org.project.appointment_project.user.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import org.project.appointment_project.user.dto.response.DoctorResponse;
 import org.project.appointment_project.user.model.User;
+import org.project.appointment_project.user.utils.NameUtils;
 
 import java.util.List;
 
@@ -50,5 +48,12 @@ public interface DoctorMapper {
             return null;
         }
         return user.getUserProfile().getGender().toString();
+    }
+
+
+
+    @Named("formatDoctorTitle")
+    default String formatDoctorTitle(String fullName) {
+        return NameUtils.formatDoctorFullName(fullName);
     }
 }

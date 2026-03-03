@@ -10,6 +10,11 @@ spring:
     driver-class-name: "org.postgresql.Driver"
   application:
     name: appointment
+  devtools:
+    restart:
+      exclude: "META-INF/resources/**,WEB-INF/**"
+    livereload:
+      enabled: false
   mail:
     host: smtp.gmail.com
     port: 587
@@ -21,6 +26,9 @@ spring:
           auth: true
           starttls:
             enable: true
+  web:
+    resources:
+      add-mappings: true
 
 
   jpa:
@@ -92,3 +100,13 @@ task:
   scheduling:
     pool:
       size: 2  # Thread pool cho schedulers
+
+# ZK Framework configuration
+zk:
+  homepage: index.zul
+  springboot-packaging: jar
+  zul-view-resolver-enabled: true
+  zul-view-resolver-prefix: /
+  zul-view-resolver-suffix: .zul
+  richlet-filter-mapping: /richlet/*
+  prefer-locale: en

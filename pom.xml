@@ -99,12 +99,31 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.zkoss.zkspringboot</groupId>
+            <artifactId>zkspringboot-starter</artifactId>
+            <version>3.2.7.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkplus</artifactId>
+            <version>10.0.0-jakarta</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 	</dependencies>
+
+    <repositories>
+        <repository>
+            <id>ZK CE</id>
+            <name>ZK CE Repository</name>
+            <url>https://mavensync.zkoss.org/maven2</url>
+        </repository>
+    </repositories>
 
 	<build>
 		<plugins>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk>
+    <preference>
+        <name>org.zkoss.zk.ui.prefer.locale</name>
+        <value>en</value>
+    </preference>
+
+    <preference>
+        <name>org.zkoss.web.classWebResource.cache</name>
+        <value>false</value>
+    </preference>
+
+    <preference>
+        <name>org.zkoss.zul.scrollbar.horizontal</name>
+        <value>false</value>
+    </preference>
+
+    <device-config>
+        <device-type>ajax</device-type>
+        <embed>
+            zk.usePopupPosition = 'fixed';
+        </embed>
+    </device-config>
+</zk>

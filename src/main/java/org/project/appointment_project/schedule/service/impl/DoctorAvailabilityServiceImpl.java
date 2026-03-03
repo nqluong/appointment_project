@@ -9,6 +9,7 @@ import org.project.appointment_project.common.exception.CustomException;
 import org.project.appointment_project.common.exception.ErrorCode;
 import org.project.appointment_project.common.mapper.PageMapper;
 import org.project.appointment_project.common.redis.RedisCacheService;
+import org.project.appointment_project.schedule.dto.cache.CacheKeyInfo;
 import org.project.appointment_project.schedule.dto.cache.DoctorAvailabilityCacheData;
 import org.project.appointment_project.schedule.dto.cache.TimeSlot;
 import org.project.appointment_project.schedule.dto.response.AvailableSlotInfo;
@@ -68,19 +69,25 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
             LocalDate endDate,
             Pageable pageable) {
 
+        List<UUID> doctorIds = projectionPage.getContent().stream()
+                .map(DoctorWithSlotsProjection::getUserId)
+                .toList();
+
+        Map<UUID, List<AvailableSlotInfo>> slotsMap =
+                loadLimitedSlotsFromCache(doctorIds, startDate, endDate, 3);
+
         List<DoctorWithSlotsResponse> responses = projectionPage.getContent().stream()
                 .map(projection -> {
-                    DoctorWithSlotsResponse response = doctorAvailabilityMapper.toBaseDoctorResponse(projection);
+                    DoctorWithSlotsResponse response =
+                            doctorAvailabilityMapper.toBaseDoctorResponse(projection);
 
-                    // Lấy slots riêng biệt cho mỗi doctor với limit 3
-                    List<AvailableSlotInfo> slotInfos = getLimitedSlotsWithCache(
-                            projection.getUserId(), startDate, endDate, 3);
+                    // Slots từ cache
+                    List<AvailableSlotInfo> slots = slotsMap.getOrDefault(
+                            projection.getUserId(), Collections.emptyList());
+                    response.setAvailableSlots(slots);
 
-
-                    response.setAvailableSlots(slotInfos);
-
-                    log.debug("Doctor {} has {} available slots",
-                            response.getUserId(), slotInfos.size());
+                    log.debug("Doctor {} có {} slots từ cache",
+                            projection.getUserId(), slots.size());
 
                     return response;
                 })
@@ -93,7 +100,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     }
 
     @Override
-    public DoctorWithSlotsResponse getDoctorAvailableSlots1(UUID doctorId, LocalDate startDate, LocalDate endDate) {
+    public DoctorWithSlotsResponse getDoctorAvailableSlots(UUID doctorId, LocalDate startDate, LocalDate endDate) {
         DoctorWithSlotsProjection doctorProjection = repository.findDoctorById(doctorId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -111,7 +118,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     }
 
     @Override
-    public DoctorWithSlotsResponse getDoctorAvailableSlots2(UUID doctorId, LocalDate startDate, LocalDate endDate) {
+    public DoctorWithSlotsResponse getDoctorAvailableSlotsCache(UUID doctorId, LocalDate startDate, LocalDate endDate) {
         log.info("Lấy slots của bác sĩ {} từ {} đến {}", doctorId, startDate, endDate);
 
         // Lấy thông tin bác sĩ từ cache hoặc DB
@@ -123,18 +130,81 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
 
         response.setAvailableSlots(slotInfos);
 
-        log.info("Bác sĩ {} có {} slots từ {} đến {}",
-                doctorId, slotInfos.size(), startDate, endDate);
-
         return response;
     }
+
+    private Map<UUID, List<AvailableSlotInfo>> loadLimitedSlotsFromCache(
+            List<UUID> doctorIds,
+            LocalDate startDate,
+            LocalDate endDate,
+            int limitPerDoctor) {
+
+        Map<UUID, List<AvailableSlotInfo>> resultMap = new HashMap<>();
+
+        List<String> allCacheKeys = new ArrayList<>();
+        Map<String, CacheKeyInfo> keyInfoMap = new HashMap<>();
+
+        for (UUID doctorId : doctorIds) {
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate)) {
+                String cacheKey = AVAILABILITY_CACHE_PREFIX + doctorId + ":" + currentDate;
+                allCacheKeys.add(cacheKey);
+                keyInfoMap.put(cacheKey, new CacheKeyInfo(doctorId, currentDate));
+                currentDate = currentDate.plusDays(1);
+            }
+        }
+
+        // get tất cả slots cùng lúc
+        Map<UUID, List<AvailableSlotInfo>> tempSlotsMap = new HashMap<>();
+
+        try {
+            List<Object> cachedValues = redisCacheService.mget(allCacheKeys);
+
+            for (int i = 0; i < allCacheKeys.size(); i++) {
+                String cacheKey = allCacheKeys.get(i);
+                Object cached = cachedValues.get(i);
+                CacheKeyInfo keyInfo = keyInfoMap.get(cacheKey);
+
+                if (cached instanceof DoctorAvailabilityCacheData) {
+                    DoctorAvailabilityCacheData cacheData = (DoctorAvailabilityCacheData) cached;
+
+                    if (cacheData.getTotalSlots() != null && cacheData.getTotalSlots() == 0) {
+                        continue;
+                    }
+
+                    List<AvailableSlotInfo> dailySlots = convertCacheDataToSlotInfoList(cacheData);
+
+                    tempSlotsMap.computeIfAbsent(keyInfo.getDoctorId(), k -> new ArrayList<>())
+                            .addAll(dailySlots);
+                }
+            }
+
+
+        } catch (Exception e) {
+            log.error("Lỗi get slots từ cache: {}", e.getMessage());
+        }
+
+        for (UUID doctorId : doctorIds) {
+            List<AvailableSlotInfo> allSlots = tempSlotsMap.getOrDefault(
+                    doctorId, new ArrayList<>());
+
+            List<AvailableSlotInfo> limitedSlots = allSlots.stream()
+                    .limit(limitPerDoctor)
+                    .collect(Collectors.toList());
+
+            resultMap.put(doctorId, limitedSlots);
+        }
+
+        return resultMap;
+    }
+
 
     // Cache key: doctor:profile:{doctorId}
     private DoctorWithSlotsResponse getDoctorInfoWithCache(UUID doctorId) {
         String cacheKey = PROFILE_CACHE_PREFIX + doctorId;
 
         try {
-            // Kiểm tra cache profile
+
             Object cachedProfile = redisCacheService.get(cacheKey);
 
             if (cachedProfile instanceof DoctorResponse) {
@@ -158,36 +228,6 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
         return doctorAvailabilityMapper.toBaseDoctorResponse(projection);
     }
 
-    /**
-     * Lấy slots giới hạn với cache
-     */
-    private List<AvailableSlotInfo> getLimitedSlotsWithCache(
-            UUID doctorId,
-            LocalDate startDate,
-            LocalDate endDate,
-            int limit) {
-
-        List<AvailableSlotInfo> allSlots = new ArrayList<>();
-        LocalDate currentDate = startDate;
-        int count = 0;
-
-        // Lấy slots từng ngày cho đến khi đủ limit hoặc hết range
-        while (!currentDate.isAfter(endDate) && count < limit) {
-            List<AvailableSlotInfo> dailySlots = getDailySlotsWithCache(
-                    doctorId, currentDate);
-
-            for (AvailableSlotInfo slot : dailySlots) {
-                if (count >= limit) break;
-                allSlots.add(slot);
-                count++;
-            }
-
-            currentDate = currentDate.plusDays(1);
-        }
-
-        return allSlots;
-    }
-
     // Lấy tất cả slots trong khoảng với cache
     private List<AvailableSlotInfo> getAllSlotsInRangeWithCache(
             UUID doctorId,
@@ -195,70 +235,66 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
             LocalDate endDate) {
 
         List<AvailableSlotInfo> allSlots = new ArrayList<>();
+        List<LocalDate> cacheMissDates = new ArrayList<>();
+
+        List<String> cacheKeys = new ArrayList<>();
+        List<LocalDate> dates = new ArrayList<>();
+
         LocalDate currentDate = startDate;
-
-        // Lấy slots từng ngày
         while (!currentDate.isAfter(endDate)) {
-            List<AvailableSlotInfo> dailySlots = getDailySlotsWithCache(
-                    doctorId, currentDate);
-
-            allSlots.addAll(dailySlots);
+            cacheKeys.add(AVAILABILITY_CACHE_PREFIX + doctorId + ":" + currentDate);
+            dates.add(currentDate);
             currentDate = currentDate.plusDays(1);
+        }
+
+        try {
+            List<Object> cachedValues = redisCacheService.mget(cacheKeys);
+
+            for (int i = 0; i < dates.size(); i++) {
+                LocalDate date = dates.get(i);
+                Object cached = cachedValues.get(i);
+
+                if (cached instanceof DoctorAvailabilityCacheData) {
+                    DoctorAvailabilityCacheData cacheData = (DoctorAvailabilityCacheData) cached;
+
+                    if (cacheData.getTotalSlots() != null && cacheData.getTotalSlots() == 0) {
+                        continue;
+                    }
+
+                    List<AvailableSlotInfo> dailySlots = convertCacheDataToSlotInfoList(cacheData);
+                    allSlots.addAll(dailySlots);
+
+                } else {
+                    cacheMissDates.add(date);
+                }
+            }
+
+            log.info("Slots bác sĩ {}: Cache HIT {}/{} ngày",
+                    doctorId, (dates.size() - cacheMissDates.size()), dates.size());
+
+        } catch (Exception e) {
+            cacheMissDates.addAll(dates);
+        }
+
+        //  cho các ngày cache miss
+        if (!cacheMissDates.isEmpty()) {
+            log.info("Load {} ngày từ DB cho bác sĩ {} (ngoài range cache)",
+                    cacheMissDates.size(), doctorId);
+
+            for (LocalDate date : cacheMissDates) {
+                List<SlotProjection> dbSlots = repository.findAvailableSlotsByDoctorIdAndDate(
+                        doctorId, date, date);
+
+                List<AvailableSlotInfo> dailySlots = dbSlots.stream()
+                        .map(doctorAvailabilityMapper::toAvailableSlotInfo)
+                        .collect(Collectors.toList());
+
+                allSlots.addAll(dailySlots);
+            }
         }
 
         return allSlots;
     }
-
-
-    /**
-     * Cache key: doctor:availability:{doctorId}:{date}
-     */
-    private List<AvailableSlotInfo> getDailySlotsWithCache(UUID doctorId, LocalDate date) {
-        String cacheKey = AVAILABILITY_CACHE_PREFIX + doctorId + ":" + date;
-
-        try {
-            if (redisCacheService.exists(cacheKey)) {
-                Object cachedData = redisCacheService.get(cacheKey);
-
-                if (cachedData instanceof DoctorAvailabilityCacheData) {
-                    DoctorAvailabilityCacheData cacheData = (DoctorAvailabilityCacheData) cachedData;
-
-                    // Kiểm tra xem có phải ngày rỗng không
-                    if (cacheData.getTotalSlots() != null && cacheData.getTotalSlots() == 0) {
-                        log.info("Cache HIT (EMPTY) - Bác sĩ {} không có slot ngày {}",
-                                doctorId, date);
-                        return Collections.emptyList();
-                    }
-
-                    log.info("Cache HIT - Bác sĩ {} ngày {} có {} available slots",
-                            doctorId, date, cacheData.getSlots().size());
-
-                    return convertCacheDataToSlotInfoList(cacheData);
-                }
-            }
-
-            // Cache không tồn tại → Ngoài range 7 ngày của worker
-            log.info("Cache MISS - Slots bác sĩ {} ngày {} (ngoài range cache)",
-                    doctorId, date);
-
-        } catch (Exception e) {
-            log.warn("Lỗi đọc cache slots bác sĩ {} ngày {}: {}",
-                    doctorId, date, e.getMessage());
-        }
-
-        // Cache miss → Query DB và cache động
-        return getDailySlotsFromDatabase(doctorId, date);
-    }
-
-    private List<AvailableSlotInfo> getDailySlotsFromDatabase(UUID doctorId, LocalDate date) {
-        List<SlotProjection> slots = repository.findAvailableSlotsByDoctorIdAndDate(
-                doctorId, date, date);
-
-        return slots.stream()
-                .map(doctorAvailabilityMapper::toAvailableSlotInfo)
-                .collect(Collectors.toList());
-    }
-
 
     private List<AvailableSlotInfo> convertCacheDataToSlotInfoList(
             DoctorAvailabilityCacheData cacheData) {
@@ -280,6 +316,8 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
+
 
     private AvailableSlotInfo convertTimeSlotToAvailableSlotInfo(
             TimeSlot timeSlot,

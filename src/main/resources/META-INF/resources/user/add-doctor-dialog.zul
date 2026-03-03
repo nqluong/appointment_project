@@ -1,0 +1,189 @@
+<zk>
+    <window id="addDoctorWin"
+            title="Thêm Bác Sĩ Mới"
+            border="normal"
+            width="680px"
+            closable="true"
+            sclass="add-doctor-win"
+            viewModel="@id('advm') @init('org.project.appointment_project.ui.viewmodel.admin.AddDoctorViewModel')"
+            onClose="@command('closeDialog')">
+
+        <vlayout spacing="0" sclass="add-doctor-body">
+
+            <!-- Thông báo lỗi / thành công -->
+            <div sclass="add-doctor-alert add-doctor-alert-error"
+                 visible="@load(not empty advm.errorMessage)">
+                <span sclass="bi bi-exclamation-circle" style="margin-right:6px;" />
+                <label value="@load(advm.errorMessage)" />
+            </div>
+            <div sclass="add-doctor-alert add-doctor-alert-success"
+                 visible="@load(not empty advm.successMessage)">
+                <span sclass="bi bi-check-circle" style="margin-right:6px;" />
+                <label value="@load(advm.successMessage)" />
+            </div>
+
+            <!-- ===== Section: Thông tin tài khoản ===== -->
+            <div sclass="add-doctor-section-title">
+                <span sclass="fa-solid fa-user" style="margin-right:6px;" />
+                Thông tin tài khoản
+            </div>
+            <grid sclass="add-doctor-grid">
+                <columns>
+                    <column width="170px" />
+                    <column />
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Tên đăng nhập *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.username)"
+                                 placeholder="vd: dr_nguyen"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Email *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.email)"
+                                 placeholder="vd: doctor@hospital.com"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Mật khẩu *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.password)"
+                                 type="password"
+                                 placeholder="Tối thiểu 8 ký tự"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                </rows>
+            </grid>
+
+            <!-- ===== Section: Thông tin cá nhân ===== -->
+            <div sclass="add-doctor-section-title">
+                <span sclass="fa-solid fa-id-card" style="margin-right:6px;" />
+                Thông tin cá nhân
+            </div>
+            <grid sclass="add-doctor-grid">
+                <columns>
+                    <column width="170px" />
+                    <column />
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Họ *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.lastName)"
+                                 placeholder="vd: Nguyễn"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Tên *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.firstName)"
+                                 placeholder="vd: Văn A"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Giới tính" sclass="add-doctor-label" />
+                        <listbox mold="select"
+                                 model="@load(advm.genderModel)"
+                                 sclass="add-doctor-select" width="140px">
+                            <template name="model" var="g">
+                                <listitem label="@load(g)" value="@load(g)" />
+                            </template>
+                        </listbox>
+                    </row>
+                    <row>
+                        <label value="Ngày sinh" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.dateOfBirthStr)"
+                                 placeholder="YYYY-MM-DD"
+                                 sclass="add-doctor-input" width="150px" />
+                    </row>
+                    <row>
+                        <label value="Số điện thoại" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.phone)"
+                                 placeholder="vd: 0901234567"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Địa chỉ" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.address)"
+                                 placeholder="Địa chỉ..."
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                </rows>
+            </grid>
+
+            <!-- ===== Section: Thông tin chuyên môn ===== -->
+            <div sclass="add-doctor-section-title">
+                <span sclass="fa-solid fa-stethoscope" style="margin-right:6px;" />
+                Thông tin chuyên môn
+            </div>
+            <grid sclass="add-doctor-grid">
+                <columns>
+                    <column width="170px" />
+                    <column />
+                </columns>
+                <rows>
+                    <row>
+                        <label value="Số GPHÀNH NGHỀ *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.licenseNumber)"
+                                 placeholder="vd: GP123456"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Chuyên khoa *" sclass="add-doctor-label" />
+                        <listbox mold="select"
+                                 model="@load(advm.specialtyModel)"
+                                 sclass="add-doctor-select" width="100%">
+                            <template name="model" var="sp">
+                                <listitem label="@load(sp.name)" value="@load(sp.specialtyId)" />
+                            </template>
+                        </listbox>
+                    </row>
+                    <row>
+                        <label value="Bằng cấp *" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.qualification)"
+                                 placeholder="vd: Tiến sĩ Y khoa"
+                                 sclass="add-doctor-input" width="100%" />
+                    </row>
+                    <row>
+                        <label value="Năm kinh nghiệm" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.yearsOfExperienceStr)"
+                                 placeholder="vd: 10"
+                                 sclass="add-doctor-input" width="80px" />
+                    </row>
+                    <row>
+                        <label value="Giá khám (VNĐ)" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.consultationFeeStr)"
+                                 placeholder="vd: 200000"
+                                 sclass="add-doctor-input" width="160px" />
+                    </row>
+                    <row>
+                        <label value="Giới thiệu" sclass="add-doctor-label" />
+                        <textbox value="@bind(advm.bio)"
+                                 placeholder="Mô tả ngắn về bác sĩ..."
+                                 multiline="true" rows="3"
+                                 sclass="add-doctor-input add-doctor-textarea" width="100%" />
+                    </row>
+                </rows>
+            </grid>
+
+            <!-- ===== Footer buttons ===== -->
+            <div sclass="add-doctor-footer">
+                <hlayout spacing="10px">
+                    <button label="Lưu bác sĩ"
+                            iconSclass="fa-solid fa-floppy-disk"
+                            sclass="btn-save-doctor"
+                            disabled="@load(advm.loading)"
+                            onClick="@command('save')" />
+                    <button label="Làm mới"
+                            iconSclass="fa-solid fa-rotate-left"
+                            sclass="btn-reset-doctor"
+                            onClick="@command('resetForm')" />
+                    <button label="Đóng"
+                            iconSclass="fa-solid fa-xmark"
+                            sclass="btn-close-doctor"
+                            onClick="@command('closeDialog')" />
+                </hlayout>
+            </div>
+
+        </vlayout>
+    </window>
+</zk>
+
