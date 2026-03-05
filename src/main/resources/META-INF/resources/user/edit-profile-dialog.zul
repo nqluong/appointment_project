@@ -17,14 +17,7 @@
             <label value="@load(vm.errorMessage)"/>
         </div>
 
-        <!-- Alert: Success -->
-        <div sclass="add-doctor-alert add-doctor-alert-success"
-             visible="@load(not empty vm.successMessage)">
-            <span sclass="bi bi-check-circle" style="margin-right:6px;"/>
-            <label value="@load(vm.successMessage)"/>
-        </div>
 
-        <!-- ===== Section: Thông tin cá nhân ===== -->
         <div sclass="add-doctor-section-title">
             <span sclass="fa-solid fa-id-card" style="margin-right:6px;"/>
             Thông tin cá nhân
@@ -37,12 +30,12 @@
             <rows>
                 <row>
                     <label value="Họ" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.lastName)" placeholder="VD: Nguyễn"
+                    <textbox value="@bind(vm.form.lastName)" placeholder="VD: Nguyễn"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Tên" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.firstName)" placeholder="VD: Văn A"
+                    <textbox value="@bind(vm.form.firstName)" placeholder="VD: Văn A"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
@@ -56,23 +49,22 @@
                 </row>
                 <row>
                     <label value="Ngày sinh" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.dateOfBirthStr)" placeholder="YYYY-MM-DD"
+                    <textbox value="@bind(vm.form.dateOfBirthStr)" placeholder="YYYY-MM-DD"
                              sclass="add-doctor-input" width="150px"/>
                 </row>
                 <row>
                     <label value="Số điện thoại" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.phone)" placeholder="VD: 0901234567"
+                    <textbox value="@bind(vm.form.phone)" placeholder="VD: 0901234567"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Địa chỉ" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.address)" placeholder="Địa chỉ..."
+                    <textbox value="@bind(vm.form.address)" placeholder="Địa chỉ..."
                              sclass="add-doctor-input" width="100%"/>
                 </row>
             </rows>
         </grid>
 
-        <!-- ===== Section: Thông tin chuyên môn (bác sĩ) ===== -->
         <div sclass="add-doctor-section-title" visible="@load(vm.doctorProfile)">
             <span sclass="fa-solid fa-stethoscope" style="margin-right:6px;"/>
             Thông tin chuyên môn
@@ -85,7 +77,7 @@
             <rows>
                 <row>
                     <label value="Số GP hành nghề" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.licenseNumber)" placeholder="VD: GP123456"
+                    <textbox value="@bind(vm.form.licenseNumber)" placeholder="VD: GP123456"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
@@ -99,22 +91,22 @@
                 </row>
                 <row>
                     <label value="Bằng cấp / Học vị" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.qualification)" placeholder="VD: Tiến sĩ Y khoa"
+                    <textbox value="@bind(vm.form.qualification)" placeholder="VD: Tiến sĩ Y khoa"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Năm kinh nghiệm" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.yearsOfExperienceStr)" placeholder="VD: 5"
+                    <textbox value="@bind(vm.form.yearsOfExperienceStr)" placeholder="VD: 5"
                              sclass="add-doctor-input" width="80px"/>
                 </row>
                 <row>
                     <label value="Giá khám (VNĐ)" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.consultationFeeStr)" placeholder="VD: 200000"
+                    <textbox value="@bind(vm.form.consultationFeeStr)" placeholder="VD: 200000"
                              sclass="add-doctor-input" width="160px"/>
                 </row>
                 <row>
                     <label value="Giới thiệu" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.bio)"
+                    <textbox value="@bind(vm.form.bio)"
                              placeholder="Mô tả ngắn về kinh nghiệm, chuyên môn..."
                              multiline="true" rows="3"
                              sclass="add-doctor-input add-doctor-textarea" width="100%"/>
@@ -122,7 +114,6 @@
             </rows>
         </grid>
 
-        <!-- ===== Section: Hồ sơ y tế (bệnh nhân) ===== -->
         <div sclass="add-doctor-section-title" visible="@load(vm.patientProfile)">
             <span sclass="fa-solid fa-notes-medical" style="margin-right:6px;"/>
             Hồ sơ y tế
@@ -135,46 +126,45 @@
             <rows>
                 <row>
                     <label value="Nhóm máu" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.bloodType)" placeholder="VD: A+, B-, O+"
+                    <textbox value="@bind(vm.form.bloodType)" placeholder="VD: A+, B-, O+"
                              sclass="add-doctor-input" width="120px"/>
                 </row>
                 <row>
                     <label value="Dị ứng" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.allergies)"
+                    <textbox value="@bind(vm.form.allergies)"
                              placeholder="Liệt kê các dị ứng nếu có..."
                              multiline="true" rows="3"
                              sclass="add-doctor-input add-doctor-textarea" width="100%"/>
                 </row>
                 <row>
                     <label value="Tiền sử bệnh" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.medicalHistory)"
+                    <textbox value="@bind(vm.form.medicalHistory)"
                              placeholder="Mô tả tiền sử bệnh lý..."
                              multiline="true" rows="3"
                              sclass="add-doctor-input add-doctor-textarea" width="100%"/>
                 </row>
                 <row>
                     <label value="Liên hệ khẩn cấp" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.emergencyContactName)"
+                    <textbox value="@bind(vm.form.emergencyContactName)"
                              placeholder="Họ và tên người liên hệ"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="SĐT khẩn cấp" sclass="add-doctor-label"/>
-                    <textbox value="@bind(vm.emergencyContactPhone)"
+                    <textbox value="@bind(vm.form.emergencyContactPhone)"
                              placeholder="VD: 0901234567"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
             </rows>
         </grid>
 
-        <!-- ===== Footer buttons ===== -->
         <div sclass="add-doctor-footer">
             <hlayout spacing="10px">
                 <button label="Lưu thay đổi"
                         iconSclass="fa-solid fa-floppy-disk"
                         sclass="btn-save-doctor"
                         disabled="@load(vm.loading)"
-                        onClick="@command('save')"/>
+                        onClick="@command('save', view=self.root)"/>
                 <button label="Đặt lại"
                         iconSclass="fa-solid fa-rotate-left"
                         sclass="btn-reset-doctor"

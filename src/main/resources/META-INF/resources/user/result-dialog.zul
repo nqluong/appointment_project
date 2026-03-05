@@ -1,0 +1,29 @@
+<?link rel="stylesheet" href="/css/confirm-dialog.css"?>
+<zk>
+    <window viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.dialog.ResultDialogVM')"
+            id="resultWin"
+            sclass="confirm-win"
+            border="none" closable="false" mode="modal" width="400px">
+
+        <!-- Header duy nhất — sclass và icon thay đổi theo success/failure -->
+        <div sclass="@load(vm.headerSclass)">
+            <span sclass="@load(vm.iconSclass)"/>
+            <label sclass="confirm-title" value="@load(vm.headerTitle)"/>
+        </div>
+
+        <!-- Body -->
+        <div sclass="confirm-body">
+            <label sclass="confirm-message" multiline="true"
+                   value="@load(vm.message)"/>
+        </div>
+
+        <!-- Footer -->
+        <div sclass="confirm-footer">
+            <button sclass="btn-confirm-primary" label="OK"
+                    onClick="@command('close', view=self.root)"/>
+        </div>
+
+    </window>
+</zk>
+
+

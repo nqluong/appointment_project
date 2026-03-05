@@ -33,7 +33,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DoctorResponse> getAllDoctors(Pageable pageable) {
-        Page<DoctorResponse> doctorPage = doctorRepository.findAllApprovedDoctors(pageable);
+        Page<DoctorResponse> doctorPage = doctorRepository.findAllDoctors(pageable);
         return pageMapper.toPageResponse(doctorPage);
     }
 
@@ -41,6 +41,13 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public PageResponse<DoctorResponse> getDoctorsWithFilters(String specialtyName, Pageable pageable) {
         Page<DoctorResponse> doctorPage = doctorRepository.findDoctorsWithFilters(specialtyName, pageable);
+        return pageMapper.toPageResponse(doctorPage);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<DoctorResponse> searchDoctors(String keyword, Pageable pageable) {
+        Page<DoctorResponse> doctorPage = doctorRepository.searchDoctorsByKeyword(keyword, pageable);
         return pageMapper.toPageResponse(doctorPage);
     }
 
@@ -70,7 +77,9 @@ public class DoctorServiceImpl implements DoctorService {
                             mp.getYearsOfExperience(),
                             up.getGender() != null ? up.getGender().toString() : null,
                             up.getPhone(),
-                            mp.getSpecialty() != null ? mp.getSpecialty().getName() : null
+                            mp.getSpecialty() != null ? mp.getSpecialty().getName() : null,
+                            user.isActive(),
+                            mp.isDoctorApproved()
                     );
                 })
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));

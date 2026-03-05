@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -127,6 +128,19 @@ public class SecurityUtils {
     public boolean isCurrentUserAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null && hasAdminRole(authentication);
+    }
+
+    /**
+     * An toàn cho ZK ViewModel — không throw exception khi không có Security context.
+     * Trả về Optional.empty() nếu chưa xác thực hoặc không lấy được userId.
+     */
+    public Optional<UUID> getCurrentUserIdSafe() {
+        try {
+            return Optional.of(getCurrentUserId());
+        } catch (Exception e) {
+            log.debug("getCurrentUserIdSafe: không lấy được userId từ Security context — {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 
     public JwtUserPrincipal getCurrentUserPrincipal() {

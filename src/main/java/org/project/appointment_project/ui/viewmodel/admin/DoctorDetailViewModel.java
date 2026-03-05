@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import org.project.appointment_project.ui.viewmodel.admin.dto.DoctorDetailInfo;
 import org.project.appointment_project.user.dto.response.CompleteProfileResponse;
 import org.project.appointment_project.user.enums.Gender;
 import org.project.appointment_project.user.service.ProfileService;
@@ -20,40 +21,16 @@ import lombok.Getter;
 
 public class DoctorDetailViewModel {
 
-    private static final DateTimeFormatter DATE_FMT     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern(" HH:mm dd/MM/yyyy");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     private ProfileService profileService;
 
-    // Thông tin cá nhân
-    @Getter private String fullName = "";
-    @Getter private String gender = "";
-    @Getter private String dateOfBirth = "";
-    @Getter private String phone = "";
-    @Getter private String address = "";
-    @Getter private String avatarUrl = "";
+    @Getter
+    private DoctorDetailInfo doctor;
 
-    // Hồ sơ y tế
-    @Getter private String bloodType = "";
-    @Getter private String allergies = "";
-    @Getter private String medicalHistory = "";
-    @Getter private String emergencyContactName = "";
-    @Getter private String emergencyContactPhone = "";
-
-    // Thông tin chuyên môn
-    @Getter private String licenseNumber = "";
-    @Getter private String specialtyName = "";
-    @Getter private String qualification = "";
-    @Getter private String yearsOfExperience = "";
-    @Getter private String consultationFee = "";
-    @Getter private String bio = "";
-    @Getter private boolean doctorApproved = false;
-
-    // Thời gian cập nhật
-    @Getter private String userProfileUpdatedAt = "";
-    @Getter private String medicalProfileUpdatedAt = "";
-
-    @Getter private String errorMessage = "";
+    @Getter
+    private String errorMessage = "";
 
     @Init
     public void init(@BindingParam("doctorId") UUID doctorId) {
@@ -65,31 +42,36 @@ public class DoctorDetailViewModel {
         try {
             CompleteProfileResponse p = profileService.getCompleteProfileInternal(doctorId);
 
-            String first = nvl(p.getFirstName());
-            String last  = nvl(p.getLastName());
-            fullName    = NameUtils.formatDoctorFullName(first + " " + last);
-            gender      = translateGender(p.getGender());
-            dateOfBirth = p.getDateOfBirth() != null ? p.getDateOfBirth().format(DATE_FMT) : "";
-            phone       = nvl(p.getPhone());
-            address     = nvl(p.getAddress());
-            avatarUrl   = nvl(p.getAvatarUrl());
+            String firstName = nvl(p.getFirstName());
+            String lastName = nvl(p.getLastName());
 
-            bloodType            = nvl(p.getBloodType());
-            allergies            = nvl(p.getAllergies());
-            medicalHistory       = nvl(p.getMedicalHistory());
-            emergencyContactName = nvl(p.getEmergencyContactName());
-            emergencyContactPhone= nvl(p.getEmergencyContactPhone());
+            doctor = DoctorDetailInfo.builder()
+                    .fullName(NameUtils.formatDoctorFullName(firstName + " " + lastName))
+                    .gender(translateGender(p.getGender()))
+                    .dateOfBirth(p.getDateOfBirth() != null ? p.getDateOfBirth().format(DATE_FMT) : "")
+                    .phone(nvl(p.getPhone()))
+                    .address(nvl(p.getAddress()))
+                    .avatarUrl(nvl(p.getAvatarUrl()))
 
-            licenseNumber     = nvl(p.getLicenseNumber());
-            specialtyName     = nvl(p.getSpecialtyName());
-            qualification     = nvl(p.getQualification());
-            yearsOfExperience = p.getYearsOfExperience() != null ? p.getYearsOfExperience() + " năm" : "—";
-            consultationFee   = p.getConsultationFee() != null ? formatFee(p.getConsultationFee()) : "—";
-            bio               = nvl(p.getBio());
-            doctorApproved    = p.isDoctorApproved();
+                    .bloodType(nvl(p.getBloodType()))
+                    .allergies(nvl(p.getAllergies()))
+                    .medicalHistory(nvl(p.getMedicalHistory()))
+                    .emergencyContactName(nvl(p.getEmergencyContactName()))
+                    .emergencyContactPhone(nvl(p.getEmergencyContactPhone()))
 
-            userProfileUpdatedAt    = p.getUserProfileUpdatedAt()    != null ? p.getUserProfileUpdatedAt().format(DATETIME_FMT)    : "";
-            medicalProfileUpdatedAt = p.getMedicalProfileUpdatedAt() != null ? p.getMedicalProfileUpdatedAt().format(DATETIME_FMT) : "";
+                    .licenseNumber(nvl(p.getLicenseNumber()))
+                    .specialtyName(nvl(p.getSpecialtyName()))
+                    .qualification(nvl(p.getQualification()))
+                    .yearsOfExperience(p.getYearsOfExperience() != null ? p.getYearsOfExperience() + " năm" : "—")
+                    .consultationFee(p.getConsultationFee() != null ? formatFee(p.getConsultationFee()) : "—")
+                    .bio(nvl(p.getBio()))
+                    .doctorApproved(p.isDoctorApproved())
+
+                    .userProfileUpdatedAt(p.getUserProfileUpdatedAt() != null
+                            ? p.getUserProfileUpdatedAt().format(DATETIME_FMT) : "")
+                    .medicalProfileUpdatedAt(p.getMedicalProfileUpdatedAt() != null
+                            ? p.getMedicalProfileUpdatedAt().format(DATETIME_FMT) : "")
+                    .build();
 
         } catch (Exception e) {
             errorMessage = "Không thể tải thông tin bác sĩ: " + e.getMessage();
@@ -99,22 +81,17 @@ public class DoctorDetailViewModel {
     private String translateGender(Gender g) {
         if (g == null) return "";
         return switch (g) {
-            case MALE   -> "Nam";
+            case MALE -> "Nam";
             case FEMALE -> "Nữ";
         };
     }
 
-    private String nvl(String s) { return s != null ? s : ""; }
+    private String nvl(String s) {
+        return s != null ? s : "";
+    }
 
     private String formatFee(BigDecimal fee) {
         return String.format("%,.0f VNĐ", fee);
-    }
-
-    public boolean isHasAvatar()      { return avatarUrl != null && !avatarUrl.isBlank(); }
-    public boolean isHasBio()         { return bio       != null && !bio.isBlank(); }
-    public boolean isHasMedicalInfo() {
-        return (!bloodType.isBlank() || !allergies.isBlank()
-                || !medicalHistory.isBlank() || !emergencyContactName.isBlank());
     }
 
     @Command

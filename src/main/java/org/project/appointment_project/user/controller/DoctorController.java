@@ -57,4 +57,22 @@ public class DoctorController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/keyword-search")
+    public ResponseEntity<PageResponse<DoctorResponse>> searchDoctors(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        PageResponse<DoctorResponse> response = doctorService.searchDoctors(keyword, pageable);
+
+        return ResponseEntity.ok(response);
+    }
 }

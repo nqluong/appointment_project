@@ -14,6 +14,7 @@
                 <textbox value="@bind(vm.searchKeyword)"
                          placeholder="Tên bác sĩ, chuyên khoa..."
                          width="260px"
+                         onChange="@command('onSearchKeywordChange')"
                          onOK="@command('search')" />
                 <label value="Chuyên khoa:" sclass="doctor-filter-label" />
                 <listbox width="180px"
@@ -49,21 +50,28 @@
                     <column label="Thao tác"    align="center" />
                 </columns>
                 <template name="model" var="doctor" status="s">
-                    <row sclass="doctor-row" style="cursor:pointer;"
+                    <row sclass="@load(vm.getRowSclass(doctor))" style="cursor:pointer;"
                          onClick="@command('viewDoctor', doctor=doctor)">
                         <label value="@load(s.index + 1)" />
-                        <label value="@load(doctor.fullName)"/>
+                        <vlayout spacing="0px">
+                            <label value="@load(doctor.fullName)"/>
+                            <label sclass="@load(vm.getStatusBadgeSclass(doctor))"
+                                   value="@load(vm.getStatusLabel(doctor))" />
+                        </vlayout>
                         <label value="@load(doctor.specialtyName)" />
                         <label value="@load(doctor.phone)" />
                         <label value="@load(doctor.qualification)" />
                         <label value="@load(vm.getExperienceLabel(doctor))" />
                         <label value="@load(doctor.consultationFee)" />
-                        <hlayout spacing="6px" sclass="action-cell">
+                        <hlayout spacing="6px" sclass="action-cell"
+                                onClick="event.stopPropagation()">
                             <button iconSclass="fa-solid fa-pen-to-square"
                                     sclass="btn-edit"
+                                    tooltiptext="Chỉnh sửa"
                                     onClick="@command('editDoctor', doctor=doctor)" />
                             <button iconSclass="bi bi-trash-fill"
                                     sclass="btn-delete"
+                                    tooltiptext="Xóa bác sĩ"
                                     onClick="@command('deleteDoctor', doctor=doctor)" />
                         </hlayout>
                     </row>

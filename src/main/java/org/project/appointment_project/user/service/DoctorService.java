@@ -12,5 +12,7 @@ public interface DoctorService {
 
     PageResponse<DoctorResponse> getDoctorsWithFilters(String specialtyName, Pageable pageable);
 
+    PageResponse<DoctorResponse> searchDoctors(String keyword, Pageable pageable);
+
     DoctorResponse getDoctorById(UUID doctorId);
 }

@@ -2,11 +2,13 @@ package org.project.appointment_project.ui.viewmodel.admin;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.project.appointment_project.ui.viewmodel.admin.dto.AddDoctorFormData;
 import org.project.appointment_project.user.dto.request.DoctorRegistrationRequest;
 import org.project.appointment_project.user.dto.response.SpecialtyResponse;
 import org.project.appointment_project.user.enums.Gender;
@@ -23,51 +25,29 @@ import org.zkoss.zkplus.spring.SpringUtil;
 import org.zkoss.zul.ListModelList;
 
 import lombok.Getter;
-import lombok.Setter;
 
 public class AddDoctorViewModel {
 
     private UserRegistrationService userRegistrationService;
     private SpecialtyService specialtyService;
 
+    @Getter
+    private final AddDoctorFormData form = new AddDoctorFormData();
 
     @Getter
-    @Setter
-    private String username = "";
+    private ListModelList<SpecialtyResponse> specialtyModel = new ListModelList<>();
+    @Getter
+    private final ListModelList<String> genderModel = new ListModelList<>(List.of("Nam", "Nữ"));
 
     @Getter
-    @Setter
-    private String email = "";
+    private String errorMessage = "";
 
     @Getter
-    @Setter
-    private String password = "";
+    private String successMessage = "";
 
     @Getter
-    @Setter
-    private String firstName = "";
-    @Getter @Setter private String lastName = "";
-    @Getter @Setter private String phone = "";
-    @Getter @Setter private String address = "";
-    @Getter @Setter private String dateOfBirthStr = "";
+    private boolean loading = false;
 
-    // Specialty listbox
-    @Getter private ListModelList<SpecialtyResponse> specialtyModel = new ListModelList<>();
-
-    // Gender listbox
-    @Getter private ListModelList<String> genderModel = new ListModelList<>(List.of("Nam", "Nữ"));
-
-    // Doctor specific
-    @Getter @Setter private String licenseNumber = "";
-    @Getter @Setter private String qualification = "";
-    @Getter @Setter private String yearsOfExperienceStr = "";
-    @Getter @Setter private String consultationFeeStr = "";
-    @Getter @Setter private String bio = "";
-
-    // UI state
-    @Getter private String errorMessage = "";
-    @Getter private String successMessage = "";
-    @Getter private boolean loading = false;
 
     @Init
     public void init() {
@@ -94,80 +74,18 @@ public class AddDoctorViewModel {
         errorMessage = "";
         successMessage = "";
 
-        // Validate bắt buộc
-        if (isBlank(username) || isBlank(email) || isBlank(password)
-                || isBlank(firstName) || isBlank(lastName)
-                || isBlank(licenseNumber) || isBlank(qualification)) {
-            errorMessage = "Vui lòng điền đầy đủ các trường bắt buộc (*)";
-            return;
-        }
-
-        if (specialtyModel.getSelection().isEmpty()) {
-            errorMessage = "Vui lòng chọn chuyên khoa";
-            return;
-        }
+        if (!validateForm()) return;
 
         loading = true;
         try {
-            SpecialtyResponse selectedSpecialty = specialtyModel.getSelection().iterator().next();
-
-            // Parse optional fields
-            Integer years = null;
-            if (!isBlank(yearsOfExperienceStr)) {
-                try { years = Integer.parseInt(yearsOfExperienceStr.trim()); }
-                catch (NumberFormatException ex) { errorMessage = "Số năm kinh nghiệm không hợp lệ"; loading = false; return; }
-            }
-
-            BigDecimal fee = null;
-            if (!isBlank(consultationFeeStr)) {
-                try { fee = new BigDecimal(consultationFeeStr.trim()); }
-                catch (NumberFormatException ex) { errorMessage = "Giá khám không hợp lệ"; loading = false; return; }
-            }
-
-            LocalDate dob = null;
-            if (!isBlank(dateOfBirthStr)) {
-                try { dob = LocalDate.parse(dateOfBirthStr.trim()); }
-                catch (Exception ex) { errorMessage = "Ngày sinh không hợp lệ (định dạng: YYYY-MM-DD)"; loading = false; return; }
-            }
-
-            Gender gender = null;
-            if (!genderModel.getSelection().isEmpty()) {
-                gender = "Nam".equals(genderModel.getSelection().iterator().next()) ? Gender.MALE : Gender.FEMALE;
-            }
-
-            DoctorRegistrationRequest request = DoctorRegistrationRequest.builder()
-                    .username(username.trim())
-                    .email(email.trim())
-                    .password(password)
-                    .firstName(firstName.trim())
-                    .lastName(lastName.trim())
-                    .phone(isBlank(phone) ? null : phone.trim())
-                    .address(isBlank(address) ? null : address.trim())
-                    .dateOfBirth(dob)
-                    .gender(gender)
-                    .licenseNumber(licenseNumber.trim())
-                    .specialtyId(selectedSpecialty.getSpecialtyId())
-                    .qualification(qualification.trim())
-                    .yearsOfExperience(years)
-                    .consultationFee(fee)
-                    .bio(isBlank(bio) ? null : bio.trim())
-                    .build();
-
-            userRegistrationService.registerDoctor(request);
+            userRegistrationService.registerDoctor(buildRequest());
             successMessage = "Thêm bác sĩ thành công!";
-
+            BindUtils.postGlobalCommand(null, null, "onDoctorAdded", new HashMap<>());
         } catch (Exception e) {
             String msg = e.getMessage();
             errorMessage = (msg != null && !msg.isBlank()) ? msg : "Đã có lỗi xảy ra, vui lòng thử lại";
         } finally {
             loading = false;
-        }
-
-        // Notify DoctorListViewModel reload (outside try-catch to not affect error/success state)
-        if (successMessage != null && !successMessage.isBlank()) {
-            try {
-                BindUtils.postGlobalCommand(null, null, "onDoctorAdded", new HashMap<>());
-            } catch (Exception ignored) {}
         }
     }
 
@@ -177,16 +95,79 @@ public class AddDoctorViewModel {
     }
 
     @Command
-    @NotifyChange({"username","email","password","firstName","lastName","phone",
-            "address","dateOfBirthStr","licenseNumber","qualification",
-            "yearsOfExperienceStr","consultationFeeStr","bio","errorMessage","successMessage"})
+    @NotifyChange({"form", "errorMessage", "successMessage"})
     public void resetForm() {
-        username = ""; email = ""; password = ""; firstName = ""; lastName = "";
-        phone = ""; address = ""; dateOfBirthStr = ""; licenseNumber = "";
-        qualification = ""; yearsOfExperienceStr = ""; consultationFeeStr = ""; bio = "";
-        errorMessage = ""; successMessage = "";
+        form.reset();
+        errorMessage = "";
+        successMessage = "";
         specialtyModel.clearSelection();
         genderModel.clearSelection();
+    }
+
+
+    private boolean validateForm() {
+        if (isBlank(form.getUsername()) || isBlank(form.getEmail()) || isBlank(form.getPassword())
+                || isBlank(form.getFirstName()) || isBlank(form.getLastName())
+                || isBlank(form.getLicenseNumber()) || isBlank(form.getQualification())) {
+            errorMessage = "Vui lòng điền đầy đủ các trường bắt buộc (*)";
+            return false;
+        }
+        if (specialtyModel.getSelection().isEmpty()) {
+            errorMessage = "Vui lòng chọn chuyên khoa";
+            return false;
+        }
+        return true;
+    }
+
+
+    private DoctorRegistrationRequest buildRequest() {
+        return DoctorRegistrationRequest.builder()
+                .username(form.getUsername().trim())
+                .email(form.getEmail().trim())
+                .password(form.getPassword())
+                .firstName(form.getFirstName().trim())
+                .lastName(form.getLastName().trim())
+                .phone(isBlank(form.getPhone()) ? null : form.getPhone().trim())
+                .address(isBlank(form.getAddress()) ? null : form.getAddress().trim())
+                .dateOfBirth(parseDateOfBirth())
+                .gender(parseGender())
+                .licenseNumber(form.getLicenseNumber().trim())
+                .specialtyId(specialtyModel.getSelection().iterator().next().getSpecialtyId())
+                .qualification(form.getQualification().trim())
+                .yearsOfExperience(parseYears())
+                .consultationFee(parseFee())
+                .bio(isBlank(form.getBio()) ? null : form.getBio().trim())
+                .build();
+    }
+
+
+    private Integer parseYears() {
+        if (isBlank(form.getYearsOfExperienceStr())) return null;
+        try {
+            return Integer.parseInt(form.getYearsOfExperienceStr().trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Số năm kinh nghiệm không hợp lệ");
+        }
+    }
+
+    private BigDecimal parseFee() {
+        if (isBlank(form.getConsultationFeeStr())) return null;
+        try {
+            return new BigDecimal(form.getConsultationFeeStr().trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Giá khám không hợp lệ");
+        }
+    }
+
+    private LocalDate parseDateOfBirth() {
+        Date d = form.getDateOfBirth();
+        if (d == null) return null;
+        return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private Gender parseGender() {
+        if (genderModel.getSelection().isEmpty()) return null;
+        return "Nam".equals(genderModel.getSelection().iterator().next()) ? Gender.MALE : Gender.FEMALE;
     }
 
     private boolean isBlank(String s) {

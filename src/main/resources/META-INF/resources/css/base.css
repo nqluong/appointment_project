@@ -8,15 +8,40 @@ html, body {
     overflow: hidden;
 }
 
-/* ZK root containers - exclude modal wrappers */
 .z-page,
 .z-page > div,
 .z-client-info,
-body > div:not(.z-modal-backdrop):not(.z-window-modal):not([class*="z-window"]) {
+body > div:not(.z-modal-backdrop):not(.z-window-modal):not([class*="z-window"]):not(.z-popup):not([class*="z-datebox"]):not([class*="z-calendar"]):not([class*="z-combobox"]) {
     height: 100% !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+}
+
+.z-popup,
+.z-calendar,
+[class*="z-datebox-pp"],
+[class*="z-datebox-pop"],
+[class*="z-combobox-pp"] {
+    height: auto !important;
+    width: auto !important;
+    margin: unset !important;
+    padding: unset !important;
+}
+.z-popup > div,
+.z-calendar > div,
+[class*="z-datebox-pp"] > div,
+[class*="z-datebox-pop"] > div {
+    height: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.z-calendar table,
+[class*="z-datebox-pp"] table,
+[class*="z-datebox-pop"] table {
+    height: auto !important;
+    width: auto !important;
 }
 
 .z-window-noborder,

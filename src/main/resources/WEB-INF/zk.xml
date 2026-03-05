@@ -5,6 +5,11 @@
         <value>en</value>
     </library-property>
 
+    <library-property>
+        <name>org.zkoss.web.util.resource.ServletLabelLocator.disabled</name>
+        <value>true</value>
+    </library-property>
+
     <preference>
         <name>org.zkoss.zk.ui.prefer.locale</name>
         <value>en</value>

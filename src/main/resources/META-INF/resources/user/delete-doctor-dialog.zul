@@ -1,0 +1,44 @@
+<?link rel="stylesheet" href="/css/confirm-dialog.css"?>
+<zk>
+    <window sclass="confirm-win"
+            viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.dialog.DeleteDoctorDialogViewModel')"
+            border="none" closable="false" mode="modal" width="440px">
+
+        <div sclass="confirm-header confirm-header-question">
+            <span sclass="fa-solid fa-circle-question confirm-icon-question" />
+            <label sclass="confirm-title" value="Xác nhận xóa bác sĩ" />
+        </div>
+
+        <div sclass="confirm-body">
+            <label sclass="confirm-message"
+                   value="@load(('Bạn muốn xóa bác sĩ &quot;' += vm.doctorName += '&quot; như thế nào?'))" />
+            <div style="height:12px" />
+
+            <div sclass="confirm-option-row">
+                <span sclass="fa-solid fa-eye-slash confirm-option-icon" />
+                <div>
+                    <label sclass="confirm-option-title" value="Vô hiệu hóa" />
+                    <label sclass="confirm-option-desc"  value="Ẩn tài khoản, có thể khôi phục sau" />
+                </div>
+            </div>
+            <div sclass="confirm-option-row" style="margin-top:8px">
+                <span sclass="fa-solid fa-skull-crossbones confirm-option-icon confirm-option-icon-danger" />
+                <div>
+                    <label sclass="confirm-option-title confirm-option-title-danger" value="Xóa vĩnh viễn" />
+                    <label sclass="confirm-option-desc"  value="Xóa hoàn toàn, không thể hoàn tác" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div sclass="confirm-footer">
+            <button sclass="btn-confirm-cancel"  label="Hủy"
+                    onClick="@command('cancel', view=self.root)" />
+            <button sclass="btn-confirm-danger"  label="Xóa vĩnh viễn"
+                    onClick="@command('openHardDelete', view=self.root)" />
+            <button sclass="btn-confirm-primary" label="Vô hiệu hóa"
+                    onClick="@command('softDelete', view=self.root)" />
+        </div>
+
+    </window>
+</zk>

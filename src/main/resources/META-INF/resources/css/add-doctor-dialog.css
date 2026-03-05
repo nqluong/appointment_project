@@ -28,6 +28,11 @@
 .add-doctor-win .z-window-close:hover {
     opacity: 1;
 }
+.z-window{
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
 
 /* Body */
 .add-doctor-body {
@@ -107,6 +112,40 @@
 .add-doctor-input.z-textbox:focus {
     border-color: #3D5A42 !important;
     box-shadow: 0 0 0 2px rgba(61,90,66,0.15) !important;
+}
+
+/* Datebox input */
+.add-doctor-input.z-datebox .z-datebox-input,
+.add-doctor-input.z-datebox input {
+    border: none !important;
+    outline: none !important;
+    font-size: 13px !important;
+    color: #2E4030 !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    background: transparent !important;
+    padding: 0 4px !important;
+    height: 30px !important;
+    width: auto !important;
+}
+.add-doctor-input.z-datebox {
+    border: 1px solid #C2C7A9 !important;
+    border-radius: 6px !important;
+    height: 32px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+.add-doctor-input.z-datebox:focus-within {
+    border-color: #3D5A42 !important;
+    box-shadow: 0 0 0 2px rgba(61,90,66,0.15) !important;
+}
+.add-doctor-input.z-datebox .z-datebox-button {
+    border: none !important;
+    background: transparent !important;
+    color: #3D5A42 !important;
+    cursor: pointer !important;
+    padding: 0 6px !important;
 }
 
 /* Textarea */

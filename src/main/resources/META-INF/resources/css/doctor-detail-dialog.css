@@ -26,6 +26,11 @@
 }
 .doctor-detail-win .z-window-close:hover { opacity: 1; }
 
+.z-window{
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
 /* Body */
 .doctor-detail-body {
     padding: 20px 24px !important;

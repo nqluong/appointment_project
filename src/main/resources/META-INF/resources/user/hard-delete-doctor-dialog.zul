@@ -1,0 +1,33 @@
+<?link rel="stylesheet" href="/css/confirm-dialog.css"?>
+<zk>
+    <window sclass="confirm-win"
+            viewModel="@id('vm') @init('org.project.appointment_project.ui.viewmodel.dialog.HardDeleteDoctorDialogViewModel')"
+            border="none" closable="false" mode="modal" width="440px">
+
+        <!-- Header -->
+        <div sclass="confirm-header confirm-header-warning">
+            <span sclass="fa-solid fa-triangle-exclamation confirm-icon-warning" />
+            <label sclass="confirm-title" value="Xác nhận xóa vĩnh viễn" />
+        </div>
+
+        <!-- Body -->
+        <div sclass="confirm-body">
+            <div sclass="confirm-warning-box">
+                <span sclass="fa-solid fa-circle-exclamation" style="color:#B71C1C; margin-right:8px;" />
+                <label sclass="confirm-warning-text" value="Thao tác này KHÔNG THỂ hoàn tác!" />
+            </div>
+            <div style="height:10px" />
+            <label sclass="confirm-message"
+                   value="@load(('Bạn có chắc muốn xóa vĩnh viễn bác sĩ &quot;' += vm.doctorName += '&quot; khỏi hệ thống không?'))" />
+        </div>
+
+        <!-- Footer -->
+        <div sclass="confirm-footer">
+            <button sclass="btn-confirm-cancel" label="Quay lại"
+                    onClick="@command('cancel', view=self.root)" />
+            <button sclass="btn-confirm-danger" label="Xóa vĩnh viễn"
+                    onClick="@command('hardDelete', view=self.root)" />
+        </div>
+
+    </window>
+</zk>

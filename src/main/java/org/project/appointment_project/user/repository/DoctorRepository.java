@@ -17,7 +17,8 @@ public interface DoctorRepository extends JpaRepository<User, UUID> {
     @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
             "u.id, up.firstName, up.lastName, up.avatarUrl, " +
             "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
-            "CAST(up.gender AS string), up.phone, s.name) " +
+            "CAST(up.gender AS string), up.phone, s.name, " +
+            "u.isActive, mp.isDoctorApproved) " +
             "FROM User u " +
             "JOIN u.userRoles ur " +
             "JOIN ur.role r " +
@@ -33,7 +34,8 @@ public interface DoctorRepository extends JpaRepository<User, UUID> {
     @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
             "u.id, up.firstName, up.lastName, up.avatarUrl, " +
             "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
-            "CAST(up.gender AS string), up.phone, s.name) " +
+            "CAST(up.gender AS string), up.phone, s.name, " +
+            "u.isActive, mp.isDoctorApproved) " +
             "FROM User u " +
             "JOIN u.userRoles ur " +
             "JOIN ur.role r " +
@@ -58,4 +60,38 @@ public interface DoctorRepository extends JpaRepository<User, UUID> {
             "AND ur.isActive = true " +
             "AND mp.isDoctorApproved = true")
     Page<User> findAllApprovedDoctors2(Pageable pageable);
+
+
+    @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
+            "u.id, up.firstName, up.lastName, up.avatarUrl, " +
+            "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
+            "CAST(up.gender AS string), up.phone, s.name, " +
+            "u.isActive, mp.isDoctorApproved) " +
+            "FROM User u " +
+            "JOIN u.userRoles ur " +
+            "JOIN ur.role r " +
+            "JOIN u.userProfile up " +
+            "JOIN u.medicalProfile mp " +
+            "LEFT JOIN mp.specialty s " +
+            "WHERE r.name = 'DOCTOR' ")
+    Page<DoctorResponse> findAllDoctors(Pageable pageable);
+
+    @Query("SELECT new org.project.appointment_project.user.dto.response.DoctorResponse(" +
+            "u.id, up.firstName, up.lastName, up.avatarUrl, " +
+            "mp.qualification, mp.consultationFee, mp.yearsOfExperience, " +
+            "CAST(up.gender AS string), up.phone, s.name, " +
+            "u.isActive, mp.isDoctorApproved) " +
+            "FROM User u " +
+            "JOIN u.userRoles ur " +
+            "JOIN ur.role r " +
+            "JOIN u.userProfile up " +
+            "JOIN u.medicalProfile mp " +
+            "LEFT JOIN mp.specialty s " +
+            "WHERE r.name = 'DOCTOR' " +
+            "AND (" +
+            "   LOWER(CONCAT(up.firstName, ' ', up.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(CONCAT(up.lastName, ' ', up.firstName)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            ")")
+    Page<DoctorResponse> searchDoctorsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

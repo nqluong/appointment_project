@@ -24,6 +24,8 @@ public class DoctorResponse {
     String gender;
     String phone;
     String specialtyName;
+    boolean isActive;
+    boolean isApproved;
 
     public DoctorResponse(UUID id,
                           String firstName,
@@ -34,7 +36,9 @@ public class DoctorResponse {
                           Integer yearsOfExperience,
                           String gender,
                           String phone,
-                          String specialtyName) {
+                          String specialtyName,
+                          boolean isActive,
+                          boolean isApproved) {
         this.id = id;
         this.fullName = NameUtils.formatDoctorFullName(firstName + " " + lastName);
         this.avatarUrl = avatarUrl;
@@ -44,5 +48,7 @@ public class DoctorResponse {
         this.gender = gender;
         this.phone = phone;
         this.specialtyName = specialtyName;
+        this.isActive = isActive;
+        this.isApproved = isApproved;
     }
 }

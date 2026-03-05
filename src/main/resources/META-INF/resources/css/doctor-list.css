@@ -1,84 +1,101 @@
-﻿/* Page Title */
-.doctor-page-title {
+﻿.doctor-page-title {
     font-size: 30px;
     font-weight: 800;
     color: #163020;
     margin-bottom: 24px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
-.doctor-page-icon {
-    font-size: 26px;
-    margin-right: 10px;
-}
-
-/* Filter Bar */
 .doctor-filter-label {
     font-weight: 600;
     color: #2E4A35;
-    font-size: 13.5px;
+    font-size: 13px;
 }
 
-/* Filter input border */
-.z-textbox,
-.z-combobox .z-combobox-input,
-.z-listbox.z-listbox-select {
+.filter-listbox.z-listbox select,
+.z-select,
+.filter-listbox select {
     border: 1px solid #C2C7A9 !important;
     border-radius: 6px !important;
-    outline: none !important;
-    height: 30px !important;
-    padding: 0 8px !important;
+    height: 34px !important;
+    width: 180px !important;
+    padding: 0 28px 0 8px !important;
     font-size: 13px !important;
     font-family: 'Inter', 'Segoe UI', sans-serif !important;
+    font-weight: 500 !important;
     color: #2E4030 !important;
     background-color: #ffffff !important;
-    box-shadow: none !important;
-}
-
-/* Reset native select appearance to match textbox */
-.z-listbox.z-listbox-select,
-.filter-select,
-select.filter-select {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
-    padding-right: 28px !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232E4030' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 8px center !important;
     cursor: pointer !important;
-    line-height: normal !important;
-    vertical-align: middle !important;
-    border: 1px solid #C2C7A9 !important;
-    border-radius: 6px !important;
     outline: none !important;
-    height: 30px !important;
-    padding-left: 8px !important;
+    box-shadow: none !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+.filter-listbox.z-listbox select:hover,
+.filter-listbox select:hover {
+    border-color: #3D5A42 !important;
+}
+.filter-listbox.z-listbox select:focus,
+.filter-listbox select:focus {
+    border-color: #3D5A42 !important;
+    box-shadow: 0 0 0 2px rgba(61, 90, 66, 0.15) !important;
+}
+.filter-listbox select option {
     font-size: 13px !important;
     font-family: 'Inter', 'Segoe UI', sans-serif !important;
     color: #2E4030 !important;
     background-color: #ffffff !important;
-    box-shadow: none !important;
 }
 
-.filter-select:focus,
-select.filter-select:focus {
-    border-color: #3D5A42 !important;
-    box-shadow: 0 0 0 2px rgba(61, 90, 66, 0.15) !important;
+.filter-listbox select option:checked {
+    background-color: #E1EAD2 !important;
+    color: #163020 !important;
+    font-weight: 600 !important;
 }
 
-.z-textbox:focus,
-.z-combobox .z-combobox-input:focus,
-.z-listbox.z-listbox-select:focus {
-    border-color: #3D5A42 !important;
-    box-shadow: 0 0 0 2px rgba(61, 90, 66, 0.15) !important;
+.btn-search,
+.btn-search.z-button {
+    background: #3D5A42 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.btn-search:hover,
+.btn-search.z-button:hover {
+    background: #2A3F2E !important;
 }
 
+.btn-add-doctor,
+.btn-add-doctor.z-button {
+    background: #D67B4F !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 18px !important;
+    font-size: 13px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn-add-doctor:hover,
+.btn-add-doctor.z-button:hover {
+    background: #B8613A !important;
+    transform: translateY(-1px);
+}
 
-
-/* Table header title */
 .doctor-table-title {
     font-size: 14px;
+    font-weight: 600;
     color: #163020;
     display: block;
     margin-bottom: 16px;
@@ -86,7 +103,6 @@ select.filter-select:focus {
     border-bottom: 2px solid #C2C7A9;
 }
 
-/* Grid columns header - ZK render ra .z-column và cell bên trong là .z-column-cnt */
 .z-grid .z-column,
 .z-grid .z-columns .z-column,
 .doctor-table-header .z-column {
@@ -96,7 +112,6 @@ select.filter-select:focus {
     border-left: none !important;
     border-right: 1px solid #C2C7A9 !important;
 }
-
 .z-grid .z-column .z-column-cnt,
 .z-grid .z-columns .z-column .z-column-cnt,
 .doctor-table-header .z-column .z-column-cnt {
@@ -108,7 +123,10 @@ select.filter-select:focus {
     padding: 12px 10px;
 }
 
-/* Grid rows - ZK render cell thành .z-row .z-cell */
+.z-column-content{
+    color: #2E4030;
+}
+
 .z-grid .z-row .z-cell {
     padding: 11px 14px;
     border-bottom: 1px solid #E1EAD2;
@@ -116,30 +134,63 @@ select.filter-select:focus {
     font-size: 13px;
     vertical-align: middle;
 }
-
-/* Striped rows - dòng chẵn */
 .z-grid .z-row:nth-child(even) .z-cell {
     background-color: #F9FAF4 !important;
 }
-
-.z-grid .z-row:hover .z-cell {
+.z-grid .z-row:hover .z-cell,
+.doctor-row:hover .z-cell {
     background-color: #EDF2EE !important;
+    cursor: pointer;
 }
 
-/* Status labels */
-.status-active {
-    color: #2E7D32;
-    font-weight: 600;
-    font-size: 13px;
+.doctor-row-inactive .z-cell {
+    background-color: #FFF5F5 !important;
+    color: #9E3030 !important;
+}
+.doctor-row-inactive:nth-child(even) .z-cell {
+    background-color: #FFECEC !important;
+}
+.doctor-row-inactive:hover .z-cell {
+    background-color: #FFE0E0 !important;
 }
 
-.status-inactive {
-    color: #C62828;
-    font-weight: 600;
-    font-size: 13px;
+.doctor-row-unapproved .z-cell {
+    background-color: #FFFDF0 !important;
+    color: #7A5A00 !important;
+}
+.doctor-row-unapproved:nth-child(even) .z-cell {
+    background-color: #FFF9DC !important;
+}
+.doctor-row-unapproved:hover .z-cell {
+    background-color: #FFF3B0 !important;
 }
 
-/* Căn giữa hlayout trong ô thao tác */
+.doctor-badge {
+    display: inline-block !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 1px 7px !important;
+    border-radius: 20px !important;
+    margin-top: 2px !important;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.doctor-badge-active {
+    background: #E8F5E9 !important;
+    color: #2E7D32 !important;
+    border: 1px solid #A5D6A7 !important;
+}
+.doctor-badge-inactive {
+    background: #FFEBEE !important;
+    color: #C62828 !important;
+    border: 1px solid #FFCDD2 !important;
+}
+.doctor-badge-unapproved {
+    background: #FFF8E1 !important;
+    color: #F57F17 !important;
+    border: 1px solid #FFE082 !important;
+}
+
 .action-cell,
 .z-grid .z-row .z-cell .z-hlayout {
     display: flex !important;
@@ -148,7 +199,6 @@ select.filter-select:focus {
     width: 100% !important;
 }
 
-/* Edit button */
 .btn-edit,
 .btn-edit.z-button {
     background: #3D5A42 !important;
@@ -156,16 +206,11 @@ select.filter-select:focus {
     border: none !important;
     border-radius: 7px !important;
     font-size: 14px !important;
-    font-weight: 600;
     cursor: pointer;
     padding: 6px 10px !important;
-    line-height: 1 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-width: unset !important;
-    width: auto !important;
-    height: auto !important;
     transition: background 0.2s ease;
 }
 .btn-edit:hover,
@@ -173,7 +218,6 @@ select.filter-select:focus {
     background: #2A3F2E !important;
 }
 
-/* Delete button */
 .btn-delete,
 .btn-delete.z-button {
     background: #FFEBEE !important;
@@ -181,16 +225,11 @@ select.filter-select:focus {
     border: 1px solid #FFCDD2 !important;
     border-radius: 7px !important;
     font-size: 14px !important;
-    font-weight: 600;
     cursor: pointer;
     padding: 6px 10px !important;
-    line-height: 1 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-width: unset !important;
-    width: auto !important;
-    height: auto !important;
     transition: background 0.2s ease;
 }
 .btn-delete:hover,
@@ -198,67 +237,6 @@ select.filter-select:focus {
     background: #FFCDD2 !important;
 }
 
-/* Search button - Nút "Tìm" */
-.btn-search {
-    background: #3D5A42 !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 8px 16px !important;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-.btn-search:hover {
-    background: #2A3F2E !important;
-}
-
-/* Add button - Nút "+ Thêm bác sĩ" */
-.btn-add-doctor {
-    background: #D67B4F !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 8px 18px !important;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-}
-.btn-add-doctor:hover {
-    background: #B8613A !important;
-    transform: translateY(-1px);
-}
-
-/* ===== Listbox select filter ===== */
-.filter-listbox.z-listbox select,
-.filter-listbox select {
-    border: 1px solid #C2C7A9 !important;
-    border-radius: 6px !important;
-    height: 34px !important;
-    font-size: 13px !important;
-    color: #2E4030 !important;
-    background-color: #ffffff !important;
-    padding: 0 28px 0 8px !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232E4030' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 8px center !important;
-    cursor: pointer !important;
-    outline: none !important;
-    box-shadow: none !important;
-    width: 180px !important;
-}
-.filter-listbox.z-listbox select:focus,
-.filter-listbox select:focus {
-    border-color: #3D5A42 !important;
-    box-shadow: 0 0 0 2px rgba(61, 90, 66, 0.15) !important;
-}
-
-/* ===== Pagination ===== */
 .pagination-bar {
     display: flex !important;
     align-items: center !important;
@@ -291,16 +269,3 @@ select.filter-select:focus {
     padding: 0 4px;
 }
 
-.doctor-avatar {
-    border: 2px solid #E1EAD2;
-    flex-shrink: 0;
-    border-radius: 50% !important;
-    object-fit: cover;
-}
-
-
-/* Row hover highlight in the doctor table */
-.doctor-row:hover .z-cell {
-    background-color: #DFF0D8 !important;
-    cursor: pointer;
-}

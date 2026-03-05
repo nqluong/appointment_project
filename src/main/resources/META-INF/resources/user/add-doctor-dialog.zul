@@ -33,19 +33,19 @@
             <rows>
                 <row>
                     <label value="Tên đăng nhập *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.username)"
+                    <textbox value="@bind(advm.form.username)"
                              placeholder="vd: dr_nguyen"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Email *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.email)"
+                    <textbox value="@bind(advm.form.email)"
                              placeholder="vd: doctor@hospital.com"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Mật khẩu *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.password)"
+                    <textbox value="@bind(advm.form.password)"
                              type="password"
                              placeholder="Tối thiểu 8 ký tự"
                              sclass="add-doctor-input" width="100%"/>
@@ -66,13 +66,13 @@
             <rows>
                 <row>
                     <label value="Họ *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.lastName)"
+                    <textbox value="@bind(advm.form.lastName)"
                              placeholder="VD: Nguyễn"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Tên *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.firstName)"
+                    <textbox value="@bind(advm.form.firstName)"
                              placeholder="VD: Văn A"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
@@ -88,19 +88,21 @@
                 </row>
                 <row>
                     <label value="Ngày sinh" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.dateOfBirthStr)"
-                             placeholder="YYYY-MM-DD"
-                             sclass="add-doctor-input" width="150px"/>
+                    <datebox value="@bind(advm.form.dateOfBirth)"
+                             format="dd/MM/yyyy"
+                             placeholder="dd/MM/yyyy"
+                             sclass="add-doctor-input" width="160px"
+                             lenient="false"/>
                 </row>
                 <row>
                     <label value="Số điện thoại" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.phone)"
+                    <textbox value="@bind(advm.form.phone)"
                              placeholder="VD: 0901234567"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Địa chỉ" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.address)"
+                    <textbox value="@bind(advm.form.address)"
                              placeholder="Địa chỉ..."
                              sclass="add-doctor-input" width="100%"/>
                 </row>
@@ -120,7 +122,7 @@
             <rows>
                 <row>
                     <label value="Số GP HÀNH NGHỀ *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.licenseNumber)"
+                    <textbox value="@bind(advm.form.licenseNumber)"
                              placeholder="VD: GP123456"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
@@ -136,25 +138,25 @@
                 </row>
                 <row>
                     <label value="Bằng cấp *" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.qualification)"
+                    <textbox value="@bind(advm.form.qualification)"
                              placeholder="VD: Tiến sĩ Y khoa"
                              sclass="add-doctor-input" width="100%"/>
                 </row>
                 <row>
                     <label value="Năm kinh nghiệm" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.yearsOfExperienceStr)"
+                    <textbox value="@bind(advm.form.yearsOfExperienceStr)"
                              placeholder="VD: 10"
                              sclass="add-doctor-input" width="80px"/>
                 </row>
                 <row>
                     <label value="Giá khám (VNĐ)" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.consultationFeeStr)"
+                    <textbox value="@bind(advm.form.consultationFeeStr)"
                              placeholder="VD: 200000"
                              sclass="add-doctor-input" width="160px"/>
                 </row>
                 <row>
                     <label value="Giới thiệu" sclass="add-doctor-label"/>
-                    <textbox value="@bind(advm.bio)"
+                    <textbox value="@bind(advm.form.bio)"
                              placeholder="Mô tả ngắn về bác sĩ..."
                              multiline="true" rows="3"
                              sclass="add-doctor-input add-doctor-textarea" width="100%"/>
